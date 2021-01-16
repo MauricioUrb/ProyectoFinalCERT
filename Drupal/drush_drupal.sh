@@ -7,3 +7,12 @@ composer require drush/drush:dev-master
 sudo echo "PATH=$PATH:$HOME/ProyectoFinalCERT/Drupal/vendor/bin" >> ~/.bashrc
 source ~/.bashrc
 #En este punto ya se puede usar drush
+# Descarga de drupal
+#composer create-project drupal/recommended-project carpeta
+# o con drush
+mkdir carpeta/destino
+cd carpeta/destino
+drush site-install standard --db-url='mysql://[DB_USER]:[DB_PASS]@[DB_HOST]:[DB_PORT]/[DB_NAME]' --account-name=ADMIN-NAME --account-pass=YOUR-PW --site-name=WEBSITE-NAME --site-mail=WEBSITE@MAIL.COM \
+# composer require drush/drush:^10 ?
+
+#https://matti.dev/post/setup-install-drupal-9-with-composer-and-drush
