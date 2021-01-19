@@ -8,7 +8,7 @@ source ~/.bashrc
 #En este punto ya se puede usar drush
 # Descarga de drupal
 alias tmp="cd /var/www/"
-alias
+tmp
 sudo composer create-project drupal/recommended-project drupal
 # Instalación de drupal
 #drush site-install standard --db-url='mysql://[DB_USER]:[DB_PASS]@[DB_HOST]:[DB_PORT]/[DB_NAME]' --account-name=ADMIN-NAME --account-pass=YOUR-PW --site-name=WEBSITE-NAME --site-mail=WEBSITE@MAIL.COM \
