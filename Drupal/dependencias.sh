@@ -6,13 +6,14 @@ if [[ $UID -ne 0 ]]; then
 fi
 
 # Todas las dependencias
-apt-get install php php-cli php-common php-curl php-dev php-imap php-json php-ldap php-pgsql php-snmp php-xml php-gd apache2 curl php-fpm php-pdo php-zip php-mbstring php-pear php-bcmath gnupg2 postgresql-12 postgresql-client-12 -y
+apt-get install php php-cli php-common libapache2-mod-php php-curl php-dev php-imap php-json php-ldap php-pgsql php-snmp php-xml php-gd apache2 curl php-fpm php-pdo php-zip php-mbstring php-pear php-bcmath gnupg2 -y
 
 # Para PostgreSQL hay que actualizar los repos
 # https://www.postgresql.org/download/linux/debian/
-sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" |sudo tee  /etc/apt/sources.list.d/pgdg.list
 apt-get update
+apt-get install postgresql-12 postgresql-client-12 -y
 
 # Configuración de Apache
 # configuracion basica/segura de apache
@@ -46,10 +47,3 @@ systemctl restart apache2
 curl -I localhost
 
 # Configuración de PostgreSQL
-{
-  psql -U postgres -f ProyectoFinalCERT/Postgres/DB_pfinal.sql 
-} || {
-  echo "No está en esta ruta el archivo de sql :("
-}
-
-echo -e "\n\nOK"
