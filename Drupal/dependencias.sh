@@ -6,7 +6,7 @@ if [[ $UID -ne 0 ]]; then
 fi
 
 # Todas las dependencias
-apt-get install php php-cli php-common libapache2-mod-php php-curl php-dev php-imap php-json php-ldap php-pgsql php-snmp php-xml php-gd apache2 curl php-fpm php-pdo php-zip php-mbstring php-pear php-bcmath gnupg2 -y
+apt-get install git php php-cli php-common libapache2-mod-php php-curl php-dev php-imap php-json php-ldap php-pgsql php-snmp php-xml php-gd apache2 curl php-fpm php-pdo php-zip php-mbstring php-pear php-bcmath gnupg2 -y
 
 # Para PostgreSQL hay que actualizar los repos
 # https://www.postgresql.org/download/linux/debian/
