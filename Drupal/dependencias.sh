@@ -3,6 +3,7 @@
 # checamos que sea root (su -)
 if [[ $UID -ne 0 ]]; then
 	echo "Se requiere ser root"
+	exit 1
 fi
 
 # Todas las dependencias
