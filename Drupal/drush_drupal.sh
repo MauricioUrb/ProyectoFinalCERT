@@ -10,6 +10,10 @@ sudo echo "PATH=$PATH:$HOME/ProyectoFinalCERT/Drupal/vendor/bin" >> ~/.bashrc
 composer create-project drupal/recommended-project drupal
 sudo mv drupal/ /var/www/
 
+sudo mkdir -p /var/www/drupal/sites/default/files/translations/
+sudo chmod -R 777 /var/www/drupal/sites/default/files
+sudo cp /var/www/drupal/sites/default/default.settings.php /var/www/drupal/sites/default/settings.php
+sudo chmod a+w /var/www/drupal/sites/default/settings.php
 
 #https://matti.dev/post/setup-install-drupal-9-with-composer-and-drush
 : <<'END'
@@ -21,5 +25,8 @@ source ~/.bashrc
 Instalación de drupal
 drush site-install standard --db-url='mysql://[DB_USER]:[DB_PASS]@[DB_HOST]:[DB_PORT]/[DB_NAME]' --account-name=ADMIN-NAME --account-pass=YOUR-PW --site-name=WEBSITE-NAME --site-mail=WEBSITE@MAIL.COM \
 drush si standard --db-url="mysql://postgres:hola123.,@localhost:5432/drupaldb" --account-name=admin --account-pass="hola123.,"
+
+Cuando termine la instalaicón de drupal se ejecuta
+chmod go-w sites/default/settings.php
 
 END
