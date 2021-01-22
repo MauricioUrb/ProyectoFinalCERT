@@ -1,3 +1,5 @@
+# Se debe de ejecutar como el usuario normal (por ahora)
+
 sudo cp composer.phar /usr/bin/composer
 sudo chmod +x /usr/bin/composer
 sudo composer require drush/drush:dev-master
@@ -9,17 +11,24 @@ sudo echo "PATH=$PATH:$HOME/ProyectoFinalCERT/Drupal/vendor/bin" >> ~/.bashrc
 # Descarga de drupal
 sudo composer create-project drupal/recommended-project drupal
 sudo mv drupal/ /var/www/
-
+echo -e "\nDrupal descargado en /var/www/drupal\nAgregando archivos, carpetas y permisos...\n"
 # Creación de directorio, archivo y permisos para drupal
 sudo mkdir -p /var/www/drupal/web/sites/default/files/translations/
 sudo chmod -R 777 /var/www/drupal/web/sites/default/files
 sudo cp /var/www/drupal/web/sites/default/default.settings.php /var/www/drupal/web/sites/default/settings.php
 sudo chmod a+w /var/www/drupal/web/sites/default/settings.php
 
+echo -e "\nCreando la base de datos\n"
 # Creación de la BD
 sudo cp $HOME/ProyectoFinalCERT/Postgres/DB_pfinal.sql /tmp/bd.sql
 sudo su -c "psql -f /tmp/bd.sql" - postgres
 
+echo -e "\nReiniciando apache...\n"
+# Habilitar apache
+sudo sed -i  's/html/drupal/' /etc/apache2/sites-enabled/000-default.conf
+sudo systemctl restart apache2.service
+
+echo -e "\nPor favor ejecuta el comando: source ~/.bashrc\n"
 #https://matti.dev/post/setup-install-drupal-9-with-composer-and-drush
 : <<'END'
 Comentarios
