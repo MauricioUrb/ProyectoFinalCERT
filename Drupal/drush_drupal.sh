@@ -11,10 +11,10 @@ composer create-project drupal/recommended-project drupal
 sudo mv drupal/ /var/www/
 
 # Creación de directorio, archivo y permisos para drupal
-sudo mkdir -p /var/www/drupal/sites/default/files/translations/
-sudo chmod -R 777 /var/www/drupal/sites/default/files
-sudo cp /var/www/drupal/sites/default/default.settings.php /var/www/drupal/sites/default/settings.php
-sudo chmod a+w /var/www/drupal/sites/default/settings.php
+sudo mkdir -p /var/www/drupal/web/sites/default/files/translations/
+sudo chmod -R 777 /var/www/drupal/web/sites/default/files
+sudo cp /var/www/drupal/web/sites/default/default.settings.php /var/www/drupal/web/sites/default/settings.php
+sudo chmod a+w /var/www/drupal/web/sites/default/settings.php
 
 # Creación de la BD
 sudo su -c "psql -f ~/ProyectoFinalCERT/Postgres/DB_pfinal.sql" - postgres
