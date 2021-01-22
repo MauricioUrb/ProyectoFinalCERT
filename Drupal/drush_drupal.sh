@@ -1,13 +1,13 @@
 sudo cp composer.phar /usr/bin/composer
 sudo chmod +x /usr/bin/composer
-composer require drush/drush:dev-master
+sudo composer require drush/drush:dev-master
 # A revisar en qué parte se quedará este archivo
 # por lo mientras se asume que el repo se clonó en el home
 sudo echo "PATH=$PATH:$HOME/ProyectoFinalCERT/Drupal/vendor/bin" >> ~/.bashrc
 
 #En este punto ya se puede usar drush
 # Descarga de drupal
-composer create-project drupal/recommended-project drupal
+sudo composer create-project drupal/recommended-project drupal
 sudo mv drupal/ /var/www/
 
 # Creación de directorio, archivo y permisos para drupal
@@ -17,7 +17,8 @@ sudo cp /var/www/drupal/web/sites/default/default.settings.php /var/www/drupal/w
 sudo chmod a+w /var/www/drupal/web/sites/default/settings.php
 
 # Creación de la BD
-sudo su -c "psql -f ~/ProyectoFinalCERT/Postgres/DB_pfinal.sql" - postgres
+sudo cp $HOME/ProyectoFinalCERT/Postgres/DB_pfinal.sql /tmp/bd.sql
+sudo su -c "psql -f /tmp/bd.sql" - postgres
 
 #https://matti.dev/post/setup-install-drupal-9-with-composer-and-drush
 : <<'END'
