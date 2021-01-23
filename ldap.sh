@@ -1,11 +1,17 @@
 #!/bin/bash
 
+# Es necesario ser root
+if [[ $UID -ne 0 ]]; then
+	echo "Requieres permisos de root"
+	exit 0
+fi
+
 # Es necesario agregar la dirección IP y el dominio al hosts
-echo -e "$(hostname -i | cut -d' ' -f2)\tldap.dominio.com\tldap"
+echo -e "$(hostname -i | cut -d' ' -f2)\tldap.dominio.com\tldap" >> /etc/hosts
 
 # Instalación de dependecias
-sudo apt-get install slapd ldap-utils ldapscripts -y
-sudo dpkg-reconfigure slapd
+apt-get install slapd ldap-utils ldapscripts -y
+dpkg-reconfigure slapd
 : <<'END'
 https://devconnected.com/how-to-setup-openldap-server-on-debian-10/
 Datos a introducir
@@ -23,7 +29,7 @@ echo "Creando archivos base de ldap..."
 echo "dn: ou=users,dc=ldap,dc=dominio,dc=com
 objectClass: organizationalUnit
 ou: users" > users.ldif
-sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f users.ldif
+ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f users.ldif
 
 echo "Creando archivos de usuarios de ldap..."
 #Archivos de usuarios
@@ -72,10 +78,10 @@ homeDirectory: /home/angel
 loginShell: /bin/bash
 mail: angel@dominio.com" > angel.ldif
 
-sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f angel.ldif
-sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f oscar.ldif
-sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f mauricio.ldif
+ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f angel.ldif
+ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f oscar.ldif
+ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f mauricio.ldif
 
 #Veririficar que todo esté en orden
 clear
-sudo slapcat
+slapcat
