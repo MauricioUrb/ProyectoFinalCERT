@@ -1,7 +1,9 @@
 #!/bin/bash
 
-#sudo echo "10.10.20.130	ldap.dominio.com ldap" >> /etc/hosts
 # Es necesario agregar la dirección IP y el dominio al hosts
+echo -e "$(hostname -i | cut -d' ' -f2)\tldap.dominio.com\tldap"
+
+# Instalación de dependecias
 sudo apt-get install slapd ldap-utils ldapscripts -y
 sudo dpkg-reconfigure slapd
 : <<'END'
@@ -16,61 +18,62 @@ No
 Yes
 END
 
-echo "Creando archivo base de ldap..."
-echo "dn: ou=People,dc=ldap,dc=dominio,dc=com
+echo "Creando archivos base de ldap..."
+# Usuarios
+echo "dn: ou=users,dc=ldap,dc=dominio,dc=com
 objectClass: organizationalUnit
-ou: People" > base.ldif
-sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f base.ldif
+ou: users" > users.ldif
+sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f users.ldif
 
 echo "Creando archivos de usuarios de ldap..."
 #Archivos de usuarios
-echo "dn: uid=alberto,ou=People,dc=ldap,dc=dominio,dc=com
-objectClass: inetOrgPerson
+echo "dn: cn=mauricio,ou=users,dc=ldap,dc=dominio,dc=com
+objectClass: top
 objectClass: posixAccount
 objectClass: shadowAccount
-cn: alberto
-sn: alberto
-uid: alberto
-uidNumber: 3000
-gidNumber: 3000
-userPassword: hola123.,
-homeDirectory: /home/alberto
-loginShell: /bin/bash
-gecos: alberto
-description: Alberto" > alberto.ldif
-
-echo "dn: uid=fernando,ou=People,dc=ldap,dc=dominio,dc=com
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: shadowAccount
-cn: fernando
-sn: fernando
-uid: fernando
-uidNumber: 3001
-gidNumber: 3000
-userPassword: hola123.,
-homeDirectory: /home/fernando
-loginShell: /bin/bash
-gecos: fernando
-description: Fernando" > fernando.ldif
-
-echo "dn: uid=mauricio,ou=People,dc=ldap,dc=dominio,dc=com
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: shadowAccount
+objectclass: iNetOrgPerson
 cn: mauricio
 sn: mauricio
 uid: mauricio
-uidNumber: 3002
+uidNumber: 3000
 gidNumber: 3000
 userPassword: hola123.,
 homeDirectory: /home/mauricio
 loginShell: /bin/bash
-gecos: mauricio
-description: Mauricio" > mauricio.ldif
+mail: mauricio@dominio.com" > mauricio.ldif
 
-sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f alberto.ldif
-sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f fernando.ldif
+echo "dn: cn=oscar,ou=users,dc=ldap,dc=dominio,dc=com
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectclass: iNetOrgPerson
+cn: oscar
+sn: oscar
+uid: oscar
+uidNumber: 3001
+gidNumber: 3001
+userPassword: hola123.,
+homeDirectory: /home/oscar
+loginShell: /bin/bash
+mail: oscar@dominio.com" > oscar.ldif
+
+echo "dn: cn=angel,ou=users,dc=ldap,dc=dominio,dc=com
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectclass: iNetOrgPerson
+cn: angel
+sn: angel
+uid: angel
+uidNumber: 3002
+gidNumber: 3002
+userPassword: hola123.,
+homeDirectory: /home/angel
+loginShell: /bin/bash
+mail: angel@dominio.com" > angel.ldif
+
+sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f angel.ldif
+sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f oscar.ldif
 sudo ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f mauricio.ldif
 
 #Veririficar que todo esté en orden
