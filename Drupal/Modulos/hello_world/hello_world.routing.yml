@@ -1,0 +1,8 @@
+hello_world:
+  #Ruta que tendrá en la url
+	path: /hello/world
+	defaults:
+		_controller: Drupal\hello_world\Controller\HelloWorldController::hello
+    _title: "Título de la pagina"
+	requirements:
+		_permission: 'access content'
