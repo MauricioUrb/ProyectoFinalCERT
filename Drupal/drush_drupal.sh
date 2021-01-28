@@ -13,6 +13,7 @@ chmod +x /usr/bin/composer
 # Descarga de drupal y drush
 composer create-project drupal/recommended-project drupal --working-dir=/var/www/
 composer require drush/drush --working-dir=/var/www/drupal
+composer require drupal/console --with-all-dependencies --working-dir=/var/www/drupal
 echo -e "\nDrupal descargado en /var/www/drupal\nAgregando archivos, carpetas y permisos...\n"
 
 # Creación de directorio, archivo y permisos para drupal
@@ -26,11 +27,18 @@ echo -e "\nCreando la base de datos\n"
 cp $HOME/ProyectoFinalCERT/Postgres/DB_pfinal.sql /tmp/bd.sql
 su -c "psql -f /tmp/bd.sql" - postgres
 
-echo -e "\nReiniciando apache...\n"
+echo -e "\nConfigurando y reiniciando apache...\n"
 # Habilitar apache
 sed -i  's/html/drupal\/web/' /etc/apache2/sites-enabled/000-default.conf
 sed -i -r '23i\\t<Directory /var/www/drupal/web/>\n\t\tAllowOverride All\n\t</Directory>' /etc/apache2/sites-enabled/000-default.conf
 sed -i '116s/# RewriteBase/RewriteBase/' /var/www/drupal/web/.htaccess
+# Configuración para los servicios de LDAP y SMTP
+#apt-get install mailutils -y
+sed -i '915s/;extension=imap/extension=imap/' /etc/php/7.3/apache2/php.ini
+sed -i '917s/;extension=ldap/extension=ldap/' /etc/php/7.3/apache2/php.ini
+sed -i '923s/;extension=openssl/extension=openssl/' /etc/php/7.3/apache2/php.ini
+sed -i '930s/;extension=pgsql/extension=pgsql/' /etc/php/7.3/apache2/php.ini
+sed -i '1074s/;sendmail_path =/sendmail_path = "\/usr\/sbin\/sendmail -t -i"/' /etc/php/7.3/apache2/php.ini
 systemctl restart apache2.service
 
 # Instalación del sitio
@@ -51,4 +59,26 @@ END
 chmod go-w /var/www/drupal/web/sites/default/settings.php
 chmod go-w /var/www/drupal/web/sites/default
 
-echo -e "\n\nSitio instalado!\n"
+echo "Sitio instalado. Instalando modulos..."
+
+# Para descargar los módulos
+#https://docs.acquia.com/resource/module-install-d8/
+#composer require 'drupal/simple_ldap:^1.4' --working-dir=/var/www/drupal
+# Para descargar los módulos
+composer require drupal/simple_ldap:^1.x-dev --working-dir=/var/www/drupal
+composer require drupal/smtp:^1.0 --working-dir=/var/www/drupal
+
+# Módulos custom
+cp -r Modulos/* /var/www/drupal/web/modules/.
+
+# Para habilitar los módulos
+/var/www/drupal/vendor/bin/drush en simple_ldap
+/var/www/drupal/vendor/bin/drush en smtp
+# /var/www/drupal/vendor/bin/drush en [nombre de los modulos custom]
+# https://www.youtube.com/watch?v=3vdQH-41mPo
+# https://www.youtube.com/watch?v=79zYcIoheCc
+
+# Limpiando caché
+/var/www/drupal/vendor/bin/drupal router:rebuild --root=/var/www/drupal
+
+#https://www.drupal.org/docs/creating-custom-modules/basic-structure
