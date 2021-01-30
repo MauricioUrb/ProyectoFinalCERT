@@ -122,4 +122,3 @@ CREATE TABLE comentarios
  CONSTRAINT FK_usuarios FOREIGN KEY ( id_usuarios ) REFERENCES usuarios ( id_usuarios ),
  CONSTRAINT FK_revisiones FOREIGN KEY ( id_revision ) REFERENCES revisiones ( id_revision )
 );
-
