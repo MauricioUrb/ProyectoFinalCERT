@@ -1,0 +1,7 @@
+name: Asignacion de Revision
+type: module
+description: Pagina para generar una revision.
+package: Custom
+core_version_requirement: ^8 || ^9
+core: 8.x
+#configure: sitios.admin_settings

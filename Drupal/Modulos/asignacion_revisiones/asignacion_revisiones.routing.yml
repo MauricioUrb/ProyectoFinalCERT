@@ -1,0 +1,7 @@
+asignacion_revisiones.content:
+  path: /revisiones/asignacion
+  defaults:
+    _form: '\Drupal\asignacion_revisiones\Form\AsignacionRevisionesForm'
+    _title: "Crear nueva revision"
+  requirements:
+    _permission: 'access content'
