@@ -1,0 +1,7 @@
+hallazgos_alta.content:
+  path: /hallazgos/alta
+  defaults:
+    _form: '\Drupal\hallazgos_alta\Form\HallazgosAltaForm'
+    _title: "Alta de Hallazgo"
+  requirements:
+    _permission: 'access content'

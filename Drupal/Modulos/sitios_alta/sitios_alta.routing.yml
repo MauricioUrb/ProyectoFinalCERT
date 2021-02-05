@@ -1,0 +1,7 @@
+sitios_alta.content:
+  path: /sitios/alta
+  defaults:
+    _form: '\Drupal\sitios_alta\Form\SitiosAltaForm'
+    _title: "Alta de Sitios"
+  requirements:
+    _permission: 'access content'

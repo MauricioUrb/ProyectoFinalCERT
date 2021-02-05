@@ -1,0 +1,7 @@
+pruebas_test.content:
+  path: /pruebas
+  defaults:
+    _form: '\Drupal\pruebas_test\Form\PruebasTestForm'
+    _title: "Página de prueba"
+  requirements:
+    _permission: 'access content'
