@@ -97,7 +97,6 @@ CREATE TABLE revisiones
 (
  id_revision    serial NOT NULL,
  tipo_revisión  boolean NOT NULL,
- status         char(70) NOT NULL,
  fecha_revision date NOT NULL,
  id_status		int NOT NULL,
  CONSTRAINT PK_revisiones PRIMARY KEY ( id_revision ),
