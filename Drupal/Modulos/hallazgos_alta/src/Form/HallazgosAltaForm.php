@@ -87,7 +87,19 @@ class HallazgosAltaForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $messenger_service = \Drupal::service('messenger');
-    $messenger_service->addMessage(t('The form is working.'));
+	  // insertando en la base de datos
+	  $connection = \Drupal::service('database');
+	  $result = $connection->insert('hallazgos')
+		  ->fields(array(
+			  'nombre_hallazgo' => $form_state->getValue('nombre'),
+			  'descripcion_hallazgo' => $form_state->getValue('description'),
+			  'solucion_recomendacion_hallazgo' => $form_state->getValue('solution'),
+			  'referencias_hallazgo' => $form_state->getValue('references'),
+			  'resumen_ejecutivo' => $form_state->getValue('resumen_ejecutivo'),
+			  'recomendacion_general' => $form_state->getValue('recomendation'),
+		  ))
+		  ->execute();
+	  $messenger_service = \Drupal::service('messenger');
+	  $messenger_service->addMessage(t('Hallazgo insertado en la base de datos'));
   }
 }
