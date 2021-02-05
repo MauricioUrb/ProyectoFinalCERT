@@ -60,7 +60,8 @@ class AsignacionRevisionesForm extends FormBase{
     $form['estatus'] = array(
       '#title' => t('Estatus de la revisi  n:'),
       '#type' => 'radios',
-      '#options' => array(0 => t('Asignado'), 1 => t('En proceso'), 2 => t('Concluido'), 3 => t('Apro$      '#default_value' => isset($node->active) ? $node->active : 0,
+      '#options' => array(0 => t('Asignado'), 1 => t('En proceso'), 2 => t('Concluido'), 3 => t('Aprobado')),
+      '#default_value' => isset($node->active) ? $node->active : 0,
     );
 
     //Boton para enviar el formulario
