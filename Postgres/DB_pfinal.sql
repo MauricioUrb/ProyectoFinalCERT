@@ -4,8 +4,10 @@ CREATE USER manager with encrypted password 'hola123.,';
 --Creación de la BD
 CREATE DATABASE drupaldb WITH ENCODING='UTF8' OWNER=manager TEMPLATE=template0;
 
---Selección de la bd
-\c drupaldb
+--Selección de la bd con el owner (el usuario manager ya debe de estar en el archivo pg_hba con md5)
+-- al agregar al usuario 'manager' se evita que las tablas se creen con el usuario 'postgres' y 
+-- haya problemas de permisos al momento de insertar datos
+\c drupaldb manager
 
 --Creación de tablas
 CREATE TABLE nivel_cvss
@@ -55,7 +57,7 @@ CREATE TABLE cvss
 CREATE TABLE sitios
 (
  id_sitios           serial,
- descripción_sitios  text NOT NULL,
+ descripcion_sitios  text NOT NULL,
  dir_ip_sitios       text NOT NULL,
  dependencias_sitios text NOT NULL,
  url_sitios          varchar(2083) NOT NULL,
@@ -70,7 +72,7 @@ CREATE TABLE hallazgos
  id_hallazgos                    serial,
  nombre_hallazgo                 varchar(40) NOT NULL,
  descripcion_hallazgo            varchar(70) NOT NULL,
- solucion_recomendación_hallazgo varchar(70) NOT NULL,
+ solucion_recomendacion_hallazgo varchar(70) NOT NULL,
  referencias_hallazgo            varchar(70) NOT NULL,
  resumen_ejecutivo               varchar(70) NOT NULL,
  recomendacion_general           varchar(70) NOT NULL,
@@ -96,7 +98,7 @@ CREATE TABLE sitios_hallazgos
 CREATE TABLE revisiones
 (
  id_revision    serial NOT NULL,
- tipo_revisión  boolean NOT NULL,
+ tipo_revision  boolean NOT NULL,
  fecha_revision date NOT NULL,
  id_status		int NOT NULL,
  CONSTRAINT PK_revisiones PRIMARY KEY ( id_revision ),
