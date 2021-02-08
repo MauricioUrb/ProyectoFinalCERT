@@ -29,9 +29,21 @@ su -c "psql -f /tmp/bd.sql" - postgres
 
 echo -e "\nConfigurando y reiniciando apache...\n"
 # Habilitar apache
-sed -i  's/html/drupal\/web/' /etc/apache2/sites-enabled/000-default.conf
-sed -i -r '23i\\t<Directory /var/www/drupal/web/>\n\t\tAllowOverride All\n\t</Directory>' /etc/apache2/sites-enabled/000-default.conf
+# Se copian los certificados
+cp drupal_key.key /etc/ssl/private/.
+cp drupal_crt.crt /etc/ssl/certs/.
+cp drupal-ssl.conf /etc/apache2/sites-available/.
+
 sed -i '116s/# RewriteBase/RewriteBase/' /var/www/drupal/web/.htaccess
+
+# habilitamos el sitio con ssl
+a2ensite drupal-ssl.conf
+
+# deshabilitamos la configuración de http
+a2dissite 000-default.conf
+
+# habilitamos el modulo de ssl
+a2enmod ssl
 # Configuración para los servicios de LDAP y SMTP
 #apt-get install mailutils -y
 sed -i '915s/;extension=imap/extension=imap/' /etc/php/7.3/apache2/php.ini
@@ -67,18 +79,34 @@ echo "Sitio instalado. Instalando modulos..."
 # Para descargar los módulos
 composer require drupal/simple_ldap:^1.x-dev --working-dir=/var/www/drupal
 composer require drupal/smtp:^1.0 --working-dir=/var/www/drupal
+composer require drupal/admin_toolbar:^3.0 --working-dir=/var/www/drupal
 
 # Módulos custom
 cp -r Modulos/* /var/www/drupal/web/modules/.
 
 # Para habilitar los módulos
+#/var/www/drupal/vendor/bin/drush en 
 /var/www/drupal/vendor/bin/drush en simple_ldap
 /var/www/drupal/vendor/bin/drush en smtp
-# /var/www/drupal/vendor/bin/drush en [nombre de los modulos custom]
+/var/www/drupal/vendor/bin/drush en admin_toolbar
+/var/www/drupal/vendor/bin/drush en textarea_widget_for_text
+# Custom
+#/var/www/drupal/vendor/bin/drush en [nombre de los modulos custom]
+/var/www/drupal/vendor/bin/drush en asignacion_revisiones
+/var/www/drupal/vendor/bin/drush en hallazgos_alta
+/var/www/drupal/vendor/bin/drush en pruebas_test
+/var/www/drupal/vendor/bin/drush en sitios_alta
 # https://www.youtube.com/watch?v=3vdQH-41mPo
 # https://www.youtube.com/watch?v=79zYcIoheCc
+
+# Creacion de roles
+/var/www/drupal/vendor/bin/drush rcrt 'coordinador de revisiones' 'Coordinador de Revisiones'
+/var/www/drupal/vendor/bin/drush rcrt 'pentester' 'Pentester'
+#/var/www/drupal/vendor/bin/drush rcrt '' ''
 
 # Limpiando caché
 /var/www/drupal/vendor/bin/drupal router:rebuild --root=/var/www/drupal
 
 #https://www.drupal.org/docs/creating-custom-modules/basic-structure
+# Status del sitio
+/var/www/drupal/vendor/bin/drupal site:status --root=/var/www/drupal
