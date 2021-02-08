@@ -11,8 +11,11 @@ cp composer.phar /usr/bin/composer
 chmod +x /usr/bin/composer
 
 # Descarga de drupal y drush
+echo "Descargando drupal..."
 composer create-project drupal/recommended-project drupal --working-dir=/var/www/
+echo "Descargando drush..."
 composer require drush/drush --working-dir=/var/www/drupal
+echo "Descargando la consola de drupal..."
 composer require drupal/console --with-all-dependencies --working-dir=/var/www/drupal
 echo -e "\nDrupal descargado en /var/www/drupal\nAgregando archivos, carpetas y permisos...\n"
 
@@ -80,6 +83,7 @@ echo "Sitio instalado. Instalando modulos..."
 composer require drupal/simple_ldap:^1.x-dev --working-dir=/var/www/drupal
 composer require drupal/smtp:^1.0 --working-dir=/var/www/drupal
 composer require drupal/admin_toolbar:^3.0 --working-dir=/var/www/drupal
+composer require 'drupal/textarea_widget_for_text:^1.2' --working-dir=/var/www/drupal
 
 # Módulos custom
 cp -r Modulos/* /var/www/drupal/web/modules/.
