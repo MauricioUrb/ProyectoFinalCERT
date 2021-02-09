@@ -102,35 +102,21 @@ CREATE TABLE revision_hallazgo
  CONSTRAINT FK_revision FOREIGN KEY ( id_revision ) REFERENCES revisiones ( id_revision )
 );
 
-
-
-CREATE TABLE usuarios
-(
- id_usuario serial NOT NULL,
- nombre     varchar(50) NOT NULL,
- correo     varchar(50) NOT NULL,
- CONSTRAINT PK_usuarios PRIMARY KEY ( id_usuario )
-);
-
-
-
 CREATE TABLE comentarios
 (
  id_comentario serial,
  id_usuario    integer NOT NULL,
  comentario    text  NOT NULL,
  CONSTRAINT PK_comentarios PRIMARY KEY ( id_comentario, id_usuario ),
- CONSTRAINT FK_usuarios FOREIGN KEY ( id_usuario ) REFERENCES usuarios ( id_usuario )
 );
 
 CREATE TABLE revision_comentario
 (
  id_comentario integer NOT NULL,
  id_revision   integer NOT NULL,
- id_usuario    integer NOT NULL,
- CONSTRAINT PK_revision_comentario PRIMARY KEY ( id_comentario, id_revision, id_usuario ),
- CONSTRAINT FK_comentarios FOREIGN KEY ( id_comentario, id_usuario ) REFERENCES comentarios ( id_comentario, id_usuario ),
- CONSTRAINT FK_revisiones FOREIGN KEY ( id_revision ) REFERENCES revisiones ( id_revision )
+ CONSTRAINT PK_revision_comentario PRIMARY KEY ( id_comentario, id_revision ),
+ CONSTRAINT FK_118 FOREIGN KEY ( id_comentario ) REFERENCES comentarios ( id_comentario ),
+ CONSTRAINT FK_122 FOREIGN KEY ( id_revision ) REFERENCES revisiones ( id_revision )
 );
 
 CREATE TABLE revision_sitio
