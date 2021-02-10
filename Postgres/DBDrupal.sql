@@ -5,7 +5,7 @@ CREATE USER manager with encrypted password 'hola123.,';
 CREATE DATABASE drupaldb WITH ENCODING='UTF8' OWNER=manager TEMPLATE=template0;
 
 --Dar todos los privilegios de la base de datos a manager
-GRANT ALL privileges on database drupaldb1 to manager;
+GRANT ALL privileges on database drupaldb to manager;
 
 --Selección de la bd con el owner (el usuario manager ya debe de estar en el archivo pg_hba con md5)
 -- al agregar al usuario 'manager' se evita que las tablas se creen con el usuario 'postgres' y 
@@ -105,12 +105,13 @@ CREATE TABLE revision_hallazgo
  CONSTRAINT FK_revision FOREIGN KEY ( id_revision ) REFERENCES revisiones ( id_revision )
 );
 
-CREATE TABLE comentarios
+CREATE TABLE comentario
 (
  id_comentario serial,
- id_usuario    integer NOT NULL,
+ uid    integer NOT NULL,
  comentario    text  NOT NULL,
- CONSTRAINT PK_comentarios PRIMARY KEY ( id_comentario, id_usuario ),
+ CONSTRAINT PK_comentario PRIMARY KEY ( id_comentario, uid ),
+ CONSTRAINT FK_users FOREIGN KEY ( uid ) REFERENCES users ( uid )
 );
 
 CREATE TABLE revision_comentario
@@ -134,11 +135,8 @@ CREATE TABLE revision_sitio
 CREATE TABLE revisiones_usuarios
 (
  id_revision integer NOT NULL,
- id_usuario  integer NOT NULL,
- CONSTRAINT PK_revisiones_usuarios PRIMARY KEY ( id_revision, id_usuario ),
+ uid  integer NOT NULL,
+ CONSTRAINT PK_revisiones_usuarios PRIMARY KEY ( id_revision, uid ),
  CONSTRAINT FK_revision FOREIGN KEY ( id_revision ) REFERENCES revisiones ( id_revision ),
- CONSTRAINT FK_usuario FOREIGN KEY ( id_usuario ) REFERENCES usuarios ( id_usuario )
+ CONSTRAINT FK_users FOREIGN KEY ( uid ) REFERENCES users ( uid )
 );
-
-
-
