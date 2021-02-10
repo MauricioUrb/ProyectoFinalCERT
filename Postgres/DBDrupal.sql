@@ -4,6 +4,9 @@ CREATE USER manager with encrypted password 'hola123.,';
 --Creación de la BD
 CREATE DATABASE drupaldb WITH ENCODING='UTF8' OWNER=manager TEMPLATE=template0;
 
+--Dar todos los privilegios de la base de datos a manager
+GRANT ALL privileges on database drupaldb1 to manager;
+
 --Selección de la bd con el owner (el usuario manager ya debe de estar en el archivo pg_hba con md5)
 -- al agregar al usuario 'manager' se evita que las tablas se creen con el usuario 'postgres' y 
 -- haya problemas de permisos al momento de insertar datos
@@ -136,8 +139,6 @@ CREATE TABLE revisiones_usuarios
  CONSTRAINT FK_revision FOREIGN KEY ( id_revision ) REFERENCES revisiones ( id_revision ),
  CONSTRAINT FK_usuario FOREIGN KEY ( id_usuario ) REFERENCES usuarios ( id_usuario )
 );
-
-
 
 
 
