@@ -27,8 +27,10 @@ chmod a+w /var/www/drupal/web/sites/default/settings.php
 
 echo -e "\nCreando la base de datos\n"
 # Creación de la BD
-cp $HOME/ProyectoFinalCERT/Postgres/DB_pfinal.sql /tmp/bd.sql
-su -c "psql -f /tmp/bd.sql" - postgres
+cp *.sql /tmp/.
+su -c "psql -f /tmp/ini.sql" - postgres
+sed -i '90i\local   drupaldb        manager                                 md5' /etc/postgresql/12/main/pg_hba.conf
+systemctl restart postgresql.service
 
 echo -e "\nConfigurando y reiniciando apache...\n"
 # Habilitar apache
@@ -73,6 +75,10 @@ END
 # Regresando permisos de las carpetas de drupal
 chmod go-w /var/www/drupal/web/sites/default/settings.php
 chmod go-w /var/www/drupal/web/sites/default
+
+echo "Creando tablas..."
+# Creación de tablas
+su -c "psql -f /tmp/bd.sql" - postgres
 
 echo "Sitio instalado. Instalando modulos..."
 
