@@ -1,0 +1,7 @@
+revisiones_asignadas.content:
+  path: /revisiones
+  defaults:
+    _controller: Drupal\revisiones_asignadas\Controller\RevisionesAsignadasController::revisiones
+    _title: "Revisiones asignadas"
+  requirements:
+    _permission: 'access content'
