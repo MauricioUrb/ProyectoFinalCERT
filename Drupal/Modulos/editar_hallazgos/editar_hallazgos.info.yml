@@ -1,0 +1,8 @@
+name: Actualizar hallazgos
+type: module
+description: Pagina para actualizar los hallzgos
+package: Custom
+core_version_requirement: ^8 || ^9
+core: 8.x
+#configure: sitios.admin_settings
+

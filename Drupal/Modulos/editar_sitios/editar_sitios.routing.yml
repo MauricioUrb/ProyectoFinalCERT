@@ -1,0 +1,7 @@
+editar_sitios.content:
+  path: /editar/sitios
+  defaults:
+    _form: '\Drupal\editar_sitios\Form\EditarSitiosForm'
+    _title: "Actualizar Sitio"
+  requirements:
+    _permission: 'access content'

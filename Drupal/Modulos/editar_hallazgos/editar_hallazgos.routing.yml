@@ -1,0 +1,7 @@
+editar_hallazgos.content:
+  path: /editar/hallazgos
+  defaults:
+    _form: '\Drupal\editar_hallazgos\Form\EditarHallazgosForm'
+    _title: "Actualizar Hallazgo"
+  requirements:
+    _permission: 'access content'
