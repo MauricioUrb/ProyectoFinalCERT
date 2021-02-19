@@ -24,10 +24,11 @@ class EditarHallazgosForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state, $id_h = NULL) {
     $node = \Drupal::routeMatch()->getParameter('node');
     $nid = $node->nid->value;
-
+    global $varh;
+    $varh = $id_h;
     //Coneccion a la BD
     $node = \Drupal::routeMatch()->getParameter('node');
     //Se selecciona la tabla en modo lectura
@@ -43,7 +44,7 @@ class EditarHallazgosForm extends FormBase {
            ->fields('h', array('vector_cvss'))
            ->fields('h', array('enlace_cvss'))
            ->fields('h', array('r_ejecutivo_hallazgo'));
-    $select->condition('id_hallazgos', 3);
+    $select->condition('id_hallazgos', $id_h);
     //Se realiza la consulta
     $results = $select->execute();
 
@@ -123,32 +124,32 @@ class EditarHallazgosForm extends FormBase {
 //    $form['txt']['#markup'] = $txt;
 
     return $form;
+
   }
 
-  /**
-   * {@inheritdoc}
-   * Se hace el insert a la bases de datos
-   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-	  // se hace la conexion a la base de datos
-	  $connection = \Drupal::service('database');
-	  // se realiza el update en la tabla hallazgos
-	  $update = $connection->update('hallazgos')
-		  // Se agregan actualizan todos los campos.
-		  ->fields(array(
-			  'nombre_hallazgo_vulnerabilidad' => $form_state->getValue('nombre'),
-			  'descripcion_hallazgo' => $form_state->getValue('description'),
-			  'solucion_recomendacion_halazgo' => $form_state->getValue('solution'),
-			  'referencias_hallazgo' => $form_state->getValue('references'),
-			  'r_ejecutivo_hallazgo' => $form_state->getValue('resumen_ejecutivo'),
-			  'recomendacion_general_hallazgo' => $form_state->getValue('recomendation'),
-		  ))
-		  //Se agregan condiciones
-		  ->condition('id_hallazgos', 3)
-		  // ejecutamos el query
-	  	  ->execute();
-	  // mostramos el mensaje de que se inserto
-	  $messenger_service = \Drupal::service('messenger');
-	  $messenger_service->addMessage(t('Se ha actualizado la base de datos'));
+          global $varh;
+          // se hace la conexion a la base de datos
+          $connection = \Drupal::service('database');
+          // se realiza el update en la tabla hallazgos
+          $update = $connection->update('hallazgos')
+                  // Se agregan actualizan todos los campos.
+                  ->fields(array(
+                          'nombre_hallazgo_vulnerabilidad' => $form_state->getValue('nombre'),
+                          'descripcion_hallazgo' => $form_state->getValue('description'),
+                          'solucion_recomendacion_halazgo' => $form_state->getValue('solution'),
+                          'referencias_hallazgo' => $form_state->getValue('references'),
+                          'vector_cvss' => $form_state->getValue('cvss_vector'),
+                          'enlace_cvss' => $form_state->getValue('cvss_enlace'),
+                          'r_ejecutivo_hallazgo' => $form_state->getValue('resumen_ejecutivo'),
+                          'recomendacion_general_hallazgo' => $form_state->getValue('recomendation'),
+                  ))
+                  //Se agregan condiciones
+                  ->condition('id_hallazgos', $varh)
+                  // ejecutamos el query
+                  ->execute();
+          // mostramos el mensaje de que se inserto
+          $messenger_service = \Drupal::service('messenger');
+          $messenger_service->addMessage(t('Se ha actualizado la base de datos'));
   }
 }

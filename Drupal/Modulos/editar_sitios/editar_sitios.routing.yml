@@ -1,5 +1,5 @@
 editar_sitios.content:
-  path: /editar/sitios
+  path: /editar/sitios/{id_s}
   defaults:
     _form: '\Drupal\editar_sitios\Form\EditarSitiosForm'
     _title: "Actualizar Sitio"

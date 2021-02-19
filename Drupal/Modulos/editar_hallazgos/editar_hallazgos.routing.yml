@@ -1,5 +1,5 @@
 editar_hallazgos.content:
-  path: /editar/hallazgos
+  path: /editar/hallazgos/{id_h}
   defaults:
     _form: '\Drupal\editar_hallazgos\Form\EditarHallazgosForm'
     _title: "Actualizar Hallazgo"
