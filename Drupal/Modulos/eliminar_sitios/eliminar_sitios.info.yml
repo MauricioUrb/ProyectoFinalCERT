@@ -1,0 +1,8 @@
+name: Eliminar sitios
+type: module
+description: Pagina para eliminar los sitios
+package: Custom
+core_version_requirement: ^8 || ^9
+core: 8.x
+#configure: sitios.admin_settings
+

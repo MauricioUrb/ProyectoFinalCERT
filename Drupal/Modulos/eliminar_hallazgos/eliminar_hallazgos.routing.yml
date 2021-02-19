@@ -1,0 +1,7 @@
+eliminar_hallazgos.content:
+  path: /eliminar/hallazgos/{id_h}
+  defaults:
+    _form: '\Drupal\eliminar_hallazgos\Form\EliminarHallazgosForm'
+    _title: "Eliminar Hallazgo"
+  requirements:
+    _permission: 'access content'
