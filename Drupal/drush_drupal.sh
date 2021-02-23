@@ -11,8 +11,11 @@ cp composer.phar /usr/bin/composer
 chmod +x /usr/bin/composer
 
 # Descarga de drupal y drush
+echo "Descargando drupal..."
 echo 'yes' | composer create-project drupal/recommended-project drupal --working-dir=/var/www/
+echo "Descargando drush..."
 echo 'yes' | composer require drush/drush --working-dir=/var/www/drupal
+echo "Descargando la consola de drupal..."
 echo 'yes' | composer require drupal/console --with-all-dependencies --working-dir=/var/www/drupal
 echo -e "\nDrupal descargado en /var/www/drupal\nAgregando archivos, carpetas y permisos...\n"
 
@@ -25,7 +28,7 @@ chmod a+w /var/www/drupal/web/sites/default/settings.php
 echo -e "\nCreando la base de datos\n"
 # Creación de la BD
 cp *.sql /tmp/.
-su -c "psql -f /tmp/ini.sql" - postgres
+su -c "psql -f /tmp/bd.sql" - postgres
 sed -i '90i\local   drupaldb        manager                                 md5' /etc/postgresql/12/main/pg_hba.conf
 sed -i '91i\local   drupaldb_segundo manager                                md5' /etc/postgresql/12/main/pg_hba.conf
 systemctl restart postgresql.service
@@ -61,29 +64,34 @@ systemctl restart apache2.service
 # Instalación del sitio
 echo 'yes' | /var/www/drupal/vendor/bin/drush si standard --db-url=pgsql://manager:hola123.,@localhost/drupaldb --db-su-pw="hola123.," --site-name=revisiones --account-name=admin --account-pass="hola123.," --locale=es
 
-#Para poder ejecutar drush se ejecuta desde /var/www/drupal/vendor/bin/drush
-
-sed -i "792i\$databases['drupaldb_segundo']['default'] = array (" /var/www/drupal/web/sites/default/settings.php
-sed -i "793i\  \'database' => 'drupaldb_segundo'," /var/www/drupal/web/sites/default/settings.php
-sed -i "794i\  \'username' => 'manager'," /var/www/drupal/web/sites/default/settings.php
-sed -i "795i\  \'password' => 'hola123.,'," /var/www/drupal/web/sites/default/settings.php
-sed -i "796i\  \'prefix' => ''," /var/www/drupal/web/sites/default/settings.php
-sed -i "797i\  \'host' => 'localhost'," /var/www/drupal/web/sites/default/settings.php
-sed -i "798i\  \'port' => ''," /var/www/drupal/web/sites/default/settings.php
-sed -i "799i\  \'namespace' => 'Drupal\\Core\\Database\\Driver\\pgsql'," /var/www/drupal/web/sites/default/settings.php
-sed -i "800i\  \'driver' => 'pgsql'," /var/www/drupal/web/sites/default/settings.php
-sed -i "801i\);" /var/www/drupal/web/sites/default/settings.php
+#https://matti.dev/post/setup-install-drupal-9-with-composer-and-drush
+: <<'END'
+Comentarios
+Para poder ejecutar drush se ejecuta desde 
+/var/www/drupal/vendor/bin/drush
+Instalación de drupal
+drush si standard --db-url=pgsql://manager:hola123.,@localhost/drupaldb --db-su-pw="hola123.," --site-name=revisiones --account-name=admin --account-pass="hola123.," --locale=es
+END
 
 echo "Creando tablas..."
 # Creación de tablas
-su -c "psql -f /tmp/bd.sql" - postgres
+#su -c "psql -f /tmp/bd.sql" - postgres
 
-echo "Sitio instalado. Instalando modulos..."
+sed -i "792i\$databases['drupaldb_segundo']['default'] = array (" /var/www/drupal/web/sites/default/settings.php
+sed -i "793i\  'database' => 'drupaldb_segundo'," /var/www/drupal/web/sites/default/settings.php
+sed -i "794i\  'username' => 'manager'," /var/www/drupal/web/sites/default/settings.php
+sed -i "795i\  'password' => 'hola123.,'," /var/www/drupal/web/sites/default/settings.php
+sed -i "796i\  'prefix' => ''," /var/www/drupal/web/sites/default/settings.php
+sed -i "797i\  'host' => 'localhost'," /var/www/drupal/web/sites/default/settings.php
+sed -i "798i\  'port' => ''," /var/www/drupal/web/sites/default/settings.php
+sed -i "799i\  'namespace' => 'Drupal\\\\Core\\\\Database\\\\Driver\\\\pgsql'," /var/www/drupal/web/sites/default/settings.php
+sed -i "800i\  'driver' => 'pgsql'," /var/www/drupal/web/sites/default/settings.php
+sed -i "801i\);" /var/www/drupal/web/sites/default/settings.php
 
-# Regresando los permisos
+# Regresando permisos de las carpetas de drupal
 chmod go-w /var/www/drupal/web/sites/default/settings.php
 chmod go-w /var/www/drupal/web/sites/default
-chmod 755 /var/www/drupal/web/sites/default/files
+echo "Sitio instalado. Instalando modulos..."
 
 # Para descargar los módulos
 #https://docs.acquia.com/resource/module-install-d8/
@@ -129,14 +137,6 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 # Limpiando caché
 /var/www/drupal/vendor/bin/drupal router:rebuild --root=/var/www/drupal
 
-# Actualizaciones del core
-# https://www.drupal.org/docs/updating-drupal/updating-drupal-core-via-composer
-#composer outdated 'drupal/*' --working-dir=/var/www/drupal
-#composer update drupal/core 'drupal/core-recommended' --with-all-dependencies --working-dir=/var/www/drupal
-#/var/www/drupal/vendor/bin/drush updatedb  --root=/var/www/drupal
-#/var/www/drupal/vendor/bin/drush cache:rebuild --root=/var/www/drupal
-
+#https://www.drupal.org/docs/creating-custom-modules/basic-structure
 # Status del sitio
 /var/www/drupal/vendor/bin/drupal site:status --root=/var/www/drupal
-
-
