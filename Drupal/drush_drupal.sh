@@ -28,10 +28,12 @@ chmod a+w /var/www/drupal/web/sites/default/settings.php
 echo -e "\nCreando la base de datos\n"
 # Creación de la BD
 cp *.sql /tmp/.
-su -c "psql -f /tmp/bd.sql" - postgres
+su -c "psql -f /tmp/ini.sql" - postgres
 sed -i '90i\local   drupaldb        manager                                 md5' /etc/postgresql/12/main/pg_hba.conf
 sed -i '91i\local   drupaldb_segundo manager                                md5' /etc/postgresql/12/main/pg_hba.conf
 systemctl restart postgresql.service
+echo "Creando tablas..."
+su -c "psql -f /tmp/bd.sql" - postgres
 
 echo -e "\nConfigurando y reiniciando apache...\n"
 # Habilitar apache
@@ -72,10 +74,6 @@ Para poder ejecutar drush se ejecuta desde
 Instalación de drupal
 drush si standard --db-url=pgsql://manager:hola123.,@localhost/drupaldb --db-su-pw="hola123.," --site-name=revisiones --account-name=admin --account-pass="hola123.," --locale=es
 END
-
-echo "Creando tablas..."
-# Creación de tablas
-#su -c "psql -f /tmp/bd.sql" - postgres
 
 sed -i "792i\$databases['drupaldb_segundo']['default'] = array (" /var/www/drupal/web/sites/default/settings.php
 sed -i "793i\  'database' => 'drupaldb_segundo'," /var/www/drupal/web/sites/default/settings.php
