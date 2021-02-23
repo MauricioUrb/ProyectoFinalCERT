@@ -1,5 +1,5 @@
 --Creación de la BD
-CREATE DATABASE drupaldd_segundo WITH ENCODING='UTF8' OWNER=manager TEMPLATE=template0;
+CREATE DATABASE drupaldb_segundo WITH ENCODING='UTF8' OWNER=manager TEMPLATE=template0;
 
 --Selección de la bd
 \c drupaldd_segundo manager
@@ -86,21 +86,12 @@ CREATE TABLE revisiones_asignadas (
 	FOREIGN KEY (id_revision) REFERENCES revisiones(id_revision)
 );
 
-CREATE TABLE revisiones_sitios (
-	id_rev_sitio serial PRIMARY KEY,
+CREATE TABLE revisiones_sitios_hallazgos (
 	id_revision serial NOT NULL,
 	id_sitio serial NOT NULL,
-	FOREIGN KEY (id_sitio) REFERENCES sitios(id_sitio),
-	FOREIGN KEY (id_revision) REFERENCES revisiones(id_revision)
-);
-
-CREATE TABLE revisiones_sitios_hallazgos (
-	id_hall_rev serial PRIMARY KEY,
-	id_rev_sitio serial NOT NULL,
 	id_hallazgo serial NOT NULL,,
 	id_rev_sitio serial NOT NULL,
 	descripcion_hall_rev char(70) NOT NULL,
-	--inmagenes ??? NULL,
 	recursos_afectador text NOT NULL,
 	impacto_hall_rev char(12),
 	cvss_hallazgos char(108) NOT NULL,

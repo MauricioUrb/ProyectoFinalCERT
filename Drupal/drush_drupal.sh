@@ -27,7 +27,7 @@ echo -e "\nCreando la base de datos\n"
 cp *.sql /tmp/.
 su -c "psql -f /tmp/ini.sql" - postgres
 sed -i '90i\local   drupaldb        manager                                 md5' /etc/postgresql/12/main/pg_hba.conf
-sed -i '91i\local   drupaldd_segundo manager                                md5' /etc/postgresql/12/main/pg_hba.conf
+sed -i '91i\local   drupaldb_segundo manager                                md5' /etc/postgresql/12/main/pg_hba.conf
 systemctl restart postgresql.service
 
 echo -e "\nConfigurando y reiniciando apache...\n"
@@ -64,7 +64,7 @@ echo 'yes' | /var/www/drupal/vendor/bin/drush si standard --db-url=pgsql://manag
 #Para poder ejecutar drush se ejecuta desde /var/www/drupal/vendor/bin/drush
 
 sed -i "792i\$databases['drupaldb_segundo']['default'] = array (" /var/www/drupal/web/sites/default/settings.php
-sed -i "793i\  \'database' => 'drupaldd_segundo'," /var/www/drupal/web/sites/default/settings.php
+sed -i "793i\  \'database' => 'drupaldb_segundo'," /var/www/drupal/web/sites/default/settings.php
 sed -i "794i\  \'username' => 'manager'," /var/www/drupal/web/sites/default/settings.php
 sed -i "795i\  \'password' => 'hola123.,'," /var/www/drupal/web/sites/default/settings.php
 sed -i "796i\  \'prefix' => ''," /var/www/drupal/web/sites/default/settings.php
