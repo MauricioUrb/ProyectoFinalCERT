@@ -27,6 +27,7 @@ echo -e "\nCreando la base de datos\n"
 cp *.sql /tmp/.
 su -c "psql -f /tmp/ini.sql" - postgres
 sed -i '90i\local   drupaldb        manager                                 md5' /etc/postgresql/12/main/pg_hba.conf
+sed -i '91i\local   drupaldd_segundo manager                                md5' /etc/postgresql/12/main/pg_hba.conf
 systemctl restart postgresql.service
 
 echo -e "\nConfigurando y reiniciando apache...\n"
