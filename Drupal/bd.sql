@@ -6,7 +6,7 @@ CREATE DATABASE drupaldb WITH ENCODING='UTF8' OWNER=manager TEMPLATE=template0;
 CREATE DATABASE drupaldb_segundo WITH ENCODING='UTF8' OWNER=manager TEMPLATE=template0;--Selección de la bd
 
 --Seleccion de la BD
-\c drupaldb_segundo manager
+\c drupaldb_segundo
 
 --Creación de tablas
 CREATE TABLE dependencias (
