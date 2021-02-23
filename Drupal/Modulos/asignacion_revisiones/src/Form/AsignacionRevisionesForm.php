@@ -23,9 +23,10 @@ class AsignacionRevisionesForm extends FormBase{
    * (@inheritdoc)
    */
   public function buildForm(array $form, FormStateInterface $form_state){
-    $node = \Drupal::routeMatch()->getParameter('node');
-    $nid = $node->nid->value;
-
+    $current_user_roles = \Drupal::currentUser()->getRoles();
+    if (!in_array('coordinador de revisiones', $current_user_roles)){
+      return array('#markup' => "No tienes permiso para ver este formulario.",);
+    }
     //Tipo de revision
     $active = array(0 => t('Oficio'), 1 => t('Circular'));
     $form['tipo'] = array(
@@ -36,21 +37,10 @@ class AsignacionRevisionesForm extends FormBase{
     );
 
     //Coneccion a la BD
-    $node = \Drupal::routeMatch()->getParameter('node');
-    //Se selecciona la tabla en modo lectura
-    $select = Database::getConnection()->select('users_field_data', 'r');
-    //Consulta para saber quienes son los pentester
-    $pentesters = Database::getConnection()->select('user__roles', 'r');
-    //Se especifican las columnas a leer
-    $pentesters->fields('r', array('entity_id'));
-    $select->fields('r', array('name'));
-    //Primera consulta para determianr a los pentester
-    $pentesters->condition('roles_target_id','pentester');
-    //Ya se tienen los uid de los usuarios con rol pentester
-    $rol = $pentesters->execute()->fetchCol();
-    //WHERE (este caso es una agrupacion por and)
-    $select->condition('uid',$rol, 'IN');
-    //Se realiza la consulta
+    $select = Database::getConnection()->select('users_field_data', 'ud');
+    $select->join('user__roles', 'ur', 'ud.uid = ur.entity_id');
+    $select->fields('ud', array('name'));
+    $select->condition('ur.roles_target_id','pentester');
     $results = $select->execute()->fetchCol();
 
     //Se crean las opciones para los revisores
@@ -62,16 +52,13 @@ class AsignacionRevisionesForm extends FormBase{
     );
 
     //Sitios
-    $consulta = Database::getConnection()->select('sitios', 'r');
-    $desc_sitios = Database::getConnection()->select('sitios', 'r');
-    //Se especifican las columnas a leer
-    $consulta->fields('r', array('url_sitios'));
-    $desc_sitios->fields('r', array('descripcion_sitios'));
-    $descripcion = $desc_sitios->execute()->fetchCol();
+    Database::setActiveConnection('drupaldb_segundo');
+    $connection = Database::getConnection();
+    $consulta = Database::getConnection()->select('sitios', 's');
+    $consulta->fields('s', array('url_sitio'));
     $sitios = $consulta->execute()->fetchCol();
-    for($i = 0; $i < sizeof($sitios); $i++){
-      $impresion[$i] = $sitios[$i]." --- Descripci  n: ".$descripcion[$i];
-    }
+    Database::setActiveConnection();
+    
     $form['sitios'] = array(
       '#title' => t('Sitios:'),
       '#type' => 'checkboxes',
@@ -151,10 +138,13 @@ class AsignacionRevisionesForm extends FormBase{
     if(!$email){$mensaje = "Ocurrió algún error y no se ha podido enviar el correo de notificación.";}
 
     //id_revisiones
+    Database::setActiveConnection('drupaldb_segundo');
+    $connection = Database::getConnection();
     $consulta = Database::getConnection()->select('revisiones', 'r');
-    $consulta->addExpression('MAX(id_revisiones)','revisiones');
+    $consulta->addExpression('MAX(id_revision)','revisiones');
     $resultado = $consulta->execute()->fetchCol();
     $id_revisiones = $resultado[0] + 1;
+    Database::setActiveConnection();
     //uid_usuarios
     $consulta = Database::getConnection()->select('users_field_data', 'r');
     $consulta->fields('r', array('uid'));
@@ -173,35 +163,40 @@ class AsignacionRevisionesForm extends FormBase{
       $url_sitios[$tmp] = $form['sitios']['#options'][$pos];
       $tmp++;
     }
+    Database::setActiveConnection('drupaldb_segundo');
+    $connection = Database::getConnection();
     //id_sitios
     $consulta = Database::getConnection()->select('sitios', 'r');
-    $consulta->fields('r', array('id_sitios'));
-    $consulta->condition('url_sitios',$url_sitios, 'IN');
+    $consulta->fields('r', array('id_sitio'));
+    $consulta->condition('url_sitio',$url_sitios, 'IN');
     $id_sitios = $consulta->execute()->fetchCol();
+    Database::setActiveConnection();
     //Fecha
     $tmp = getdate();
     $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
     //Otros datos
     $tipo_revision = $form_state->getValue(['tipo']);
-    $estatus_revision = 'Asignada';
+    $estatus_revision = 1;
     //id_revisiones,uid_usuarios[],id_sitios[]
     //Insercion en la BD
     //revisiones
-    $connection = \Drupal::service('database');
+    //Database::setActiveConnection('drupaldb_segundo');
+    //$connection = Database::getConnection();
+    //$coneccion = \Drupal::service('database');
     $result = $connection->insert('revisiones')
       ->fields(array(
-        'id_revisiones' => $id_revisiones,
+        'id_revision' => $id_revisiones,
         'tipo_revision' => $tipo_revision,
-        'estatus_revision'=> 'Asignada',
+        'id_estatus'=> $estatus_revision,
         'fecha_inicio_revision' => $fecha,
-        'fecha_fin_revision' => $fecha,
+        'fecha_fin_revision' => NULL,
       ))->execute();
     //revisiones_asignadas
     foreach ($uid_usuarios as $pentester) {
       $result = $connection->insert('revisiones_asignadas')
         ->fields(array(
-          'id_revisiones' => $id_revisiones,
-          'id_usuarios' => $pentester,
+          'id_revision' => $id_revisiones,
+          'id_usuario' => $pentester,
         ))->execute();
     }
     /*/revisiones_sitios
@@ -213,6 +208,7 @@ class AsignacionRevisionesForm extends FormBase{
           'id_revisiones_hallazgos' => NULL,
         ))->execute();
     }*/
+    Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
   }
