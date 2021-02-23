@@ -1,8 +1,5 @@
---Creación de la BD
-CREATE DATABASE drupaldb_segundo WITH ENCODING='UTF8' OWNER=manager TEMPLATE=template0;
-
 --Selección de la bd
-\c drupaldd_segundo manager
+\c drupaldb_segundo manager
 
 --Creación de tablas
 CREATE TABLE dependencias (
@@ -68,15 +65,13 @@ CREATE TABLE revisiones (
 	tipo_revision boolean NOT NULL,
 	estatus_revision char(15) NOT NULL,
 	fecha_inicio_revision date NOT NULL,
-	fecha_fin_revision date NULL,
-	FOREIGN KEY (id_coordinador) REFERENCES users(uid)
+	fecha_fin_revision date NULL
 );
 
 CREATE TABLE comentarios (
 	id_comentario serial PRIMARY KEY,
 	id_revision serial NOT NULL,
 	comentario char(70) NOT NULL,
-	FOREIGN KEY (id_coordinador) REFERENCES users(uid),
 	FOREIGN KEY (id_revision) REFERENCES revisiones(id_revision)
 );
 
@@ -89,14 +84,15 @@ CREATE TABLE revisiones_asignadas (
 CREATE TABLE revisiones_sitios_hallazgos (
 	id_revision serial NOT NULL,
 	id_sitio serial NOT NULL,
-	id_hallazgo serial NOT NULL,,
+	id_hallazgo serial NOT NULL,
 	id_rev_sitio serial NOT NULL,
 	descripcion_hall_rev char(70) NOT NULL,
 	recursos_afectador text NOT NULL,
 	impacto_hall_rev char(12),
 	cvss_hallazgos char(108) NOT NULL,
-	FOREIGN KEY (id_rev_sitio) REFERENCES revisiones_sitios(id_rev_sitio)
-	FOREIGN KEY (id_hallazgo) REFERENCES hallazgos(id_hallazgo)
+	FOREIGN KEY (id_sitio) REFERENCES sitios(id_sitio),
+	FOREIGN KEY (id_hallazgo) REFERENCES hallazgos(id_hallazgo),
+	FOREIGN KEY (id_revision) REFERENCES revisiones(id_revision)
 );
 
 grant all on database drupaldb to manager;
