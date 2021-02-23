@@ -63,9 +63,15 @@ CREATE TABLE hallazgos (
 CREATE TABLE revisiones (
 	id_revision serial PRIMARY KEY,
 	tipo_revision boolean NOT NULL,
-	estatus_revision char(15) NOT NULL,
+	id_estatus serial NOT NULL,
 	fecha_inicio_revision date NOT NULL,
-	fecha_fin_revision date NULL
+	fecha_fin_revision date NULL,
+	FOREIGN KEY (id_estatus) REFERENCES estatus_revisiones(id_estatus)
+);
+
+CREATE TABLE estatus_revisiones (
+	id_estatus serial PRIMARY KEY,
+	estatus char(10)
 );
 
 CREATE TABLE comentarios (
@@ -93,5 +99,9 @@ CREATE TABLE revisiones_sitios_hallazgos (
 	FOREIGN KEY (id_sitio) REFERENCES sitios(id_sitio),
 	FOREIGN KEY (id_hallazgo) REFERENCES hallazgos(id_hallazgo),
 	FOREIGN KEY (id_revision) REFERENCES revisiones(id_revision)
-);
+);;
 
+insert into estatus_revisiones(estatus) values('Asignado');
+insert into estatus_revisiones(estatus) values('En proceso');
+insert into estatus_revisiones(estatus) values('Concluido');
+insert into estatus_revisiones(estatus) values('Aprobado');
