@@ -108,8 +108,11 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 # Para habilitar los módulos
 #/var/www/drupal/vendor/bin/drush en 
 /var/www/drupal/vendor/bin/drush en simple_ldap
+/var/www/drupal/vendor/bin/drush en simple_ldap_user
 /var/www/drupal/vendor/bin/drush en smtp
 /var/www/drupal/vendor/bin/drush en admin_toolbar
+/var/www/drupal/vendor/bin/drush en admin_toolbar_tools
+/var/www/drupal/vendor/bin/drush en admin_toolbar_search
 /var/www/drupal/vendor/bin/drush en textarea_widget_for_text
 /var/www/drupal/vendor/bin/drush en mailsystem
 /var/www/drupal/vendor/bin/drush en phpmailer_smtp
