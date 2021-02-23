@@ -60,6 +60,11 @@ CREATE TABLE hallazgos (
 	CHECK (vector_cvss ~* 'AV:[ANLP]\/AC:[HL]\/PR:[NLH]\/UI:[NR]\/S:[UC]\/C:[NLH]\/I:[NLH]\/A:[NLH](\/E:[UPFH])?(\/RL:[OTWU])?(\/RC:[URC])?(\/CR:[LMH])?(\/IR:[LMH])?(\/AR:[LMH])?(\/MAV:[NALP])?(\/MAC:[LH])?(\/MPR:[NLH])?(\/MUI:[NR])?(\/MS:[UC])?(\/MC:[NLH])?(\/MI:[NLH])?(\/MA:[NLH])?')
 );
 
+CREATE TABLE estatus_revisiones (
+	id_estatus serial PRIMARY KEY,
+	estatus char(10)
+);
+
 CREATE TABLE revisiones (
 	id_revision serial PRIMARY KEY,
 	tipo_revision boolean NOT NULL,
@@ -67,11 +72,6 @@ CREATE TABLE revisiones (
 	fecha_inicio_revision date NOT NULL,
 	fecha_fin_revision date NULL,
 	FOREIGN KEY (id_estatus) REFERENCES estatus_revisiones(id_estatus)
-);
-
-CREATE TABLE estatus_revisiones (
-	id_estatus serial PRIMARY KEY,
-	estatus char(10)
 );
 
 CREATE TABLE comentarios (
