@@ -29,8 +29,7 @@ class RevisionesAsignadasController {
       //se recorren los resultados para después imprimirlos
       foreach ($datos as $result){
         if($result->tipo_revision){$tipo = 'Circular';}else{$tipo = 'Oficio';}
-        //$url = Url::fromRoute('informacion_revision.content', array('rev_id' => $result->id_revision));
-        $url = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $result->id_revision));
+        $url = Url::fromRoute('informacion_revision.content', array('rev_id' => $result->id_revision));
         $project_link = Link::fromTextAndUrl('Revisar', $url);
         $project_link = $project_link->toRenderable();
         $project_link['#attributes'] = array('class' => array('button'));
@@ -143,8 +142,7 @@ class RevisionesAsignadasController {
       //se recorren los resultados para después imprimirlos
       foreach ($datos as $result){
         if($result->tipo_revision){$tipo = 'Circular';}else{$tipo = 'Oficio';}
-        //$url = Url::fromRoute('edit_revision.content', array('rev_id' => $result->id_revision));
-        $url = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $result->id_revision));
+        $url = Url::fromRoute('edit_revision.content', array('rev_id' => $result->id_revision));
         $project_link = Link::fromTextAndUrl('Editar', $url);
         $project_link = $project_link->toRenderable();
         $project_link['#attributes'] = array('class' => array('button'));
