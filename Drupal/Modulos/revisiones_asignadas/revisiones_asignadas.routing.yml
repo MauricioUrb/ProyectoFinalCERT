@@ -4,4 +4,4 @@ revisiones_asignadas.content:
     _controller: Drupal\revisiones_asignadas\Controller\RevisionesAsignadasController::revisiones
     _title: "Revisiones asignadas"
   requirements:
-    _permission: 'access content'
+    _permission: 'view revisiones_asignadas'

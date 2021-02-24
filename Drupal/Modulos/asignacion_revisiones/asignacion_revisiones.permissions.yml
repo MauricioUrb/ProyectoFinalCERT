@@ -1,0 +1,3 @@
+view asignacion_revisiones:
+  title: 'Ver formulario para asignar una revision'
+  description: 'Ver formulario para asignar una revision a pentesters.'

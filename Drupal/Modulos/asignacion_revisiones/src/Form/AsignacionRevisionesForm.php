@@ -180,9 +180,6 @@ class AsignacionRevisionesForm extends FormBase{
     //id_revisiones,uid_usuarios[],id_sitios[]
     //Insercion en la BD
     //revisiones
-    //Database::setActiveConnection('drupaldb_segundo');
-    //$connection = Database::getConnection();
-    //$coneccion = \Drupal::service('database');
     $result = $connection->insert('revisiones')
       ->fields(array(
         'id_revision' => $id_revisiones,
@@ -199,6 +196,11 @@ class AsignacionRevisionesForm extends FormBase{
           'id_usuario' => $pentester,
         ))->execute();
     }
+    $result = $connection->insert('revisiones_asignadas')
+      ->fields(array(
+        'id_revision' => $id_revisiones,
+        'id_usuario' => \Drupal::currentUser()->id(),
+      ))->execute();
     /*/revisiones_sitios
     foreach ($id_sitios as $sitios) {
       $result = $connection->insert('revisiones_sitios')

@@ -4,4 +4,4 @@ asignacion_revisiones.content:
     _form: '\Drupal\asignacion_revisiones\Form\AsignacionRevisionesForm'
     _title: "Crear nueva revision"
   requirements:
-    _permission: 'access content'
+    _permission: 'view asignacion_revisiones'

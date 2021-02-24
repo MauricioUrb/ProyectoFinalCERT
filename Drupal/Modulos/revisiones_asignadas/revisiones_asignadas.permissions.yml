@@ -1,0 +1,3 @@
+view revisiones_asignadas:
+  title: 'Ver revisiones asignadas'
+  description: 'Ver las revisiones asignadas a los pentesters.'
