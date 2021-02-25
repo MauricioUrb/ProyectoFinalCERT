@@ -7,9 +7,9 @@ use Drupal\Core\Database\Database;
 
 class RevisionesAsignadasController {
   public function revisiones(){
-    $current_user_roles = \Drupal::currentUser()->getRoles();
-    $user = \Drupal::currentUser()->id();
-    if (in_array('coordinador de revisiones', $current_user_roles)){
+    //$current_user_roles = \Drupal::currentUser()->getRoles();
+    //$user = \Drupal::currentUser()->id();
+    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
       //Consulta de las revisiones que tiene el usuario
       //$user = \Drupal::currentUser()->id();
 
@@ -23,7 +23,7 @@ class RevisionesAsignadasController {
       $select->fields('r', array('id_estatus'));
       $select->fields('r', array('fecha_inicio_revision'));
       $select->fields('r', array('fecha_fin_revision'));
-      $select->condition('id_usuario',$user);
+      $select->condition('id_usuario',\Drupal::currentUser()->id());
       $datos = $select->execute();
       Database::setActiveConnection();
 
@@ -42,7 +42,7 @@ class RevisionesAsignadasController {
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision', $result->id_revision);
-        $select->condition('id_usuario', $user, '<>');
+        $select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
         $usuarios_rev = $select->execute()->fetchCol();
 
         //estatus_revision
@@ -142,7 +142,7 @@ class RevisionesAsignadasController {
         '#markup' => render($pendientes),
       ];
       $form['boton'] = array('#markup' => render($project_link),);
-    }elseif (in_array('pentester', $current_user_roles)){
+    }elseif (in_array('pentester', \Drupal::currentUser()->getRoles())){
       //Consulta de las revisiones que tiene el usuario
       //$user = \Drupal::currentUser()->id();
 
@@ -156,7 +156,7 @@ class RevisionesAsignadasController {
       $select->fields('r', array('id_estatus'));
       $select->fields('r', array('fecha_inicio_revision'));
       $select->fields('r', array('fecha_fin_revision'));
-      $select->condition('id_usuario',$user);
+      $select->condition('id_usuario',\Drupal::currentUser()->id());
       $datos = $select->execute();
 
       Database::setActiveConnection();

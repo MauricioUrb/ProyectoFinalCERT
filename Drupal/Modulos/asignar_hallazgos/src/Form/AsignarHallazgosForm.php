@@ -8,6 +8,7 @@ use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\Core\Link;
 
 /*
  *
@@ -29,6 +30,7 @@ class AsignarHallazgosForm extends FormBase{
     $regresar = $rev_id;
     global $id_hall;
     $id_hall = $hall_id;
+    global $hall_arr;
     //Consulta de la URL del sitio para imprimirlo
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -54,7 +56,6 @@ class AsignarHallazgosForm extends FormBase{
         $select->condition('id_hallazgo',$hallazgos_no,'NOT IN');
       }
       $hallazgos = $select->execute()->fetchCol();
-      global $hall_arr;
       $hall_arr = $hallazgos;
       
       $form['hallazgos'] = array(
@@ -64,14 +65,25 @@ class AsignarHallazgosForm extends FormBase{
         '#required' => TRUE,
       );
     }else{
+      $pos = 0;
+      $select = Database::getConnection()->select('hallazgos', 'h');
+      $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
+      $hallazgos = $select->execute()->fetchCol();
+      $hall_arr = $hallazgos;
       $select = Database::getConnection()->select('hallazgos', 'h');
       $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
       $select->condition('id_hallazgo',$hall_id);
       $nombre_hallazgo = $select->execute()->fetchCol();
+      foreach ($hallazgos as $hallazgo) {
+        if($hallazgo == $nombre_hallazgo[0]){break;}
+        $pos++;
+      }
       $form['hallazgos'] = array(
-        '#type' => 'item',
-        '#title' => t('Editar hallazgo:'),
-        '#markup' => $nombre_hallazgo[0],
+        '#type' => 'select',
+        '#title' => t('Selecciona el hallazgo a editar:'),
+        '#options' => $hallazgos,
+        '#required' => TRUE,
+        '#default_value' => $pos,
       );
     }
     //Se obtienen valores si ya existen
@@ -123,6 +135,11 @@ class AsignarHallazgosForm extends FormBase{
       '#type' => 'submit',
       '#value' => t('Guardar'),
     );
+    $url = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
+    $project_link = Link::fromTextAndUrl('Cancelar', $url);
+    $project_link = $project_link->toRenderable();
+    $project_link['#attributes'] = array('class' => array('button'));
+    $form['cancelar'] = array('#markup' => render($project_link),);
     return $form;    
   }
   /*
@@ -182,6 +199,7 @@ class AsignarHallazgosForm extends FormBase{
         $mensaje = 'Hallazgo actualizado.';
         $result = $connection->update('revisiones_hallazgos')
         ->fields(array(
+          'id_hallazgo' => $id_hallazgo[0],
           'descripcion_hall_rev' => $form_state->getValue(['descripcion']),
           'recursos_afectador' => $form_state->getValue(['recursos']),
           'impacto_hall_rev' => $form_state->getValue(['impacto']),

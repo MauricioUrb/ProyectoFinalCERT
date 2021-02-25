@@ -68,7 +68,7 @@ class EditRevisionForm extends FormBase{
         $editar = $editar->toRenderable();
         $editar['#attributes'] = array('class' => array('button'));
         //Boton de borrar
-        $urlBorrar = Url::fromRoute('asignacion_revisiones.content', array('id_rev_sitio' => $result->id_rev_sitio));
+        $urlBorrar = Url::fromRoute('delete_hallazgo_revision.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo));
         $borrar = Link::fromTextAndUrl('Borrar', $urlBorrar);
         $borrar = $borrar->toRenderable();
         $borrar['#attributes'] = array('class' => array('button'));

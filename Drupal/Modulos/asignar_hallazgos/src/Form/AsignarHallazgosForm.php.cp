@@ -22,11 +22,14 @@ class AsignarHallazgosForm extends FormBase{
   /*
    * (@inheritdoc)
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $hall_id = NULL){
     global $id_principal;
     $id_principal = $id_rev_sitio;
     global $regresar;
     $regresar = $rev_id;
+    global $id_hall;
+    $id_hall = $hall_id;
+    global $hall_arr;
     //Consulta de la URL del sitio para imprimirlo
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -40,57 +43,80 @@ class AsignarHallazgosForm extends FormBase{
       '#title' => t('Activo'),
       '#markup' => $activo[0],
     );
-    //Traemos todas las opciones de hallazgos/vulnerabilidades para que los seleccione
-    $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
-    $select->fields('h', array('id_hallazgo'));
-    $select->condition('id_rev_sitio',$id_rev_sitio);
-    $hallazgos_no = $select->execute()->fetchCol();
-    $select = Database::getConnection()->select('hallazgos', 'h');
-    $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
-    if(sizeof($hallazgos_no)){
-      $select->condition('id_hallazgo',$hallazgos_no,'NOT IN');
+    if($hall_id == 0){
+      //Traemos todas las opciones de hallazgos/vulnerabilidades para que los seleccione
+      $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
+      $select->fields('h', array('id_hallazgo'));
+      $select->condition('id_rev_sitio',$id_rev_sitio);
+      $hallazgos_no = $select->execute()->fetchCol();
+      $select = Database::getConnection()->select('hallazgos', 'h');
+      $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
+      if(sizeof($hallazgos_no)){
+        $select->condition('id_hallazgo',$hallazgos_no,'NOT IN');
+      }
+      $hallazgos = $select->execute()->fetchCol();
+      $hall_arr = $hallazgos;
+      
+      $form['hallazgos'] = array(
+        '#type' => 'select',
+        '#title' => t('Selecciona el hallazgo a agregar:'),
+        '#options' => $hallazgos,
+        '#required' => TRUE,
+      );
+    }else{
+      $select = Database::getConnection()->select('hallazgos', 'h');
+      $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
+      $select->condition('id_hallazgo',$hall_id);
+      $nombre_hallazgo = $select->execute()->fetchCol();
+      $form['hallazgos'] = array(
+        '#type' => 'item',
+        '#title' => t('Editar hallazgo:'),
+        '#markup' => $nombre_hallazgo[0],
+      );
     }
-    $hallazgos = $select->execute()->fetchCol();
-    global $hall_arr;
-    $hall_arr = $hallazgos;
+    //Se obtienen valores si ya existen
+    $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
+    $select->fields('h', array('descripcion_hall_rev'));
+    $select->fields('h', array('recursos_afectador'));
+    $select->fields('h', array('impacto_hall_rev'));
+    $select->fields('h', array('cvss_hallazgos'));
+    $select->condition('id_rev_sitio',$id_rev_sitio);
+    $select->condition('id_hallazgo',$hall_id);
+    $results = $select->execute();
     Database::setActiveConnection();
-    
-    $form['hallazgos'] = array(
-      '#type' => 'select',
-      '#title' => t('Selecciona el hallazgo a agregar:'),
-      '#options' => $hallazgos,
-      '#required' => TRUE,
-      '#default_value' => 1,
-    );
+    $descripcion_hall_rev = '';
+    $recursos_afectador = '';
+    $impacto_hall_rev = '';
+    $cvss_hallazgos = '';
+    foreach ($results as $result) {
+      $descripcion_hall_rev = $result->descripcion_hall_rev;
+      $recursos_afectador = $result->recursos_afectador;
+      $impacto_hall_rev = $result->impacto_hall_rev;
+      $cvss_hallazgos = $result->cvss_hallazgos;
+    }
     $form['descripcion'] = array(
-      '#type' => 'text_format',
+      '#type' => 'textarea',
       '#title' => t('Description'),
       '#required' => TRUE,
+      '#default_value' => $descripcion_hall_rev,
     );
-    /*
-    $form['imagenes'] = array(
-      '#type' => 'text_format',
-      '#title' => t('Imagenes del hallazgo'),
-      '#default_value' => $titulo_imagen,
-    );
-    IMAGEN
-    */
     $form['recursos'] =array(
       '#type' => 'textarea',
       '#title' => 'Recursos afectados',
       '#required' => TRUE,
+      '#default_value' => $recursos_afectador,
     );
     $form['impacto'] =array(
       '#type' => 'textfield',
       '#title' => 'Impacto',
       '#required' => TRUE,
-      '#default_value' => $impacto,
+      '#default_value' => $impacto_hall_rev,
     );
     $form['cvss'] = array(
       '#type' => 'textfield',
       '#title' => 'CVSS',
       '#required' => TRUE,
-      '#default_value' => $cvss,
+      '#default_value' => $cvss_hallazgos,
     );
     //Boton para enviar el formulario
     $form['submit'] = array(
@@ -132,6 +158,8 @@ class AsignarHallazgosForm extends FormBase{
     global $hall_arr;
     global $id_principal;
     global $regresar;
+    global $id_hall;
+    $mensaje = 'Hallazgo agregado a la revision.';
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
     //Obtener el id_hallazgo
@@ -140,17 +168,36 @@ class AsignarHallazgosForm extends FormBase{
     $consulta->condition('nombre_hallazgo_vulnerabilidad',$hall_arr[$form_state->getValue(['hallazgos'])]);
     $id_hallazgo = $consulta->execute()->fetchCol();
     //Insercion en la BD
-    $result = $connection->insert('revisiones_hallazgos')
+    if($id_hall == 0){
+      $result = $connection->insert('revisiones_hallazgos')
+        ->fields(array(
+          'id_rev_sitio' => $id_principal,
+          'id_hallazgo' => $id_hallazgo[0],
+          'descripcion_hall_rev' => $form_state->getValue(['descripcion']),
+          'recursos_afectador' => $form_state->getValue(['recursos']),
+          'impacto_hall_rev' => $form_state->getValue(['impacto']),
+          'cvss_hallazgos' => $form_state->getValue(['cvss']),
+        ))->execute();
+      }else{
+        $mensaje = 'Hallazgo actualizado.';
+        $result = $connection->update('revisiones_hallazgos')
+        ->fields(array(
+          'descripcion_hall_rev' => $form_state->getValue(['descripcion']),
+          'recursos_afectador' => $form_state->getValue(['recursos']),
+          'impacto_hall_rev' => $form_state->getValue(['impacto']),
+          'cvss_hallazgos' => $form_state->getValue(['cvss']),
+        ))
+        ->condition('id_hallazgo', $id_hall)
+        ->condition('id_rev_sitio', $id_principal)
+        ->execute();
+      }
+    $result = $connection->update('revisiones')
       ->fields(array(
-        'id_rev_sitio' => $id_principal,
-        'id_hallazgo' => $id_hallazgo[0],
-        'descripcion_hall_rev' => $form_state->getValue(['descripcion']),
-        'recursos_afectador' => $form_state->getValue(['recursos']),
-        'impacto_hall_rev' => $form_state->getValue(['impacto']),
-        'cvss_hallazgos' => $form_state->getValue(['cvss']),
-      ))->execute();
+        'id_estatus' => 2,
+      ))
+      ->condition('id_revision', $regresar)
+      ->execute();
     Database::setActiveConnection();
-  	$mensaje = 'Hallazgo agregado a la revision.';
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
   	$form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));

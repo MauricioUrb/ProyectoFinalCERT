@@ -1,0 +1,7 @@
+name: Borrar hallazgo de revision
+type: module
+description: Pagina para confirmar el borrado de un hallazgo en una revision
+package: Custom
+core_version_requirement: ^8 || ^9
+core: 8.x
+#configure: sitios.admin_settings
