@@ -1,0 +1,7 @@
+edit_revision.content:
+  path: /revisiones/edit/{rev_id}
+  defaults:
+    _form: '\Drupal\edit_revision\Form\EditRevisionForm'
+    _title: "Edicion de revision"
+  requirements:
+    _permission: 'access content'

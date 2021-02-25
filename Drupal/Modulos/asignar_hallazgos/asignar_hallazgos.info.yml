@@ -1,0 +1,7 @@
+name: Asignacion de hallazgos en revision
+type: module
+description: Pagina para asignar hallazgos en un revision
+package: Custom
+core_version_requirement: ^8 || ^9
+core: 8.x
+#configure: sitios.admin_settings

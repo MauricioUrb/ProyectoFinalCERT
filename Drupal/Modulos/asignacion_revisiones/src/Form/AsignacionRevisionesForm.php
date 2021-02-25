@@ -144,6 +144,10 @@ class AsignacionRevisionesForm extends FormBase{
     $consulta->addExpression('MAX(id_revision)','revisiones');
     $resultado = $consulta->execute()->fetchCol();
     $id_revisiones = $resultado[0] + 1;
+    $consulta = Database::getConnection()->select('revisiones_sitios', 'r');
+    $consulta->addExpression('MAX(id_rev_sitio)','revisiones_sitios');
+    $resultado = $consulta->execute()->fetchCol();
+    $id_rev_sitio = $resultado[0] + 1;
     Database::setActiveConnection();
     //uid_usuarios
     $consulta = Database::getConnection()->select('users_field_data', 'r');
@@ -177,7 +181,7 @@ class AsignacionRevisionesForm extends FormBase{
     //Otros datos
     $tipo_revision = $form_state->getValue(['tipo']);
     $estatus_revision = 1;
-    //id_revisiones,uid_usuarios[],id_sitios[]
+    //id_revisiones,uid_usuarios[],id_sitios[],$id_rev_sitio
     //Insercion en la BD
     //revisiones
     $result = $connection->insert('revisiones')
@@ -201,15 +205,16 @@ class AsignacionRevisionesForm extends FormBase{
         'id_revision' => $id_revisiones,
         'id_usuario' => \Drupal::currentUser()->id(),
       ))->execute();
-    /*/revisiones_sitios
+    //revisiones_sitios
     foreach ($id_sitios as $sitios) {
       $result = $connection->insert('revisiones_sitios')
         ->fields(array(
-          'id_revisiones' => $id_revisiones,
-          'id_sitios' => $sitio,
-          'id_revisiones_hallazgos' => NULL,
+          'id_rev_sitio' => $id_rev_sitio,
+          'id_revision' => $id_revisiones,
+          'id_sitio' => $sitios,
         ))->execute();
-    }*/
+      $id_rev_sitio++;
+    }
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);

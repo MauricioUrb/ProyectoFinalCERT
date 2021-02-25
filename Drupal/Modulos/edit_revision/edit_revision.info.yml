@@ -1,0 +1,7 @@
+name: Edicion de la revision asignada
+type: module
+description: Pagina para editar las revisiones que fueron asignadas
+package: Custom
+core_version_requirement: ^8 || ^9
+core: 8.x
+#configure: sitios.admin_settings

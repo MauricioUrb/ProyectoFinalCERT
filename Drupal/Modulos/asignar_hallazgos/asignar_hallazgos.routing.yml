@@ -1,0 +1,7 @@
+asignar_hallazgos.content:
+  path: /revisiones/hallazgos/{rev_id}/{id_rev_sitio}/{hall_id}
+  defaults:
+    _form: '\Drupal\asignar_hallazgos\Form\AsignarHallazgosForm'
+    _title: "Asignar hallazgos"
+  requirements:
+    _permission: 'access content'

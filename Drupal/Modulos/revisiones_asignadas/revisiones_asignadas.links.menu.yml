@@ -1,0 +1,6 @@
+revisiones_asignadas.newpage:
+  title: 'Revisiones'
+  description: 'Link a la página de revisiones'
+  route_name: revisiones_asignadas.content
+  weight: 10
+  menu_name: main
