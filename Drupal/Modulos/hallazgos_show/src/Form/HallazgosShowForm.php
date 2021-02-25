@@ -22,15 +22,13 @@ class HallazgosShowForm extends FormBase{
   }
 
   public function buildForm(array $form, FormStateInterface $form_state){
-    $node = \Drupal::routeMatch()->getParameter('node');
-    $nid = $node->nid->value;
-
-    //Coneccion a la BD
-    $node = \Drupal::routeMatch()->getParameter('node');
+    //conectar a la otra db
+    \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+    $connection = \Drupal\Core\Database\Database::getConnection();
     //Se selecciona la tabla en modo lectura
     $select = Database::getConnection()->select('hallazgos', 'h');
     //Se especifican las columnas a leer
-    $select->fields('h', array('id_hallazgos'))
+    $select->fields('h', array('id_hallazgo'))
            ->fields('h', array('nombre_hallazgo_vulnerabilidad'))
            ->fields('h', array('descripcion_hallazgo'))
            ->fields('h', array('solucion_recomendacion_halazgo'))
@@ -46,30 +44,19 @@ class HallazgosShowForm extends FormBase{
     $txt = '';
     //se recorren los resultados para después imprimirlos
     foreach ($results as $result){
-/*      $txt .= ' ' . $result->id_hallazgos;
-      $txr .= ' ' . $result->nombre_hallazgo_vulnerabilidad;
-      $txt .= ' ' . $result->descripcion_hallazgo;
-      $txt .= ' ' . $result->solucion_recomendacion_halazgo;
-      $txt .= ' ' . $result->referencias_hallazgo;
-      $txt .= ' ' . $result->nivel_cvss;*/
-//      $txt .= ' ' . '<a href="/editar/hallazgos">Editar</a>';
-
-      $url1 = Url::fromRoute('editar_hallazgos.content', array('id_h' => $result->id_hallazgos));
+      $url1 = Url::fromRoute('editar_hallazgos.content', array('id_h' => $result->id_hallazgo));
       $project_link1 = Link::fromTextAndUrl('Editar ', $url1);
       $project_link1 = $project_link1->toRenderable();
       $project_link1['#attributes'] = array('class' => array('button'));
 
-      $url = Url::fromRoute('eliminar_hallazgos.content', array('id_h' => $result->id_hallazgos));
+      $url = Url::fromRoute('eliminar_hallazgos.content', array('id_h' => $result->id_hallazgo));
       $project_link = Link::fromTextAndUrl('Eliminar ', $url);
       $project_link = $project_link->toRenderable();
       $project_link['#attributes'] = array('class' => array('button'));
-/*      $form[$rev] = array(
-            '#markup' => render($project_link),
-      );*/
 
       $txt .= '<br />';
-      $rows[$result->id_hallazgos] = [
-                $result->id_hallazgos,
+      $rows[$result->id_hallazgo] = [
+                $result->id_hallazgo,
                 $result->nombre_hallazgo_vulnerabilidad,
                 $result->descripcion_hallazgo,
                 $result->solucion_recomendacion_halazgo,
@@ -86,7 +73,7 @@ class HallazgosShowForm extends FormBase{
         ];
     }
 
-    $form['txt']['#markup'] = $txt;
+    //$form['txt']['#markup'] = $txt;
     //Se asignan titulos a cada columna
     $header = [
       'id' => t('ID'),
@@ -116,6 +103,8 @@ class HallazgosShowForm extends FormBase{
     ];
 
     return $form;
+    //regresar a bd la default
+    \Drupal\Core\Database\Database::setActiveConnection();
 
   }
 
