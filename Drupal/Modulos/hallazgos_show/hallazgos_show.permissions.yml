@@ -1,0 +1,3 @@
+view hallazgos_show:
+  title: 'Catalogo hallazgos'
+  description: 'Ver el catalogo de hallazgos.'

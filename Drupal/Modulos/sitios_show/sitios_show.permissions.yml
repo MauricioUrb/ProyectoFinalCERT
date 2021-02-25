@@ -1,0 +1,3 @@
+view sitios_show:
+  title: 'Catalogo sitios'
+  description: 'Ver el catalogo de sitios.'

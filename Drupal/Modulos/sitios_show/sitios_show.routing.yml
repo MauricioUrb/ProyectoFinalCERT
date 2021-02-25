@@ -1,7 +1,7 @@
-asignacion_revisiones.content:
-  path: /sitios/show
+sitios_show.content:
+  path: /sitios
   defaults:
     _form: '\Drupal\sitios_show\Form\SitiosShowForm'
     _title: "Catalogo Sitios"
   requirements:
-    _permission: 'access content'
+    _permission: 'view sitios_show'
