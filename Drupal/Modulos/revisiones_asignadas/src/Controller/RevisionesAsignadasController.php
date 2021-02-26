@@ -131,7 +131,7 @@ class RevisionesAsignadasController {
         '#rows' => $rows,
         '#empty' => t('No tienes revisiones asignadas en proceso.'),
       ];
-      $url = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $result->id_revision));
+      $url = Url::fromRoute('asignacion_revisiones.content', array());
       $project_link = Link::fromTextAndUrl('Asignar una nueva revision', $url);
       $project_link = $project_link->toRenderable();
       $project_link['#attributes'] = array('class' => array('button'));
