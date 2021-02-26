@@ -1,0 +1,3 @@
+view edit_revision:
+  title: 'Editar revisiones'
+  description: 'Editar las revisiones para asignar hallazgos.'

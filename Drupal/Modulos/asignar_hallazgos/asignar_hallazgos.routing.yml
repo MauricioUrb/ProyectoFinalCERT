@@ -4,4 +4,4 @@ asignar_hallazgos.content:
     _form: '\Drupal\asignar_hallazgos\Form\AsignarHallazgosForm'
     _title: "Asignar hallazgos"
   requirements:
-    _permission: 'access content'
+    _permission: 'view asignar_hallazgos'

@@ -118,17 +118,26 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 /var/www/drupal/vendor/bin/drush en phpmailer_smtp
 # Custom
 #/var/www/drupal/vendor/bin/drush en [nombre de los modulos custom]
+#Revisiones
 /var/www/drupal/vendor/bin/drush en asignacion_revisiones
+/var/www/drupal/vendor/bin/drush en revisiones_asignadas
+/var/www/drupal/vendor/bin/drush en asignar_hallazgos
+/var/www/drupal/vendor/bin/drush en delete_hallazgo_revision
+/var/www/drupal/vendor/bin/drush en edit_revision
+/var/www/drupal/vendor/bin/drush en comentar_revision
+/var/www/drupal/vendor/bin/drush en aprobar_revision
+/var/www/drupal/vendor/bin/drush en informacion_revision
+/var/www/drupal/vendor/bin/drush en delete_hallazgo_revision
+#Hallazgos
 /var/www/drupal/vendor/bin/drush en editar_hallazgos
-/var/www/drupal/vendor/bin/drush en editar_sitios
 /var/www/drupal/vendor/bin/drush en eliminar_hallazgos
-/var/www/drupal/vendor/bin/drush en eliminar_sitios
 /var/www/drupal/vendor/bin/drush en hallazgos_alta
 /var/www/drupal/vendor/bin/drush en hallazgos_show
-/var/www/drupal/vendor/bin/drush en pruebas_test
+#Siios
+/var/www/drupal/vendor/bin/drush en editar_sitios
+/var/www/drupal/vendor/bin/drush en eliminar_sitios
 /var/www/drupal/vendor/bin/drush en sitios_alta
 /var/www/drupal/vendor/bin/drush en sitios_show
-/var/www/drupal/vendor/bin/drush en revisiones_asignadas
 
 # Creacion de roles
 /var/www/drupal/vendor/bin/drush rcrt 'coordinador de revisiones' 'Coordinador de Revisiones'

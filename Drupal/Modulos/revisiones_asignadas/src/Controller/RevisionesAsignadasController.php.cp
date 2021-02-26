@@ -7,9 +7,9 @@ use Drupal\Core\Database\Database;
 
 class RevisionesAsignadasController {
   public function revisiones(){
-    //$current_user_roles = \Drupal::currentUser()->getRoles();
-    //$user = \Drupal::currentUser()->id();
-    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
+    $current_user_roles = \Drupal::currentUser()->getRoles();
+    $user = \Drupal::currentUser()->id();
+    if (in_array('coordinador de revisiones', $current_user_roles)){
       //Consulta de las revisiones que tiene el usuario
       //$user = \Drupal::currentUser()->id();
 
@@ -23,15 +23,15 @@ class RevisionesAsignadasController {
       $select->fields('r', array('id_estatus'));
       $select->fields('r', array('fecha_inicio_revision'));
       $select->fields('r', array('fecha_fin_revision'));
-      $select->condition('id_usuario',\Drupal::currentUser()->id());
+      $select->condition('id_usuario',$user);
       $datos = $select->execute();
       Database::setActiveConnection();
 
       //se recorren los resultados para después imprimirlos
       foreach ($datos as $result){
         if($result->tipo_revision){$tipo = 'Circular';}else{$tipo = 'Oficio';}
-        $url = Url::fromRoute('informacion_revision.content', array('rev_id' => $result->id_revision));
-        //$url = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $result->id_revision));
+        //$url = Url::fromRoute('informacion_revision.content', array('rev_id' => $result->id_revision));
+        $url = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $result->id_revision));
         $project_link = Link::fromTextAndUrl('Revisar', $url);
         $project_link = $project_link->toRenderable();
         $project_link['#attributes'] = array('class' => array('button'));
@@ -42,7 +42,7 @@ class RevisionesAsignadasController {
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision', $result->id_revision);
-        $select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
+        $select->condition('id_usuario', $user, '<>');
         $usuarios_rev = $select->execute()->fetchCol();
 
         //estatus_revision
@@ -131,18 +131,13 @@ class RevisionesAsignadasController {
         '#rows' => $rows,
         '#empty' => t('No tienes revisiones asignadas en proceso.'),
       ];
-      $url = Url::fromRoute('asignacion_revisiones.content', array());
-      $project_link = Link::fromTextAndUrl('Asignar una nueva revision', $url);
-      $project_link = $project_link->toRenderable();
-      $project_link['#attributes'] = array('class' => array('button'));
       //Revisiones pendientes de aprobacion
       $form['pendientes'] = [
         '#type' => 'item',
         '#title' => t('Revisiones en proceso'),
         '#markup' => render($pendientes),
       ];
-      $form['boton'] = array('#markup' => render($project_link),);
-    }elseif (in_array('pentester', \Drupal::currentUser()->getRoles())){
+    }elseif (in_array('pentester', $current_user_roles)){
       //Consulta de las revisiones que tiene el usuario
       //$user = \Drupal::currentUser()->id();
 
@@ -156,15 +151,15 @@ class RevisionesAsignadasController {
       $select->fields('r', array('id_estatus'));
       $select->fields('r', array('fecha_inicio_revision'));
       $select->fields('r', array('fecha_fin_revision'));
-      $select->condition('id_usuario',\Drupal::currentUser()->id());
+      $select->condition('id_usuario',$user);
       $datos = $select->execute();
 
       Database::setActiveConnection();
       //se recorren los resultados para después imprimirlos
       foreach ($datos as $result){
         if($result->tipo_revision){$tipo = 'Circular';}else{$tipo = 'Oficio';}
-        $url = Url::fromRoute('edit_revision.content', array('rev_id' => $result->id_revision));
-        //$url = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $result->id_revision));
+        //$url = Url::fromRoute('edit_revision.content', array('rev_id' => $result->id_revision));
+        $url = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $result->id_revision));
         $project_link = Link::fromTextAndUrl('Editar', $url);
         $project_link = $project_link->toRenderable();
         $project_link['#attributes'] = array('class' => array('button'));
@@ -229,7 +224,6 @@ class RevisionesAsignadasController {
             $result->id_revision,
             $tipo,
             $estatus_revision[0],
-            //$result->id_estatus,
             $txt,
             $result->fecha_inicio_revision,
             $coordinador[0],

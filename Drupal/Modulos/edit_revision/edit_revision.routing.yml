@@ -4,4 +4,4 @@ edit_revision.content:
     _form: '\Drupal\edit_revision\Form\EditRevisionForm'
     _title: "Edicion de revision"
   requirements:
-    _permission: 'access content'
+    _permission: 'view edit_revision'

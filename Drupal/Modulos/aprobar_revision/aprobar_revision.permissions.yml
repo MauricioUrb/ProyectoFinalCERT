@@ -1,0 +1,3 @@
+view aprobar_revision:
+  title: 'Aprobación de revisiones'
+  description: 'Ver la página para poder aprobar una revisión.'

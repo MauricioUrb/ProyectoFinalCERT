@@ -1,0 +1,7 @@
+name: Pagina para comentar un revision (Coordinador)
+type: module
+description: Pagina para realizar un comentario en una revision
+package: Custom
+core_version_requirement: ^8 || ^9
+core: 8.x
+#configure: sitios.admin_settings

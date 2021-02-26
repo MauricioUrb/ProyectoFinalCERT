@@ -1,0 +1,3 @@
+view asignar_hallazgos:
+  title: 'Asignación de hallazgos'
+  description: 'Ver el formulario para asignar y editar hallazgos en una revisión.'

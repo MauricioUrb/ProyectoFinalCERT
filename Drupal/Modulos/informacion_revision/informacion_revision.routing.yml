@@ -1,0 +1,7 @@
+informacion_revision.content:
+  path: /revisiones/info/{rev_id}
+  defaults:
+    _controller: \Drupal\informacion_revision\Controller\InformacionRevisionController::informacion
+    _title: "Informacion de revision"
+  requirements:
+    _permission: '´view informacion_revision'

@@ -1,0 +1,3 @@
+view delete_hallazgo_revision:
+  title: 'Borrar hallazgos'
+  description: 'Ver la página para borrar un halalzgo de una revisión.'
