@@ -82,7 +82,7 @@ class RevisionesAsignadasController {
             $result->fecha_fin_revision,
             render($project_link),
           ];
-        }else{
+        }elseif($result->id_estatus < 3){
           $rows[$result->id_revision] = [
             $result->id_revision,
             $tipo,
@@ -185,16 +185,9 @@ class RevisionesAsignadasController {
         $select->condition('u.roles_target_id', 'coordinador de revisiones');
         $coordinador = $select->execute()->fetchCol();
 
-        //Se busca si la revision tiene comentarios
+        //lista de sitios asignados
         Database::setActiveConnection('drupaldb_segundo');
         $connection = Database::getConnection();
-        $select = Database::getConnection()->select('comentarios', 'c');
-        $select->fields('c', array('id_revision'));
-        $select->condition('id_revision', $result->id_revision);
-        $comentarios = $select->execute()->fetchCol();
-
-        //////////////////////
-        //lista de sitios asignados
         $select = Database::getConnection()->select('revisiones_sitios', 'r');
         $select->join('sitios',"s","r.id_sitio = s.id_sitio");
         $select->fields('s', array('url_sitio'));
@@ -207,7 +200,6 @@ class RevisionesAsignadasController {
         $txt = substr($txt, 0, -3);
         //////////////////////
 
-        if(in_array($result->id_revision,$comentarios)){$comentario = 'Sí';}else{$comentario = '-';}
         //estatus_revision
         $select = Database::getConnection()->select('estatus_revisiones', 's');
         $select->fields('s', array('estatus'));
@@ -224,7 +216,7 @@ class RevisionesAsignadasController {
             $result->fecha_fin_revision,
             $coordinador[0],
           ];
-        }else{
+        }elseif($result->id_estatus < 3){
           $rows[$result->id_revision] = [
             $result->id_revision,
             $tipo,
@@ -233,7 +225,6 @@ class RevisionesAsignadasController {
             $txt,
             $result->fecha_inicio_revision,
             $coordinador[0],
-            $comentario,
             render($project_link),
           ];
         }
@@ -246,7 +237,6 @@ class RevisionesAsignadasController {
         'activos' => t('Activos asignados'),
         'start' => t('Fecha de asignacion'),
         'coordinador' => t('Coordinador de revision'),
-        'coment' => t('Comentarios por atender'),
         'edit' => t('Editar'),
       ];
       $header2 = [
