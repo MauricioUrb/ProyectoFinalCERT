@@ -1,0 +1,6 @@
+revisiones_aprobadas.newpage:
+  title: 'Revisiones Aprobadas'
+  description: 'Link a la página de revisiones aprobadas'
+  route_name: revisiones_aprobadas.content
+  weight: 10
+  menu_name: main
