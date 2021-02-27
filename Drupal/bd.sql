@@ -74,13 +74,6 @@ CREATE TABLE revisiones (
 	FOREIGN KEY (id_estatus) REFERENCES estatus_revisiones(id_estatus)
 );
 
-CREATE TABLE comentarios (
-	id_comentario serial PRIMARY KEY,
-	id_revision serial NOT NULL,
-	comentario varchar(70) NOT NULL,
-	FOREIGN KEY (id_revision) REFERENCES revisiones(id_revision)
-);
-
 CREATE TABLE revisiones_asignadas (
 	id_revision serial NOT NULL,
 	id_usuario int NOT NULL,

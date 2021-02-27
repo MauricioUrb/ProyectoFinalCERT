@@ -98,6 +98,9 @@ class AprobarRevisionForm extends FormBase{
       ->condition('id_revision',$no_rev)
       ->execute();
     Database::setActiveConnection();
+    /*
+    En esta parte se crea el reporte
+    */
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
     $form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));

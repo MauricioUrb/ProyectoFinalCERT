@@ -89,19 +89,13 @@ class ComentarRevisionForm extends FormBase{
     $to = substr($to, 0, -1);
     $langcode = \Drupal::currentUser()->getPreferredLangcode();
     $params['context']['subject'] = "Asignación de revisión";
-    $params['context']['message'] = 'El Coordinador de revisiones ha realizado un comentario en la revision #'. $no_rev.'. Favor de atender el comentario.';
+    $params['context']['message'] = 'El Coordinador de revisiones ha realizado un comentario en la revision #'. $no_rev.".\n\n".$form_state->getValue(['comentario']),;
     //$to = 'mauricio@dominio.com,angel@dominio.com';
     $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $to, $langcode, $params);
     if(!$email){$mensaje .= " Ocurrió algún error y no se ha podido enviar el correo de notificación.";}
-    //Insercion de comentario en la BD
+    //Actualizacion de estatus de la revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    $result = $connection->insert('comentarios')
-      ->fields(array(
-        'id_revision' => $no_rev,
-        'comentario' => $form_state->getValue(['comentario']),
-      ))->execute();
-    //Actualizacion de estatus de la revision
     $update = $connection->update('revisiones')
       ->fields(array(
         'id_estatus' => 2,

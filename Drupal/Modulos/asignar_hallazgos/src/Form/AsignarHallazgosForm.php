@@ -118,6 +118,9 @@ class AsignarHallazgosForm extends FormBase{
       '#required' => TRUE,
       '#default_value' => $recursos_afectador,
     );
+    /*
+    En esta parte se agregará lo correspondiente a las imágenes a agregar
+    */
     $form['impacto'] =array(
       '#type' => 'textfield',
       '#title' => 'Impacto',
