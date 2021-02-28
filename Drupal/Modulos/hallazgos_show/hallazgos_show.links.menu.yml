@@ -2,5 +2,5 @@ hallazgos_show.newpage:
   title: 'Catalogo Hallazgos'
   description: 'Link a la página de Hallazgos'
   route_name: hallazgos_show.content
-  weight: 10
+  weight: 11
   menu_name: main
