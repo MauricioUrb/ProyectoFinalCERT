@@ -127,7 +127,7 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 /var/www/drupal/vendor/bin/drush en comentar_revision
 /var/www/drupal/vendor/bin/drush en aprobar_revision
 /var/www/drupal/vendor/bin/drush en informacion_revision
-/var/www/drupal/vendor/bin/drush en delete_hallazgo_revision
+/var/www/drupal/vendor/bin/drush en revisiones_aprobadas
 #Hallazgos
 /var/www/drupal/vendor/bin/drush en editar_hallazgos
 /var/www/drupal/vendor/bin/drush en eliminar_hallazgos
