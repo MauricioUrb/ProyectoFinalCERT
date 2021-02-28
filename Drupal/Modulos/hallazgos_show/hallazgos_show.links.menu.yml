@@ -3,4 +3,4 @@ hallazgos_show.newpage:
   description: 'Link a la página de Hallazgos'
   route_name: hallazgos_show.content
   weight: 10
-  manu_name: main
+  menu_name: main
