@@ -89,7 +89,7 @@ class ComentarRevisionForm extends FormBase{
     $to = substr($to, 0, -1);
     $langcode = \Drupal::currentUser()->getPreferredLangcode();
     $params['context']['subject'] = "Asignación de revisión";
-    $params['context']['message'] = 'El Coordinador de revisiones ha realizado un comentario en la revision #'. $no_rev.".\n\n".$form_state->getValue(['comentario']),;
+    $params['context']['message'] = 'El Coordinador de revisiones ha realizado un comentario en la revision #'. $no_rev.".\n\n".$form_state->getValue(['comentario']);
     //$to = 'mauricio@dominio.com,angel@dominio.com';
     $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $to, $langcode, $params);
     if(!$email){$mensaje .= " Ocurrió algún error y no se ha podido enviar el correo de notificación.";}
