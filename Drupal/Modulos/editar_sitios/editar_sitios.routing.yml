@@ -4,4 +4,4 @@ editar_sitios.content:
     _form: '\Drupal\editar_sitios\Form\EditarSitiosForm'
     _title: "Actualizar Sitio"
   requirements:
-    _permission: 'access content'
+    _permission: 'view editar_sitios'

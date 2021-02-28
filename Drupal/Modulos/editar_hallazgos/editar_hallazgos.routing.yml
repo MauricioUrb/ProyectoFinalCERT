@@ -4,4 +4,4 @@ editar_hallazgos.content:
     _form: '\Drupal\editar_hallazgos\Form\EditarHallazgosForm'
     _title: "Actualizar Hallazgo"
   requirements:
-    _permission: 'access content'
+    _permission: 'view editar_hallazgos'

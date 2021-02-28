@@ -4,4 +4,4 @@ eliminar_sitios.content:
     _form: '\Drupal\eliminar_sitios\Form\EliminarSitiosForm'
     _title: "Eliminar Sitio"
   requirements:
-    _permission: 'access content'
+    _permission: 'view eliminar_sitios'
