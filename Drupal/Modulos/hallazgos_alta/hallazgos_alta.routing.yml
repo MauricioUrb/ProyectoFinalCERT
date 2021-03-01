@@ -4,4 +4,4 @@ hallazgos_alta.content:
     _form: '\Drupal\hallazgos_alta\Form\HallazgosAltaForm'
     _title: "Alta de Hallazgo"
   requirements:
-    _permission: 'access content'
+    _permission: 'view hallazgos_alta'

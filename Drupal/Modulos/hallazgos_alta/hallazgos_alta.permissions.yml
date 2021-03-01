@@ -1,0 +1,3 @@
+view hallazgos_alta:
+        title: 'Alta de hallazgos.'
+        description: 'Alta un nuevo hallazgo.'
