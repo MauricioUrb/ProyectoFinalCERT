@@ -4,4 +4,4 @@ sitios_alta.content:
     _form: '\Drupal\sitios_alta\Form\SitiosAltaForm'
     _title: "Alta de Sitios"
   requirements:
-    _permission: 'access content'
+    _permission: 'view sitios_alta'

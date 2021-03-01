@@ -1,6 +1,6 @@
 name: Alta de Sitios
 type: module
-description: 'Alta de sitios.'
+description: 'Página para dar de alta los sitios.'
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x
