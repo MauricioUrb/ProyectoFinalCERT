@@ -1,0 +1,3 @@
+view borrar_revision:
+  title: 'Borrar revisión'
+  description: 'Ver la página para borrar una revisión.'

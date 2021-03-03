@@ -30,11 +30,16 @@ class RevisionesAsignadasController {
       //se recorren los resultados para después imprimirlos
       foreach ($datos as $result){
         if($result->tipo_revision){$tipo = 'Circular';}else{$tipo = 'Oficio';}
+        //Botón para revisar
         $url = Url::fromRoute('informacion_revision.content', array('rev_id' => $result->id_revision));
-        //$url = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $result->id_revision));
         $project_link = Link::fromTextAndUrl('Revisar', $url);
         $project_link = $project_link->toRenderable();
         $project_link['#attributes'] = array('class' => array('button'));
+        //Botón para borrar revisión
+        $urlB = Url::fromRoute('borrar_revision.content', array('rev_id' => $result->id_revision));
+        $project_linkB = Link::fromTextAndUrl('Borrar', $urlB);
+        $project_linkB = $project_linkB->toRenderable();
+        $project_linkB['#attributes'] = array('class' => array('button'));
 
         //Se busca el nombre de los pentesters que fueron asignados a la revision
         Database::setActiveConnection('drupaldb_segundo');
@@ -81,6 +86,7 @@ class RevisionesAsignadasController {
             $result->fecha_inicio_revision,
             $result->fecha_fin_revision,
             render($project_link),
+            render($project_linkB),
           ];
         }elseif($result->id_estatus < 3){
           $rows[$result->id_revision] = [
@@ -90,6 +96,7 @@ class RevisionesAsignadasController {
             $estatus_revision[0],
             $result->fecha_inicio_revision,
             $txt,
+            render($project_linkB),
           ];
         }
       }
@@ -103,6 +110,7 @@ class RevisionesAsignadasController {
         'start' => t('Fecha de asignacion'),
         'last' => t('Fecha de finalización'),
         'edit' => t('Editar'),
+        'delete' => t('Borrar'),
       ];
       $header2 = [
         'id' => t('ID'),
@@ -111,6 +119,7 @@ class RevisionesAsignadasController {
         'status' => t('Estado'),
         'start' => t('Fecha de asignacion'),
         'activos' => t('Activos asignados'),
+        'delete' => t('Borrar'),
       ];
       //se construye la tabla para mostrar
       $concluidas['table'] = [

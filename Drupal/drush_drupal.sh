@@ -18,6 +18,9 @@ echo 'yes' | composer require drush/drush --working-dir=/var/www/drupal
 echo "Descargando la consola de drupal..."
 echo 'yes' | composer require drupal/console --with-all-dependencies --working-dir=/var/www/drupal
 echo -e "\nDrupal descargado en /var/www/drupal\nAgregando archivos, carpetas y permisos...\n"
+#En lo que se revisa lo de word
+#echo "Descargando PhpOffice..."
+#echo 'yes' | composer require phpoffice/phpword --with-all-dependencies --working-dir=/var/www/drupal
 
 # Creación de directorio, archivo y permisos para drupal
 mkdir -p /var/www/drupal/web/sites/default/files/translations/
@@ -89,6 +92,9 @@ sed -i "801i\);" /var/www/drupal/web/sites/default/settings.php
 # Regresando permisos de las carpetas de drupal
 chmod go-w /var/www/drupal/web/sites/default/settings.php
 chmod go-w /var/www/drupal/web/sites/default
+# Donde se almacenana reportes
+#mkdir /var/www/drupal/web/reportes
+#chmod 757 /var/www/drupal/web/reportes
 echo "Sitio instalado. Instalando modulos..."
 
 # Para descargar los módulos
@@ -128,6 +134,7 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 /var/www/drupal/vendor/bin/drush en aprobar_revision
 /var/www/drupal/vendor/bin/drush en informacion_revision
 /var/www/drupal/vendor/bin/drush en revisiones_aprobadas
+/var/www/drupal/vendor/bin/drush en borrar_revision
 #Hallazgos
 /var/www/drupal/vendor/bin/drush en editar_hallazgos
 /var/www/drupal/vendor/bin/drush en eliminar_hallazgos
@@ -142,6 +149,7 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 # Creacion de roles
 /var/www/drupal/vendor/bin/drush rcrt 'coordinador de revisiones' 'Coordinador de Revisiones'
 /var/www/drupal/vendor/bin/drush rcrt 'pentester' 'Pentester'
+/var/www/drupal/vendor/bin/drush rcrt 'auxiliar' 'Auxiliar'
 #/var/www/drupal/vendor/bin/drush rcrt '' ''
 
 # Limpiando caché
