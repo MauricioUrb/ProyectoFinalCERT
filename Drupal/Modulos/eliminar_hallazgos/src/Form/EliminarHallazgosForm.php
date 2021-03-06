@@ -7,13 +7,24 @@ namespace Drupal\eliminar_hallazgos\Form;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Link;
 
+/**
+ * Provides a RSVP Email form.
+ */
 class EliminarHallazgosForm extends FormBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public function getFormId() {
     return 'eliminar_hallazgos_form';
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state, $id_h = NULL) {
     global $idh;
     $idh = $id_h;
@@ -30,6 +41,12 @@ class EliminarHallazgosForm extends FormBase {
       '#value' => t('Aceptar'),
     );
 
+    $url = Url::fromRoute('hallazgos_show.content', array());
+    $project_link = Link::fromTextAndUrl('Cancelar', $url);
+    $project_link = $project_link->toRenderable();
+    $project_link['#attributes'] = array('class' => array('button'));
+    $form['cancelar'] = array('#markup' => render($project_link),);
+
     return $form;
   }
 
@@ -43,9 +60,9 @@ class EliminarHallazgosForm extends FormBase {
 		  //Se agregan condiciones
 		  //Donde el id sea
 		  ->condition('id_hallazgo', $idh)
-		  //ejecutamos el query
+		  // ejecutamos el query
 	  	  ->execute();
-	  //mostramos el mensaje
+	  // mostramos el mensaje
 	  if($update!=FALSE){
 		  $messenger_service = \Drupal::service('messenger');
 		  $messenger_service->addMessage(t('Se ha actualizado la base de datos'));
