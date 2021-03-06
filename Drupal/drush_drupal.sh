@@ -17,11 +17,10 @@ echo "Descargando drush..."
 echo 'yes' | composer require drush/drush --working-dir=/var/www/drupal
 echo "Descargando la consola de drupal..."
 echo 'yes' | composer require drupal/console --with-all-dependencies --working-dir=/var/www/drupal
+echo "Descargando PhpOffice..."
+echo 'yes' | composer require phpoffice/phpword --with-all-dependencies --working-dir=/var/www/drupal
+echo 'yes' | composer require phpoffice/phpspreadsheet --with-all-dependencies --working-dir=/var/www/drupal
 echo -e "\nDrupal descargado en /var/www/drupal\nAgregando archivos, carpetas y permisos...\n"
-#En lo que se revisa lo de word
-#echo "Descargando PhpOffice..."
-#echo 'yes' | composer require phpoffice/phpword --with-all-dependencies --working-dir=/var/www/drupal
-
 # Creación de directorio, archivo y permisos para drupal
 mkdir -p /var/www/drupal/web/sites/default/files/translations/
 chmod -R 777 /var/www/drupal/web/sites/default/files
@@ -35,8 +34,6 @@ su -c "psql -f /tmp/ini.sql" - postgres
 sed -i '90i\local   drupaldb        manager                                 md5' /etc/postgresql/12/main/pg_hba.conf
 sed -i '91i\local   drupaldb_segundo manager                                md5' /etc/postgresql/12/main/pg_hba.conf
 systemctl restart postgresql.service
-echo "Creando tablas..."
-su -c "psql -f /tmp/bd.sql" - postgres
 
 echo -e "\nConfigurando y reiniciando apache...\n"
 # Habilitar apache
@@ -69,6 +66,9 @@ systemctl restart apache2.service
 # Instalación del sitio
 echo 'yes' | /var/www/drupal/vendor/bin/drush si standard --db-url=pgsql://manager:hola123.,@localhost/drupaldb --db-su-pw="hola123.," --site-name=revisiones --account-name=admin --account-pass="hola123.," --locale=es
 
+echo "Creando tablas..."
+su -c "psql -f /tmp/bd.sql" - postgres
+
 #https://matti.dev/post/setup-install-drupal-9-with-composer-and-drush
 : <<'END'
 Comentarios
@@ -93,8 +93,8 @@ sed -i "801i\);" /var/www/drupal/web/sites/default/settings.php
 chmod go-w /var/www/drupal/web/sites/default/settings.php
 chmod go-w /var/www/drupal/web/sites/default
 # Donde se almacenana reportes
-#mkdir /var/www/drupal/web/reportes
-#chmod 757 /var/www/drupal/web/reportes
+mkdir /var/www/drupal/web/reportes
+chmod 757 /var/www/drupal/web/reportes
 echo "Sitio instalado. Instalando modulos..."
 
 # Para descargar los módulos
