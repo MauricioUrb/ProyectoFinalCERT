@@ -198,14 +198,14 @@ class AsignacionRevisionesForm extends FormBase{
         ->fields(array(
           'id_revision' => $id_revisiones,
           'id_usuario' => $pentester,
-          'seguimiento' => 0;
+          'seguimiento' => 0,
         ))->execute();
     }
     $result = $connection->insert('revisiones_asignadas')
       ->fields(array(
         'id_revision' => $id_revisiones,
         'id_usuario' => \Drupal::currentUser()->id(),
-        'seguimiento' => 0;
+        'seguimiento' => 0,
       ))->execute();
     //revisiones_sitios
     foreach ($id_sitios as $sitios) {
