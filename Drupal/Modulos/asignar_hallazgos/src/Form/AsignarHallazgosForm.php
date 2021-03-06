@@ -197,6 +197,7 @@ class AsignarHallazgosForm extends FormBase{
           'recursos_afectador' => $form_state->getValue(['recursos']),
           'impacto_hall_rev' => $form_state->getValue(['impacto']),
           'cvss_hallazgos' => $form_state->getValue(['cvss']),
+          'estatus' => 1,
         ))->execute();
       }else{
         $mensaje = 'Hallazgo actualizado.';
@@ -218,7 +219,14 @@ class AsignarHallazgosForm extends FormBase{
       ))
       ->condition('id_revision', $regresar)
       ->execute();
+    //Obtener el id_rev_sitio_hall
+    $consulta = Database::getConnection()->select('revisiones_hallazgos', 'h');
+    $consulta->fields('h', array('id_rev_sitio_hall'));
+    $consulta->condition('id_rev_sitio',$id_principal);
+    $consulta->condition('id_hallazgo',$id_hallazgo[0]);
+    $id_rev_sitio_hall = $consulta->execute()->fetchCol();
     Database::setActiveConnection();
+    //Inserción en la bd de imagenes
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
   	$form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));
