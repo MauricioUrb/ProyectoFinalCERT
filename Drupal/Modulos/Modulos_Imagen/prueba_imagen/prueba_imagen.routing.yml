@@ -1,0 +1,7 @@
+prueba_imagen.content:
+  path: /imagenes
+  defaults:
+    _form: '\Drupal\prueba_imagen\Form\PruebaImagenForm'
+    _title: "Prueba Subir Imagenes"
+  requirements:
+    _permission: 'access content'

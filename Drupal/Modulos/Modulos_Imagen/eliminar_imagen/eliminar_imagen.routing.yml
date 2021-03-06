@@ -1,0 +1,7 @@
+eliminar_imagen.content:
+  path: /eliminar/imagen/{fid}
+  defaults:
+    _form: '\Drupal\eliminar_imagen\Form\EliminarImagenForm'
+    _title: "Eliminar Imagen"
+  requirements:
+    _permission: 'view eliminar_imagen'

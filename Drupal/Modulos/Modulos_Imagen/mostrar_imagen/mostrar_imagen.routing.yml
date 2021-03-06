@@ -1,0 +1,7 @@
+mostrar_imagen.content:
+  path: /imagenes/mostrar
+  defaults:
+    _form: '\Drupal\mostrar_imagen\Form\MostrarImagenForm'
+    _title: "Mostrar Imágenes"
+  requirements:
+    _permission: 'access content'
