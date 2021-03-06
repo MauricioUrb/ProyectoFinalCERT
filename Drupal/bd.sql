@@ -1,3 +1,8 @@
+--Datos para imágenes
+\c drupaldb manager 
+ALTER TABLE file_managed ADD id_rev_sh INT NULL;
+ALTER TABLE file_managed ADD descripcion varchar(100) NULL;
+
 --Seleccion de la BD
 \c drupaldb_segundo manager
 
@@ -57,6 +62,7 @@ CREATE TABLE hallazgos (
 	vector_cvss varchar(108) NOT NULL, --AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H/MA:H
 	enlace_cvss varchar(159) NOT NULL,
 	r_ejecutivo_hallazgo varchar(70) NOT NULL,
+	solucion_corta varchar(70) NOT NULL,
 	CHECK (vector_cvss ~* 'AV:[ANLP]\/AC:[HL]\/PR:[NLH]\/UI:[NR]\/S:[UC]\/C:[NLH]\/I:[NLH]\/A:[NLH](\/E:[UPFH])?(\/RL:[OTWU])?(\/RC:[URC])?(\/CR:[LMH])?(\/IR:[LMH])?(\/AR:[LMH])?(\/MAV:[NALP])?(\/MAC:[LH])?(\/MPR:[NLH])?(\/MUI:[NR])?(\/MS:[UC])?(\/MC:[NLH])?(\/MI:[NLH])?(\/MA:[NLH])?')
 );
 
@@ -77,6 +83,7 @@ CREATE TABLE revisiones (
 CREATE TABLE revisiones_asignadas (
 	id_revision serial NOT NULL,
 	id_usuario int NOT NULL,
+	seguimiento boolean NOT NULL,
 	FOREIGN KEY (id_revision) REFERENCES revisiones(id_revision)
 );
 
@@ -95,6 +102,7 @@ CREATE TABLE revisiones_hallazgos (
 	recursos_afectador text NOT NULL,
 	impacto_hall_rev varchar(12),
 	cvss_hallazgos varchar(108) NOT NULL,
+	estatus boolean NOT NULL,
 	FOREIGN KEY (id_rev_sitio) REFERENCES revisiones_sitios(id_rev_sitio),
 	FOREIGN KEY (id_hallazgo) REFERENCES hallazgos(id_hallazgo)
 );
