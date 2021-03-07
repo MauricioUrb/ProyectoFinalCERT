@@ -1,0 +1,3 @@
+view agregar_imagen:
+  title: 'Agregar imagen a revisión'
+  description: 'Ver el formulario para agregar imagenes en hallazgos en una revisión.'

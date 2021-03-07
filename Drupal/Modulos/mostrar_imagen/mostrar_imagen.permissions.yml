@@ -1,0 +1,3 @@
+view mostrar_imagen:
+  title: 'Ver imágenes de un hallazgo en una revisión'
+  description: 'Ver las imagenes en hallazgos en una revisión.'

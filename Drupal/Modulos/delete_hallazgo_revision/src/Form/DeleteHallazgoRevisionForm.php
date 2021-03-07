@@ -23,7 +23,9 @@ class DeleteHallazgoRevisionForm extends FormBase{
   /*
    * (@inheritdoc)
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $hall_id = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $hall_id = NULL, $rsh = NULL){
+    global $id;
+    $id = $rsh;
     global $id_principal;
     $id_principal = $id_rev_sitio;
     global $regresar;
@@ -108,6 +110,7 @@ class DeleteHallazgoRevisionForm extends FormBase{
    * (@inheritdoc)
    */
   public function submitForm(array &$form, FormStateInterface $form_state){
+    global $id;
     global $id_principal;
     global $regresar;
     global $id_hall;
@@ -119,6 +122,12 @@ class DeleteHallazgoRevisionForm extends FormBase{
       ->condition('id_hallazgo', $id_hall)
       ->execute();
     Database::setActiveConnection();
+    $connection = \Drupal::service('database');
+    //se elimina un regitro de la tabla file_managed
+    $elimina = $connection->delete('file_managed')
+      //se agrega la condicion id_sitio
+      ->condition('id_rev_sh', $id)
+      ->execute();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
   	$form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));

@@ -1,0 +1,6 @@
+name: Mostrar Imagenes
+type: module
+description: Pagina para mostrar imagenes.
+package: Custom
+core_version_requirement: ^8 || ^9
+core: 8.x

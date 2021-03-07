@@ -62,13 +62,24 @@ class EditRevisionForm extends FormBase{
       $select->condition('h.id_rev_sitio',$result->id_rev_sitio);
       $datHall = $select->execute();
       foreach ($datHall as $hallazgo) {
+        //Obtener el id_rev_sitio_hall
+        $consulta = Database::getConnection()->select('revisiones_hallazgos', 'h');
+        $consulta->fields('h', array('id_rev_sitio_hall'));
+        $consulta->condition('id_rev_sitio',$result->id_rev_sitio);
+        $consulta->condition('id_hallazgo',$hallazgo->id_hallazgo);
+        $id_rev_sitio_hall = $consulta->execute()->fetchCol();
+        //Boton de imagenes
+        $urlImg = Url::fromRoute('mostrar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $id_rev_sitio_hall[0]));
+        $imagenes = Link::fromTextAndUrl('Ver imágenes', $urlImg);
+        $imagenes = $imagenes->toRenderable();
+        $imagenes['#attributes'] = array('class' => array('button'));
         //Boton de editar
         $urlEditar = Url::fromRoute('asignar_hallazgos.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo));
         $editar = Link::fromTextAndUrl('Editar', $urlEditar);
         $editar = $editar->toRenderable();
         $editar['#attributes'] = array('class' => array('button'));
         //Boton de borrar
-        $urlBorrar = Url::fromRoute('delete_hallazgo_revision.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo));
+        $urlBorrar = Url::fromRoute('delete_hallazgo_revision.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo, 'rsh' => $id_rev_sitio_hall[0]));
         $borrar = Link::fromTextAndUrl('Borrar', $urlBorrar);
         $borrar = $borrar->toRenderable();
         $borrar['#attributes'] = array('class' => array('button'));
@@ -81,6 +92,7 @@ class EditRevisionForm extends FormBase{
           $nombreHallazgo[0],
           $hallazgo->impacto_hall_rev,
           $hallazgo->cvss_hallazgos,
+          render($imagenes),
           render($editar),
           render($borrar),
         ];
@@ -90,6 +102,7 @@ class EditRevisionForm extends FormBase{
         'hallazgo' => t('Hallazgo'),
         'impact' => t('Impacto'),
         'cvss' => t('CVSS'),
+        'evidencia' => t('Evidencia'),
         'edit' => t('Editar'),
         'delete' => t('Borrar'),
       ];
