@@ -7,6 +7,7 @@ namespace Drupal\informacion_revision\Controller;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
+use Drupal\Core\Render\Markup;
 
 /*
  *
@@ -96,6 +97,7 @@ class InformacionRevisionController{
     $ids = $select->execute();
     foreach ($ids as $id) {
       $select = Database::getConnection()->select('revisiones_hallazgos', 'r');
+      $select->fields('r', array('id_rev_sitio_hall'));
       $select->fields('r', array('descripcion_hall_rev'));
       $select->fields('r', array('recursos_afectador'));
       $select->fields('r', array('impacto_hall_rev'));
@@ -135,6 +137,45 @@ class InformacionRevisionController{
           '#title' => 'Recursos afectados:',
           '#markup' => $hallazgo->recursos_afectador,
         );
+        //Obtener el id_rev_sitio_hall
+        /*
+        $consulta = Database::getConnection()->select('revisiones_hallazgos', 'h');
+        $consulta->fields('h', array('id_rev_sitio_hall'));
+        $consulta->condition('id_rev_sitio_hall',$hallazgo->id_rev_sitio_hall);
+        $id_rev_sitio_hall = $consulta->execute()->fetchCol();*/
+        Database::setActiveConnection();
+        $connection = \Drupal::service('database');
+        $select = $connection->select('file_managed', 'fm')
+          ->fields('fm', array('fid', 'filename', 'descripcion'));
+        $select->condition('id_rev_sh', $hallazgo->id_rev_sitio_hall);
+        $results = $select->execute();
+        Database::setActiveConnection('drupaldb_segundo');
+        $connection = Database::getConnection();
+        foreach ($results as $result){
+          $rows[$id->id_rev_sitio][$hallazgo->id_hallazgo][$result->fid] = [
+            $result->filename,
+            Markup::create("<a href='/sites/default/files/content/evidencia/$result->filename'>Imagen</a>"),
+            $result->descripcion,
+          ];
+        }
+        $header = [
+          'name' => t('Nombre'),
+          'image' => t('Imagen'),
+          'descripcion' => t('Descripcion'),
+        ];
+        //se construye la tabla para mostrar
+        $build[$id->id_rev_sitio][$hallazgo->id_hallazgo]['table'] = [
+          '#type' => 'table',
+          '#header' => $header,
+          '#rows' => $rows[$id->id_rev_sitio][$hallazgo->id_hallazgo],
+          '#empty' => t('Nada para mostrar.'),
+        ];
+        $form[$id->id_rev_sitio][$hallazgo->id_hallazgo]['build'] = [
+          '#type' => '#markup',
+          '#markup' => render($build[$id->id_rev_sitio][$hallazgo->id_hallazgo]),
+        ];
+        $form['regresar'] = array('#markup' => $id_rev_sitio_hall[0],);
+
         $form[$id->id_rev_sitio][$hallazgo->id_hallazgo]['impacto'] = array(
           '#type' => 'item',
           '#title' => 'Impacto',
@@ -153,11 +194,11 @@ class InformacionRevisionController{
     $urlComentar = Url::fromRoute('comentar_revision.content', array('rev_id' => $rev_id));
     $comentar = Link::fromTextAndUrl('Realizar un comentario', $urlComentar);
     $comentar = $comentar->toRenderable();
-    $comentar['#attributes'] = array('class' => array('button', 'button-action'));
+    $comentar['#attributes'] = array('class' => array('button'));
     $urlAprobar = Url::fromRoute('aprobar_revision.content', array('rev_id' => $rev_id));
     $aprobacion = Link::fromTextAndUrl('Aprobar revision', $urlAprobar);
     $aprobacion = $aprobacion->toRenderable();
-    $aprobacion['#attributes'] = array('class' => array('button', 'button-action'));
+    $aprobacion['#attributes'] = array('class' => array('button'));
     
     $form['botones'] = array(
       '#type' => 'item',
