@@ -22,19 +22,12 @@ class MostrarImagenForm extends FormBase{
     $connection = \Drupal::service('database');
 
     $select = $connection->select('file_managed', 'fm')
-                ->fields('fm', array('fid', 'filename', 'descripcion'));
-
-                //sustituir el 7 por la variable del id
+        ->fields('fm', array('fid', 'filename', 'descripcion'));
     $select->condition('id_rev_sh', $rsh);
     //Se realiza la consulta
     $results = $select->execute();
 
     foreach ($results as $result){
-      $url1 = Url::fromRoute('editar_imagen.content', array('fid' => $result->fid, 'rev_id' => $rev_id, 'rsh' => $rsh));
-      $project_link1 = Link::fromTextAndUrl('Editar ', $url1);
-      $project_link1 = $project_link1->toRenderable();
-      $project_link1['#attributes'] = array('class' => array('button'));
-
       $url = Url::fromRoute('eliminar_imagen.content', array('fid' => $result->fid, 'rev_id' => $rev_id, 'rsh' => $rsh));
       $project_link = Link::fromTextAndUrl('Eliminar ', $url);
       $project_link = $project_link->toRenderable();
@@ -44,7 +37,6 @@ class MostrarImagenForm extends FormBase{
           $result->filename,
           Markup::create("<a href='/sites/default/files/content/evidencia/$result->filename'>Imagen</a>"),
           $result->descripcion,
-          render($project_link1),
           render($project_link),
       ];
 
@@ -55,7 +47,6 @@ class MostrarImagenForm extends FormBase{
       'name' => t('Nombre'),
       'image' => t('Imagen'),
       'descripcion' => t('Descripcion'),
-      'editar' => t('Editar'),
       'eliminar' => t('Eliminar'),
     ];
     //se construye la tabla para mostrar
@@ -80,7 +71,6 @@ class MostrarImagenForm extends FormBase{
     $cantidadImg = 5 - $resultado[0];
     if($cantidadImg){
         $urlA = Url::fromRoute('agregar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $rsh));
-        //$urlA = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
         $project_linkA = Link::fromTextAndUrl('Agregar imágenes', $urlA);
         $project_linkA = $project_linkA->toRenderable();
         $project_linkA['#attributes'] = array('class' => array('button'));

@@ -1,7 +1,0 @@
-editar_imagen.content:
-  path: /editar/imagen/{fid}/{rev_id}/{rsh}
-  defaults:
-    _form: '\Drupal\editar_imagen\Form\EditarImagenForm'
-    _title: "Actualizar evidencia"
-  requirements:
-    _permission: 'view editar_imagen'
