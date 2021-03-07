@@ -18,6 +18,37 @@ class MostrarImagenForm extends FormBase{
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $rsh = NULL){
+    //Consulta de la URL del sitio para imprimirlo
+    Database::setActiveConnection('drupaldb_segundo');
+    $connection = Database::getConnection();
+    $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
+    $select->join('revisiones_sitios',"s","h.id_rev_sitio = s.id_rev_sitio");
+    $select->fields('h', array('id_rev_sitio'));
+    $select->condition('id_rev_sitio_hall',$rsh);
+    $id_rev_sitio = $select->execute()->fetchCol();
+
+    $select = Database::getConnection()->select('revisiones_sitios', 'r');
+    $select->join('sitios',"s","r.id_sitio = s.id_sitio");
+    $select->fields('s', array('url_sitio'));
+    $select->condition('id_rev_sitio',$id_rev_sitio[0]);
+    $activo = $select->execute()->fetchCol();
+    $form['sitio'] = array(
+      '#type' => 'item',
+      '#title' => t('Activo'),
+      '#markup' => $activo[0],
+    );
+    //Mostrar nombre del hallazgo
+    $select = Database::getConnection()->select('revisiones_hallazgos', 'r');
+    $select->join('hallazgos',"h","h.id_hallazgo = r.id_hallazgo");
+    $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
+    $select->condition('id_rev_sitio_hall',$rsh);
+    $hallazgo = $select->execute()->fetchCol();
+    $form['halalzgo'] = array(
+      '#type' => 'item',
+      '#title' => t('Hallazgo'),
+      '#markup' => $hallazgo[0],
+    );
+    Database::setActiveConnection();
     // se hace la conexion a la base de datos
     $connection = \Drupal::service('database');
 
