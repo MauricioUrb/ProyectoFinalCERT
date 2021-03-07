@@ -138,6 +138,7 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 /var/www/drupal/vendor/bin/drush en mostrar_imagen
 /var/www/drupal/vendor/bin/drush en eliminar_imagen
 /var/www/drupal/vendor/bin/drush en agregar_imagen
+/var/www/drupal/vendor/bin/drush en edit_revision
 #Hallazgos
 /var/www/drupal/vendor/bin/drush en editar_hallazgos
 /var/www/drupal/vendor/bin/drush en eliminar_hallazgos
