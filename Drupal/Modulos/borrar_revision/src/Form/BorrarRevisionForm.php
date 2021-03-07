@@ -125,7 +125,7 @@ class BorrarRevisionForm extends FormBase{
     //Boton para enviar el formulario
     $form['submit'] = array(
       '#type' => 'submit',
-      '#value' => t('Borrar hallazgo'),
+      '#value' => t('Borrar revisión'),
     );
     $url = Url::fromRoute('revisiones_asignadas.content', array());
     $project_link = Link::fromTextAndUrl('Cancelar', $url);
