@@ -194,6 +194,7 @@ class AsignarHallazgosForm extends FormBase{
           'recursos_afectador' => $form_state->getValue(['recursos']),
           'impacto_hall_rev' => $form_state->getValue(['impacto']),
           'cvss_hallazgos' => $form_state->getValue(['cvss']),
+          'estatus' => 1,
         ))->execute();
       }else{
         $mensaje = 'Hallazgo actualizado.';
