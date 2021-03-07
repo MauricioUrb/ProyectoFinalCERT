@@ -96,6 +96,7 @@ CREATE TABLE revisiones_sitios (
 );
 
 CREATE TABLE revisiones_hallazgos (
+	id_rev_sitio_hall serial PRIMARY KEY,
 	id_rev_sitio serial NOT NULL,
 	id_hallazgo serial NOT NULL,
 	descripcion_hall_rev varchar(70) NOT NULL,
