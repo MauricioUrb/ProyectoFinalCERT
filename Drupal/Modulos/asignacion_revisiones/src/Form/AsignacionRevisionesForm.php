@@ -95,8 +95,8 @@ class AsignacionRevisionesForm extends FormBase{
       $tmp++;
     }*/
     //Validacion de tipo de revision
-    $cadena = 'En revision de tipo Oficio solo puedes escoger un sitio para revision.';
-    if($form_state->getValue(['tipo']) == 0 && sizeof($valores) != 1){
+    $cadena = 'En revision de tipo Circular solo puedes escoger un sitio para revision.';
+    if($form_state->getValue(['tipo']) != 0 && sizeof($valores) != 1){
       $form_state->setErrorByName('sitios',$cadena);
     }
   }
