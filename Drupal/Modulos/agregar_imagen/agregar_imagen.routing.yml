@@ -2,6 +2,6 @@ agregar_imagen.content:
   path: /imagenes/{rev_id}/{rsh}
   defaults:
     _form: '\Drupal\agregar_imagen\Form\AgregarImagenForm'
-    _title: "Prueba Subir Imagenes"
+    _title: "Subir Imagenes"
   requirements:
     _permission: 'view agregar_imagen'
