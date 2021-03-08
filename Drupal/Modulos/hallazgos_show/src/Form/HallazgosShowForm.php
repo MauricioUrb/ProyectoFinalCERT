@@ -37,7 +37,8 @@ class HallazgosShowForm extends FormBase{
            ->fields('h', array('nivel_cvss'))
            ->fields('h', array('vector_cvss'))
            ->fields('h', array('enlace_cvss'))
-           ->fields('h', array('r_ejecutivo_hallazgo'));
+           ->fields('h', array('r_ejecutivo_hallazgo'))
+           ->fields('h', array('solucion_corta'));
     //Se realiza la consulta
     $results = $select->execute();
 
@@ -66,6 +67,7 @@ class HallazgosShowForm extends FormBase{
                 $result->vector_cvss,
                 $result->enlace_cvss,
                 $result->r_ejecutivo_hallazgo,
+                $result->solucion_corta,
                 //Markup::create('<a href="/node/add/page">Editar</a>'),
                 //Markup::create('<a href="/node/add/page">Eliminar</a>'),
                 render($project_link1),
@@ -86,6 +88,7 @@ class HallazgosShowForm extends FormBase{
       'vector' => t('Vector'),
       'enlace' => t('Enlace'),
       'r_ejecutivo' => t('Resumen'),
+      'sol_corta' => t('Sol Corta'),
       'edit' => t('Editar'),
       'del' => t('Eliminar'),
     ];
