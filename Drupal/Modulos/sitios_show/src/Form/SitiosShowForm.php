@@ -35,6 +35,8 @@ class SitiosShowForm extends FormBase{
     $select->fields('s', array('id_sitio', 'descripcion_sitio', 'url_sitio'))
            ->fields('d', array('nombre_dependencia', 'id_dependencia' ))
            ->fields('ip', array('dir_ip_sitios', 'id_ip'));
+    //evitar repetidos
+    $select->distinct();
     //Se realiza la consulta
     $results = $select->execute();
 
