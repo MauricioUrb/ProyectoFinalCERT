@@ -184,13 +184,19 @@ class BorrarRevisionForm extends FormBase{
     $borrar = $connection->delete('revisiones')
       ->condition('id_revision',$regresar)
       ->execute();
+    //consulta id_rev_sitio_hall
+    $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
+    $select->join('revisiones_sitios','s','h.id_rev_sitio = s.id_rev_sitio');
+    $select->fields('h', array('id_rev_sitio_hall'));
+    $select->condition('id_revision',$regresar);
+    $idImg = $select->execute()->fetchCol();
     Database::setActiveConnection();
     $connection = \Drupal::service('database');
-    //se elimina un regitro de la tabla file_managed
-    $elimina = $connection->delete('file_managed')
-      //se agrega la condicion id_sitio
-      ->condition('id_rev_sh', $id_h, 'IN')
-      ->execute();
+    if(sizeof($idImg)){
+      $elimina = $connection->delete('file_managed')
+        ->condition('id_rev_sh', $idImg, 'IN')
+        ->execute();
+    }
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
   	$form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content', array()));
