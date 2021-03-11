@@ -1,0 +1,7 @@
+name: Estadisticas
+type: module
+description: "Modulo que muestra las estadisticas"
+# Nombre de la agrupación en donde estará el módulo a crear
+package: Custom
+core_version_requirement: ^8 || ^9
+core: 8.x
