@@ -20,7 +20,7 @@ CREATE TABLE dir_ip (
 
 CREATE TABLE sitios (
 	id_sitio serial PRIMARY KEY,
-	descripcion_sitio varchar(70) NOT NULL,
+	descripcion_sitio text NOT NULL,
 	url_sitio varchar(2083) NOT NULL
 );
 
@@ -53,16 +53,16 @@ El conteo de caracteres del vector es sin el inicio CVSS:3.0/, dado que así vie
 */
 CREATE TABLE hallazgos (
 	id_hallazgo serial PRIMARY KEY,
-	nombre_hallazgo_vulnerabilidad varchar(40) NOT NULL,
-	descripcion_hallazgo varchar(70) NOT NULL,
-	solucion_recomendacion_halazgo varchar(70) NOT NULL,
-	referencias_hallazgo varchar(70) NOT NULL,
-	recomendacion_general_hallazgo varchar(70) NOT NULL,
-	nivel_cvss varchar(15) NOT NULL, --3.2 BAJO
-	vector_cvss varchar(108) NOT NULL, --AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H/MA:H
-	enlace_cvss varchar(159) NOT NULL,
-	r_ejecutivo_hallazgo varchar(70) NOT NULL,
-	solucion_corta varchar(70),
+	nombre_hallazgo_vulnerabilidad text NOT NULL,
+	descripcion_hallazgo text NOT NULL,
+	solucion_recomendacion_halazgo text NOT NULL,
+	referencias_hallazgo text NOT NULL,
+	recomendacion_general_hallazgo text NOT NULL,
+	nivel_cvss text NOT NULL, --3.2 BAJO
+	vector_cvss text NOT NULL, --AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H/MA:H
+	enlace_cvss text NOT NULL,
+	r_ejecutivo_hallazgo text NOT NULL,
+	solucion_corta text NOT NULL,
 	CHECK (vector_cvss ~* 'AV:[ANLP]\/AC:[HL]\/PR:[NLH]\/UI:[NR]\/S:[UC]\/C:[NLH]\/I:[NLH]\/A:[NLH](\/E:[UPFH])?(\/RL:[OTWU])?(\/RC:[URC])?(\/CR:[LMH])?(\/IR:[LMH])?(\/AR:[LMH])?(\/MAV:[NALP])?(\/MAC:[LH])?(\/MPR:[NLH])?(\/MUI:[NR])?(\/MS:[UC])?(\/MC:[NLH])?(\/MI:[NLH])?(\/MA:[NLH])?')
 );
 
@@ -99,9 +99,9 @@ CREATE TABLE revisiones_hallazgos (
 	id_rev_sitio_hall serial PRIMARY KEY,
 	id_rev_sitio serial NOT NULL,
 	id_hallazgo serial NOT NULL,
-	descripcion_hall_rev varchar(70) NOT NULL,
+	descripcion_hall_rev text NOT NULL,
 	recursos_afectador text NOT NULL,
-	impacto_hall_rev varchar(12),
+	impacto_hall_rev varchar(4),
 	cvss_hallazgos varchar(108) NOT NULL,
 	estatus boolean NOT NULL,
 	FOREIGN KEY (id_rev_sitio) REFERENCES revisiones_sitios(id_rev_sitio),
@@ -137,13 +137,13 @@ insert into ip_sitios values (2,2);
 insert into ip_sitios values (3,3);
 insert into ip_sitios values (4,4);
 insert into ip_sitios values (5,5);
-insert into hallazgos (nombre_hallazgo_vulnerabilidad, descripcion_hallazgo, solucion_recomendacion_halazgo, referencias_hallazgo, recomendacion_general_hallazgo, nivel_cvss, vector_cvss, enlace_cvss, r_ejecutivo_hallazgo) 
-	values ('prueba', 'prueba', 'prueba', 'prueba', 'prueba', 'None', 'AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N', 'pruebaenlace', 'pruebaejecutivo');
+insert into hallazgos (nombre_hallazgo_vulnerabilidad, descripcion_hallazgo, solucion_recomendacion_halazgo, referencias_hallazgo, recomendacion_general_hallazgo, nivel_cvss, vector_cvss, enlace_cvss, r_ejecutivo_hallazgo,solucion_corta) 
+	values ('prueba', 'prueba', 'prueba', 'prueba', 'prueba', 'None', 'AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N', 'pruebaenlace', 'pruebaejecutivo','solucion corta prueba');
 insert into hallazgos(nombre_hallazgo_vulnerabilidad,descripcion_hallazgo,solucion_recomendacion_halazgo,referencias_hallazgo,recomendacion_general_hallazgo,nivel_cvss,vector_cvss,enlace_cvss,r_ejecutivo_hallazgo) 
-	values('SLQinjection','Descripcion SLQinjection','Solucion SLQinjection','Referencia SLQinjection','Recomendacion SLQinjection','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H/MA:H','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H/MA:H','Reporte SLQinjection');
+	values('SLQinjection','Descripcion SLQinjection','Solucion SLQinjection','Referencia SLQinjection','Recomendacion SLQinjection','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H/MA:H','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H/MA:H','Reporte SLQinjection','solucion corta SLQinjection');
 insert into hallazgos(nombre_hallazgo_vulnerabilidad,descripcion_hallazgo,solucion_recomendacion_halazgo,referencias_hallazgo,recomendacion_general_hallazgo,nivel_cvss,vector_cvss,enlace_cvss,r_ejecutivo_hallazgo) 
-	values('XSS','Descripcion XSS','Solucion XSS','Referencia XSS','Recomendacion XSS','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H','Reporte XSS');
+	values('XSS','Descripcion XSS','Solucion XSS','Referencia XSS','Recomendacion XSS','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H','Reporte XSS','solucion corta XSS');
 insert into hallazgos(nombre_hallazgo_vulnerabilidad,descripcion_hallazgo,solucion_recomendacion_halazgo,referencias_hallazgo,recomendacion_general_hallazgo,nivel_cvss,vector_cvss,enlace_cvss,r_ejecutivo_hallazgo) 
-  	values('Clickjacking','Descripcion Clickjacking','Solucion Clickjacking','Referencia Clickjacking','Recomendacion Clickjacking','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C','Reporte Clickjacking');
+  	values('Clickjacking','Descripcion Clickjacking','Solucion Clickjacking','Referencia Clickjacking','Recomendacion Clickjacking','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C','Reporte Clickjacking','solucion corta Clickjacking');
 insert into hallazgos(nombre_hallazgo_vulnerabilidad,descripcion_hallazgo,solucion_recomendacion_halazgo,referencias_hallazgo,recomendacion_general_hallazgo,nivel_cvss,vector_cvss,enlace_cvss,r_ejecutivo_hallazgo) 
-  	values('CSRF','Descripcion CSRF','Solucion CSRF','Referencia CSRF','Recomendacion CSRF','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L','Reporte CSRF');
+  	values('CSRF','Descripcion CSRF','Solucion CSRF','Referencia CSRF','Recomendacion CSRF','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L','Reporte CSRF','solucion corta CSRF');
