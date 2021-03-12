@@ -95,6 +95,7 @@ chmod go-w /var/www/drupal/web/sites/default
 # Donde se almacenana reportes
 mkdir /var/www/drupal/web/reportes
 chmod 757 /var/www/drupal/web/reportes
+cp -r plantillas /var/www/drupal/web/reportes/.
 echo "Sitio instalado. Instalando modulos..."
 
 # Para descargar los módulos
