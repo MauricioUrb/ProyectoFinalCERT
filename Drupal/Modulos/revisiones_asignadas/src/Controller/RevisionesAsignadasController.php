@@ -7,12 +7,8 @@ use Drupal\Core\Database\Database;
 
 class RevisionesAsignadasController {
   public function revisiones(){
-    //$current_user_roles = \Drupal::currentUser()->getRoles();
-    //$user = \Drupal::currentUser()->id();
     if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
       //Consulta de las revisiones que tiene el usuario
-      //$user = \Drupal::currentUser()->id();
-
       //Campos de revisiones
       Database::setActiveConnection('drupaldb_segundo');
       $connection = Database::getConnection();
@@ -23,7 +19,9 @@ class RevisionesAsignadasController {
       $select->fields('r', array('id_estatus'));
       $select->fields('r', array('fecha_inicio_revision'));
       $select->fields('r', array('fecha_fin_revision'));
+      $select->condition('seguimiento', false);
       $select->condition('id_usuario',\Drupal::currentUser()->id());
+      //$select->extend('TableSort');
       $datos = $select->execute();
       Database::setActiveConnection();
 
@@ -153,8 +151,6 @@ class RevisionesAsignadasController {
       $form['boton'] = array('#markup' => render($project_link),);
     }elseif (in_array('pentester', \Drupal::currentUser()->getRoles())){
       //Consulta de las revisiones que tiene el usuario
-      //$user = \Drupal::currentUser()->id();
-
       //Campos de revisiones
       Database::setActiveConnection('drupaldb_segundo');
       $connection = Database::getConnection();
@@ -166,6 +162,7 @@ class RevisionesAsignadasController {
       $select->fields('r', array('fecha_inicio_revision'));
       $select->fields('r', array('fecha_fin_revision'));
       $select->condition('id_usuario',\Drupal::currentUser()->id());
+      $select->condition('seguimiento', false);
       $datos = $select->execute();
 
       Database::setActiveConnection();

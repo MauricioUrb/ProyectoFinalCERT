@@ -31,6 +31,7 @@ class EditRevisionForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
+    $select->condition('seguimiento', false);
     $results = $select->execute()->fetchCol();
     //estatus_revision
     $select = Database::getConnection()->select('revisiones', 'r');
@@ -157,6 +158,7 @@ class EditRevisionForm extends FormBase{
       $select = Database::getConnection()->select('revisiones_asignadas', 'r');
       $select->fields('r', array('id_usuario'));
       $select->condition('id_revision', $id_rev);
+      $select->condition('seguimiento', false);
       $usuarios_rev = $select->execute()->fetchCol();
       Database::setActiveConnection();
 
