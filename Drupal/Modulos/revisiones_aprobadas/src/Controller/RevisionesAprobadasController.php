@@ -18,6 +18,8 @@ class RevisionesAprobadasController {
       $select->fields('r', array('fecha_inicio_revision'));
       $select->fields('r', array('fecha_fin_revision'));
       $select->condition('id_estatus',4,'>=');
+      $select->orderBy('fecha_fin_revision','DESC');
+      $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
       Database::setActiveConnection();
 
@@ -145,6 +147,8 @@ class RevisionesAprobadasController {
       //$select->fields('r', array('fecha_inicio_seguimiento'));
       //$select->fields('r', array('fecha_fin_seguimiento'));
       $select->condition('id_estatus',7);
+      $select->orderBy('fecha_fin_revision','DESC');
+      $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
       Database::setActiveConnection();
       foreach ($variable as $key => $value) {
@@ -271,6 +275,7 @@ class RevisionesAprobadasController {
         '#title' => t('Revisiones de seguimiento concluidas'),
         '#markup' => render($last_T),
       ];
+      $form['pager'] = array('#type' => 'pager');
       /*
       $url = Url::fromUri('http://' . $_SERVER['SERVER_NAME'] . '/reportes/202103_variosSitios_REV3_Oficio.docx');
       $project_link = Link::fromTextAndUrl('Descargar', $url);

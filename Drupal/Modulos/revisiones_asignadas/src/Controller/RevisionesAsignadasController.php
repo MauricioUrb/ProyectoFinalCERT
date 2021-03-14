@@ -21,7 +21,8 @@ class RevisionesAsignadasController {
       $select->fields('r', array('fecha_fin_revision'));
       $select->condition('seguimiento', false);
       $select->condition('id_usuario',\Drupal::currentUser()->id());
-      //$select->extend('TableSort');
+      $select->orderBy('fecha_inicio_revision','DESC');
+      $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
       Database::setActiveConnection();
 
@@ -148,6 +149,7 @@ class RevisionesAsignadasController {
         '#title' => t('Revisiones en proceso'),
         '#markup' => render($pendientes),
       ];
+      $form['pager'] = array('#type' => 'pager');
       $form['boton'] = array('#markup' => render($project_link),);
     }elseif (in_array('pentester', \Drupal::currentUser()->getRoles())){
       //Consulta de las revisiones que tiene el usuario
@@ -163,6 +165,8 @@ class RevisionesAsignadasController {
       $select->fields('r', array('fecha_fin_revision'));
       $select->condition('id_usuario',\Drupal::currentUser()->id());
       $select->condition('seguimiento', false);
+      $select->orderBy('fecha_inicio_revision','DESC');
+      $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
 
       Database::setActiveConnection();
@@ -279,6 +283,7 @@ class RevisionesAsignadasController {
         '#title' => t('Revisiones pendientes de aprobacion'),
         '#markup' => render($pendientes),
       ];
+      $form['pager'] = array('#type' => 'pager');
     }else{
       return array('#markup' => "No tienes permiso para ver esta página",);
     }

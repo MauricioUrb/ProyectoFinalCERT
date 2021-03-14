@@ -37,6 +37,8 @@ class SitiosShowForm extends FormBase{
            ->fields('ip', array('dir_ip_sitios', 'id_ip'));
     //evitar repetidos
     $select->distinct();
+    $select->orderBy('url_sitio','DESC');
+    $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
     //Se realiza la consulta
     $results = $select->execute();
 
@@ -92,7 +94,7 @@ class SitiosShowForm extends FormBase{
       '#type' => '#markup',
       '#markup' => render($build)
     ];
-
+    $form['pager'] = array('#type' => 'pager');
     return $form;
 
   }
