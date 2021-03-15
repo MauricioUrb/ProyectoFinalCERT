@@ -24,24 +24,31 @@ class ComentarRevisionForm extends FormBase{
   /*
    * (@inheritdoc)
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $seg = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
+    $select->condition('seguimiento',$seg);
     $results = $select->execute()->fetchCol();
     //estatus_revision
     $select = Database::getConnection()->select('revisiones', 'r');
     $select->fields('r', array('id_estatus'));
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
+    if($seg && $estatus[0] == 6){$estado = TRUE;}
+    elseif (!$seg && $estatus[0] == 3) {
+      $estado = TRUE;
+    }else{$estado = FALSE;}
     Database::setActiveConnection();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || $estatus[0] != 3){
+    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || !$estado){
       return array('#markup' => "No tienes permiso para ver esta página.",);
     }
     global $no_rev;
+    global $seguimiento;
+    $seguimiento = $seg;
     $no_rev = $rev_id;
     $form['text'] = array(
       '#type' => 'item',
@@ -57,7 +64,11 @@ class ComentarRevisionForm extends FormBase{
       '#type' => 'submit',
       '#value' => t('Comentar'),
     );
-    $url = Url::fromRoute('informacion_revision.content', array('rev_id' => $rev_id));
+    if($seg){
+      $url = Url::fromRoute('informacion_seguimiento.content', array('rev_id' => $rev_id));
+    }else{
+      $url = Url::fromRoute('informacion_revision.content', array('rev_id' => $rev_id));
+    }
     $cancelar = Link::fromTextAndUrl('Cancelar', $url);
     $cancelar = $cancelar->toRenderable();
     $cancelar['#attributes'] = array('class' => array('button'));
@@ -69,6 +80,7 @@ class ComentarRevisionForm extends FormBase{
    */
   public function submitForm(array &$form, FormStateInterface $form_state){
     global $no_rev;
+    global $seguimiento;
     $mensaje = 'Comentario enviado a los pentesters.';
     //Consulta de correos
     Database::setActiveConnection('drupaldb_segundo');
@@ -96,15 +108,25 @@ class ComentarRevisionForm extends FormBase{
     //Actualizacion de estatus de la revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    $update = $connection->update('revisiones')
-      ->fields(array(
-        'id_estatus' => 2,
-      ))
-      ->condition('id_revision',$no_rev)
-      ->execute();
+    /*////////////////////////////////////////
+    if($seguimiento){
+      $update = $connection->update('revisiones')
+        ->fields(array(
+          'id_estatus' => 5,
+        ))
+        ->condition('id_revision',$no_rev)
+        ->execute();
+    }else{
+      $update = $connection->update('revisiones')
+        ->fields(array(
+          'id_estatus' => 2,
+        ))
+        ->condition('id_revision',$no_rev)
+        ->execute();
+    }*/
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
-    $form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
+    //$form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
   }
 }

@@ -1,0 +1,3 @@
+view informacion_seguimiento:
+  title: 'Ver la información de una revisión de seguimiento'
+  description: 'Ver las información que los pentesters asignaron a una revisión de seguimiento.'

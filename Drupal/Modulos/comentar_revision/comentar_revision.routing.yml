@@ -1,5 +1,5 @@
 comentar_revision.content:
-  path: /revisiones/comentar/{rev_id}
+  path: /revisiones/comentar/{rev_id}/{seg}
   defaults:
     _form: '\Drupal\comentar_revision\Form\ComentarRevisionForm'
     _title: "Comentar revision"

@@ -1,0 +1,7 @@
+asignacion_seguimiento.content:
+  path: /seguimiento/asignacion/{rev_id}
+  defaults:
+    _form: '\Drupal\asignacion_seguimiento\Form\AsignacionSeguimientoForm'
+    _title: "Crear nueva revisión de seguimiento"
+  requirements:
+    _permission: 'view asignacion_seguimiento'

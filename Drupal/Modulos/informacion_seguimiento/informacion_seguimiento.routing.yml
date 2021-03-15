@@ -1,0 +1,7 @@
+informacion_seguimiento.content:
+  path: /seguimiento/info/{rev_id}
+  defaults:
+    _controller: \Drupal\informacion_seguimiento\Controller\InformacionSeguimientoController::informacion
+    _title: "Informacion de revisión de seguimiento"
+  requirements:
+    _permission: '´view informacion_seguimiento'

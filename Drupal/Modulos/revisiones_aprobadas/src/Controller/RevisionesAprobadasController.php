@@ -106,7 +106,7 @@ class RevisionesAprobadasController {
           render($descargar),
         ];
         
-        $url1 = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $rev_id));
+        $url1 = Url::fromRoute('asignacion_seguimiento.content', array('rev_id' => $result->id_revision));
         $revisiones = Link::fromTextAndUrl('Seguimiento', $url1);
         $revisiones = $revisiones->toRenderable();
         $revisiones['#attributes'] = array('class' => array('button'));
@@ -147,11 +147,11 @@ class RevisionesAprobadasController {
       //$select->fields('r', array('fecha_inicio_seguimiento'));
       //$select->fields('r', array('fecha_fin_seguimiento'));
       $select->condition('id_estatus',7);
-      $select->orderBy('fecha_fin_revision','DESC');
+      //$select->orderBy('fecha_fin_revision','DESC');
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
       Database::setActiveConnection();
-      foreach ($variable as $key => $value) {
+      foreach ($datos as $result) {
         if($result->tipo_revision){$tipo = 'Circular';}else{$tipo = 'Oficio';}
         
         //Se busca el nombre de los pentesters que fueron asignados a la revision
@@ -160,7 +160,7 @@ class RevisionesAprobadasController {
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision', $result->id_revision);
-        $select->condition('seguimiento', true);
+        $select->condition('seguimiento', false);
         $usuarios_rev = $select->execute()->fetchCol();
 
         //lista de sitios asignados
@@ -194,7 +194,25 @@ class RevisionesAprobadasController {
         $select->condition('roles_target_id','coordinador de revisiones');
         $coordinador = $select->execute()->fetchCol();
 
-        $nombreArchivoS = 'helloWorld.docx';
+        //Botón para descargar reporte
+        list($year,$month,$day) = explode('-', $result->fecha_fin_revision);
+        if(strlen((string)$month) == 1){
+          $mes = '0'.$month;
+        }else{$mes = $month;}
+        if($result->tipo_revision){
+          $nombreArchivoS = $year.$mes.'_'.$lista_sitios[0].'_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
+        }else{
+          if(sizeof($lista_sitios) == 1){
+            $nombreArchivoS = $year.$mes.'_'.$lista_sitios[0].'_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
+          }else{
+            $nombreArchivoS = $year.$mes.'_variosSitios_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
+          }
+        }//*/
+        //$nombreArchivo = 'helloWorld.docx';
+        $urlS = Url::fromUri('http://' . $_SERVER['SERVER_NAME'] . '/reportes/' . $nombreArchivoS);
+        $descargarS = Link::fromTextAndUrl('Descargar', $urlS);
+        $descargarS = $descargarS->toRenderable();
+        $descargarS['#attributes'] = array('class' => array('button'));
         $url2 = Url::fromUri('http://' . $_SERVER['SERVER_NAME'] . '/reportes/' . $nombreArchivoS);
         $descargar1 = Link::fromTextAndUrl('Descargar', $url2);
         $descargar1 = $descargar1->toRenderable();
@@ -208,7 +226,7 @@ class RevisionesAprobadasController {
           $nombreSitios,
           //$result->fecha_inicio_seguimiento,
           //$result->fecha_fin_seguimiento,
-          render($descargar),
+          render($descargarS),
         ];
       }
       //Se asignan titulos a cada columna

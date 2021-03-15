@@ -1,0 +1,3 @@
+view asignacion_seguimiento:
+  title: 'Ver formulario para asignar una revisión de seguimiento'
+  description: 'Ver formulario para asignar una seguimiento a pentesters.'

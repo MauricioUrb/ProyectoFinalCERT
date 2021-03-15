@@ -1,9 +1,9 @@
 <?php
 /*
  * @file
- * Contains \Drupal\informacion_revision\Controller\InformacionRevisionForm
+ * Contains \Drupal\informacion_seguimiento\Controller\InformacionRevisionForm
  */
-namespace Drupal\informacion_revision\Controller;
+namespace Drupal\informacion_seguimiento\Controller;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Link;
 use Drupal\Core\Url;
@@ -12,7 +12,7 @@ use Drupal\Core\Render\Markup;
 /*
  *
  */
-class InformacionRevisionController{
+class InformacionSeguimientoController{
   public function informacion($rev_id = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
@@ -20,7 +20,7 @@ class InformacionRevisionController{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento', false);
+    $select->condition('seguimiento', true);
     $results = $select->execute()->fetchCol();
     //estatus_revision
     $select = Database::getConnection()->select('revisiones', 'r');
@@ -28,7 +28,7 @@ class InformacionRevisionController{
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || $estatus[0] != 3){
+    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || $estatus[0] != 6){
     	return array('#markup' => "No tienes permiso para ver esta página.",);
     }
     //Se obtienen los sitios correspondientes a esta revision
@@ -46,7 +46,7 @@ class InformacionRevisionController{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision', $rev_id);
-    $select->condition('seguimiento', false);
+    $select->condition('seguimiento', true);
     $select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
     $usuarios_rev = $select->execute()->fetchCol();
 
@@ -105,6 +105,7 @@ class InformacionRevisionController{
       $select->fields('r', array('impacto_hall_rev'));
       $select->fields('r', array('cvss_hallazgos'));
       $select->fields('r', array('id_hallazgo'));
+      $select->fields('r', array('estatus'));
       $select->condition('id_rev_sitio',$id->id_rev_sitio);
       $datHall = $select->execute();
       $form[$id->id_rev_sitio] = array(
@@ -139,45 +140,6 @@ class InformacionRevisionController{
           '#title' => 'Recursos afectados:',
           '#markup' => $hallazgo->recursos_afectador,
         );
-        //Obtener el id_rev_sitio_hall
-        /*
-        $consulta = Database::getConnection()->select('revisiones_hallazgos', 'h');
-        $consulta->fields('h', array('id_rev_sitio_hall'));
-        $consulta->condition('id_rev_sitio_hall',$hallazgo->id_rev_sitio_hall);
-        $id_rev_sitio_hall = $consulta->execute()->fetchCol();*/
-        Database::setActiveConnection();
-        $connection = \Drupal::service('database');
-        $select = $connection->select('file_managed', 'fm')
-          ->fields('fm', array('fid', 'filename', 'descripcion'));
-        $select->condition('id_rev_sh', $hallazgo->id_rev_sitio_hall);
-        $results = $select->execute();
-        Database::setActiveConnection('drupaldb_segundo');
-        $connection = Database::getConnection();
-        foreach ($results as $result){
-          $rows[$id->id_rev_sitio][$hallazgo->id_hallazgo][$result->fid] = [
-            $result->filename,
-            Markup::create("<a href='/sites/default/files/content/evidencia/$result->filename'>Imagen</a>"),
-            $result->descripcion,
-          ];
-        }
-        $header = [
-          'name' => t('Nombre'),
-          'image' => t('Imagen'),
-          'descripcion' => t('Descripcion'),
-        ];
-        //se construye la tabla para mostrar
-        $build[$id->id_rev_sitio][$hallazgo->id_hallazgo]['table'] = [
-          '#type' => 'table',
-          '#header' => $header,
-          '#rows' => $rows[$id->id_rev_sitio][$hallazgo->id_hallazgo],
-          '#empty' => t('Nada para mostrar.'),
-        ];
-        $form[$id->id_rev_sitio][$hallazgo->id_hallazgo]['build'] = [
-          '#type' => '#markup',
-          '#markup' => render($build[$id->id_rev_sitio][$hallazgo->id_hallazgo]),
-        ];
-        //$form['regresar'] = array('#markup' => $id_rev_sitio_hall[0],);
-
         $form[$id->id_rev_sitio][$hallazgo->id_hallazgo]['impacto'] = array(
           '#type' => 'item',
           '#title' => 'Impacto',
@@ -188,16 +150,22 @@ class InformacionRevisionController{
           '#title' => 'CVSS:',
           '#markup' => $hallazgo->cvss_hallazgos,
         );
+        if($hallazgo->estatus){$estatus = 'Persistente';}else{$estatus = 'Mitigado';}
+        $form[$id->id_rev_sitio][$hallazgo->id_hallazgo]['estatus'] = array(
+          '#type' => 'item',
+          '#title' => 'Estatus:',
+          '#markup' => $estatus,
+        );
       }
     }
 
     Database::setActiveConnection();
     //Botones
-    $urlComentar = Url::fromRoute('comentar_revision.content', array('rev_id' => $rev_id, 'seg' => 0));
+    $urlComentar = Url::fromRoute('comentar_revision.content', array('rev_id' => $rev_id, 'seg' => 1));
     $comentar = Link::fromTextAndUrl('Realizar un comentario', $urlComentar);
     $comentar = $comentar->toRenderable();
     $comentar['#attributes'] = array('class' => array('button'));
-    $urlAprobar = Url::fromRoute('aprobar_revision.content', array('rev_id' => $rev_id, 'seg' => 0));
+    $urlAprobar = Url::fromRoute('aprobar_revision.content', array('rev_id' => $rev_id, 'seg' => 1));
     $aprobacion = Link::fromTextAndUrl('Aprobar revision', $urlAprobar);
     $aprobacion = $aprobacion->toRenderable();
     $aprobacion['#attributes'] = array('class' => array('button'));
