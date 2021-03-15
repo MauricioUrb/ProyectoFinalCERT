@@ -144,8 +144,8 @@ class RevisionesAprobadasController {
       $select->fields('r', array('id_revision'));
       $select->fields('r', array('id_estatus'));
       $select->fields('r', array('tipo_revision'));
-      //$select->fields('r', array('fecha_inicio_seguimiento'));
-      //$select->fields('r', array('fecha_fin_seguimiento'));
+      $select->fields('r', array('fecha_inicio_seguimiento'));
+      $select->fields('r', array('fecha_fin_seguimiento'));
       $select->condition('id_estatus',7);
       //$select->orderBy('fecha_fin_revision','DESC');
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
@@ -224,8 +224,8 @@ class RevisionesAprobadasController {
           $coordinador[0],
           $nombres,
           $nombreSitios,
-          //$result->fecha_inicio_seguimiento,
-          //$result->fecha_fin_seguimiento,
+          $result->fecha_inicio_seguimiento,
+          $result->fecha_fin_seguimiento,
           render($descargarS),
         ];
       }
@@ -257,8 +257,8 @@ class RevisionesAprobadasController {
         'coordinador' => t('Coordinador de revisiones'),
         'pentesters' => t('Pentesters'),
         'activos' => t('Activos asignados'),
-        //'start' => t('Fecha de asignacion'),
-        //'last' => t('Fecha de finalización'),
+        'start' => t('Fecha de asignacion'),
+        'last' => t('Fecha de finalización'),
         'edit' => t('Descargar reporte'),
       ];
       //se construye la tabla para mostrar
