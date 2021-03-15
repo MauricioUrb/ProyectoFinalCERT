@@ -1,13 +1,12 @@
 #!/bin/bash
 
-# Es necesario ser root
 if [[ $UID -ne 0 ]]; then
 	echo "Requieres permisos de root"
 	exit 0
 fi
 
 # Es necesario agregar la dirección IP y el dominio al hosts
-echo -e "$(hostname -i | cut -d' ' -f2)\tldap.dominio.com\tldap" >> /etc/hosts
+echo -e "$(hostname -i | awk '{print $3}')\tldap.dominio.com\tldap" >> /etc/hosts
 
 # Instalación de dependecias
 apt-get install slapd ldap-utils ldapscripts -y
@@ -31,9 +30,25 @@ objectClass: organizationalUnit
 ou: users" > users.ldif
 ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f users.ldif
 
+echo "dn: cn=auditorias,ou=users,dc=ldap,dc=dominio,dc=com
+objectClass: top
+objectClass: shadowAccount
+objectclass: iNetOrgPerson
+cn: auditorias
+sn: auditorias
+uid: auditorias" > auditorias.ldif
+
+echo "dn: cn=sistemas,ou=users,dc=ldap,dc=dominio,dc=com
+objectClass: top
+objectClass: shadowAccount
+objectclass: iNetOrgPerson
+cn: sistemas
+sn: sistemas
+uid: sistemas" > sistemas.ldif
+
 echo "Creando archivos de usuarios de ldap..."
 #Archivos de usuarios
-echo "dn: cn=mauricio,ou=users,dc=ldap,dc=dominio,dc=com
+echo "dn: cn=mauricio,cn=auditorias,ou=users,dc=ldap,dc=dominio,dc=com
 objectClass: top
 objectClass: posixAccount
 objectClass: shadowAccount
@@ -48,7 +63,7 @@ homeDirectory: /home/mauricio
 loginShell: /bin/bash
 mail: mauricio@dominio.com" > mauricio.ldif
 
-echo "dn: cn=oscar,ou=users,dc=ldap,dc=dominio,dc=com
+echo "dn: cn=oscar,cn=auditorias,ou=users,dc=ldap,dc=dominio,dc=com
 objectClass: top
 objectClass: posixAccount
 objectClass: shadowAccount
@@ -63,7 +78,7 @@ homeDirectory: /home/oscar
 loginShell: /bin/bash
 mail: oscar@dominio.com" > oscar.ldif
 
-echo "dn: cn=angel,ou=users,dc=ldap,dc=dominio,dc=com
+echo "dn: cn=angel,cn=sistemas,ou=users,dc=ldap,dc=dominio,dc=com
 objectClass: top
 objectClass: posixAccount
 objectClass: shadowAccount
@@ -78,13 +93,61 @@ homeDirectory: /home/angel
 loginShell: /bin/bash
 mail: angel@dominio.com" > angel.ldif
 
+echo "dn: cn=manuel,cn=sistemas,ou=users,dc=ldap,dc=dominio,dc=com
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectclass: iNetOrgPerson
+cn: manuel
+sn: manuel
+uid: manuel
+uidNumber: 3003
+gidNumber: 3003
+userPassword: hola123.,
+homeDirectory: /home/manuel
+loginShell: /bin/bash
+mail: manuel@dominio.com" > manuel.ldif
+
+echo "dn: cn=alberto,cn=sistemas,ou=users,dc=ldap,dc=dominio,dc=com
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectclass: iNetOrgPerson
+cn: alberto
+sn: alberto
+uid: alberto
+uidNumber: 3004
+gidNumber: 3004
+userPassword: hola123.,
+homeDirectory: /home/alberto
+loginShell: /bin/bash
+mail: alberto@dominio.com" > alberto.ldif
+
+echo "dn: cn=fernando,cn=auditorias,ou=users,dc=ldap,dc=dominio,dc=com
+objectClass: top
+objectClass: posixAccount
+objectClass: shadowAccount
+objectclass: iNetOrgPerson
+cn: fernando
+sn: fernando
+uid: fernando
+uidNumber: 3005
+gidNumber: 3005
+userPassword: hola123.,
+homeDirectory: /home/fernando
+loginShell: /bin/bash
+mail: fernando@dominio.com" > fernando.ldif
+
+ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f auditorias.ldif
+ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f sistemas.ldif
 ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f angel.ldif
 ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f oscar.ldif
 ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f mauricio.ldif
+ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f manuel.ldif
+ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f alberto.ldif
+ldapadd -x -D cn=admin,dc=ldap,dc=dominio,dc=com -W -f fernando.ldif
 
-#Veririficar que todo esté en orden
-#slapcat
-
+#sudo slapcat
 #https://kifarunix.com/setup-openldap-server-with-ssl-tls-on-debian-10/
 #Certificados
 mkdir -p /etc/ssl/openldap/{private,certs,newcerts}
