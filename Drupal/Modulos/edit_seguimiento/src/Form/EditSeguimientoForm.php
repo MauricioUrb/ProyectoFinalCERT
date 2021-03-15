@@ -149,23 +149,38 @@ class EditSeguimientoForm extends FormBase{
       foreach ($arrH as $hallazgo) {
         foreach ($form_state->getValue([$id_rs][$hallazgo]) as $key => $value) {
           if($key == 'select'.$tmp && $value){
-            $mensaje .= $id_rs.':'.$hallazgo . '=' . $value;
-            /*$result = $connection->update('revisiones_hallazgos')
+            $result = $connection->update('revisiones_hallazgos')
                 ->fields(array(
                   'estatus' => 0,
                 ))
               ->condition('id_rev_sitio_hall', $hallazgo)
-              ->execute();*/
+              ->execute();
+            break;
+          }elseif($key == 'select'.$tmp && !$value){
+            $result = $connection->update('revisiones_hallazgos')
+                ->fields(array(
+                  'estatus' => 1,
+                ))
+              ->condition('id_rev_sitio_hall', $hallazgo)
+              ->execute();
             break;
           }
         }
-        $mensaje .= '+++Fin+++';
         $tmp++;
       }
     }
+    $fecha = getdate();
+    $hoy = $fecha['year'].'-'.$fecha['mon'].'-'.$fecha['mday'];
+    $result = $connection->update('revisiones')
+      ->fields(array(
+        'id_estatus' => 6,
+        'fecha_fin_seguimiento' => $hoy,
+      ))
+    ->condition('id_revision', $id_rev)
+    ->execute();
     Database::setActiveConnection();
     //Se busca el nombre del coordinador que asignó la revision
-    /*Database::setActiveConnection('drupaldb_segundo');
+    Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
@@ -183,14 +198,13 @@ class EditSeguimientoForm extends FormBase{
     //Se manda el correo al coordinador
     $langcode = \Drupal::currentUser()->getPreferredLangcode();
     $params['context']['subject'] = "Revision concluida";
-    $params['context']['message'] = 'Los pentesters han conlcuido la revision #'.$rev_id.' que les fue asignada.';
+    $params['context']['message'] = 'Los pentesters han conlcuido la revision #'.$id_rev.' que les fue asignada.';
     $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $mail[0], $langcode, $params);
     if(!$email){$mensaje = "Ocurrió algún error y no se ha podido enviar el correo de notificación.";}
   	
 
-    */
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
-    //$form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
+    $form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
   }
 }

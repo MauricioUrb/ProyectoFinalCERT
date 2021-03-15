@@ -110,11 +110,14 @@ class AprobarRevisionForm extends FormBase{
     //Actualizacion de estatus de la revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    /*/////////////////////////////////////////////
+    //////////////////////////////////////////////
+    $fecha = getdate();
+    $hoy = $fecha['year'].'-'.$fecha['mon'].'-'.$fecha['mday'];
     if($seguimiento){
       $update = $connection->update('revisiones')
         ->fields(array(
           'id_estatus' => 7,
+          'fecha_fin_seguimiento' => $hoy,
         ))
         ->condition('id_revision',$no_rev)
         ->execute();
@@ -122,6 +125,7 @@ class AprobarRevisionForm extends FormBase{
       $update = $connection->update('revisiones')
         ->fields(array(
           'id_estatus' => 4,
+          'fecha_fin_revision' => $hoy,
         ))
         ->condition('id_revision',$no_rev)
         ->execute();
@@ -610,7 +614,7 @@ class AprobarRevisionForm extends FormBase{
               }
             }/*else{
               $templateWord->deleteBlock($repImg);
-            }///
+            }//*/
             $contadorHallazgo++;
           }
           
@@ -1040,7 +1044,7 @@ class AprobarRevisionForm extends FormBase{
                   }
                 }/*else{
                   $templateWord->deleteBlock($repImg);
-                }///
+                }//*/
               }
             }
           }
@@ -1048,12 +1052,12 @@ class AprobarRevisionForm extends FormBase{
         }
         Database::setActiveConnection();
       }
-    }//else{}
+    }else{$nombreArchivo = 'Pendiente :v';}
     //////////////////////////////////////////////
     $mensaje = " Reporte generado como '" . $nombreArchivo . "'.";
     //*/
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
-    //$form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
+    $form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
   }
 }

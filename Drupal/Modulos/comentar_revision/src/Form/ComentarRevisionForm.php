@@ -108,7 +108,7 @@ class ComentarRevisionForm extends FormBase{
     //Actualizacion de estatus de la revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    /*////////////////////////////////////////
+    /////////////////////////////////////////
     if($seguimiento){
       $update = $connection->update('revisiones')
         ->fields(array(
@@ -123,10 +123,10 @@ class ComentarRevisionForm extends FormBase{
         ))
         ->condition('id_revision',$no_rev)
         ->execute();
-    }*/
+    }
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
-    //$form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
+    $form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
   }
 }

@@ -35,6 +35,8 @@ class AsignacionSeguimientoForm extends FormBase{
     if (!in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || $seguimiento[0]){
       return array('#markup' => "No tienes permiso para ver este formulario.",);
     }
+    global $no_rev;
+    $no_rev = $rev_id;
     $form['id'] = array(
       '#type' => 'item',
       '#title' => t('ID de revisón a mandar a seguimiento:'),
@@ -166,8 +168,9 @@ class AsignacionSeguimientoForm extends FormBase{
    * (@inheritdoc)
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    global $no_rev;
     //Buscar nombres de los pentester asignados
-    /*$tmp = '';
+    $tmp = '';
     $test = $form_state->getValue(['revisores']);
     foreach($test as $valores){
       $tmp .= $valores.'-';
@@ -205,14 +208,36 @@ class AsignacionSeguimientoForm extends FormBase{
     $consulta->condition('name',$nombresPentester, 'IN');
     $uid_usuarios = $consulta->execute()->fetchCol();
     
-    
-    //Insercion en la BD
-    
+    //Insercion en la BD}
+    $fecha = getdate();
+    $hoy = $fecha['year'].'-'.$fecha['mon'].'-'.$fecha['mday'];
+    Database::setActiveConnection('drupaldb_segundo');
+    $connection = Database::getConnection();
+    $update = $connection->update('revisiones')
+      ->fields(array(
+        'id_estatus' => 5,
+        'fecha_inicio_seguimiento' => $hoy,
+      ))
+      ->condition('id_revision',$no_rev)
+      ->execute();
+    //revisiones_asignadas
+    foreach ($uid_usuarios as $pentester) {
+      $result = $connection->insert('revisiones_asignadas')
+        ->fields(array(
+          'id_revision' => $no_rev,
+          'id_usuario' => $pentester,
+          'seguimiento' => true,
+        ))->execute();
+    }
+    $result = $connection->insert('revisiones_asignadas')
+      ->fields(array(
+        'id_revision' => $no_rev,
+        'id_usuario' => \Drupal::currentUser()->id(),
+        'seguimiento' => true,
+      ))->execute();
     Database::setActiveConnection();
-    */
-    $mensaje = 'ok';
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
-    //$form_state->setRedirectUrl(Url::fromRoute('revisiones_aprobadas.content'));
+    $form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
   }
 }
