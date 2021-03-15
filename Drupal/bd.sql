@@ -68,7 +68,7 @@ CREATE TABLE hallazgos (
 
 CREATE TABLE estatus_revisiones (
 	id_estatus serial PRIMARY KEY,
-	estatus varchar(10)
+	estatus text NOT NULL
 );
 
 CREATE TABLE revisiones (
@@ -77,6 +77,8 @@ CREATE TABLE revisiones (
 	id_estatus serial NOT NULL,
 	fecha_inicio_revision date NOT NULL,
 	fecha_fin_revision date NULL,
+	fecha_inicio_seguimiento date NULL,
+	fecha_fin_seguimiento date NULL,
 	FOREIGN KEY (id_estatus) REFERENCES estatus_revisiones(id_estatus)
 );
 
@@ -112,6 +114,9 @@ insert into estatus_revisiones(estatus) values('Asignado');
 insert into estatus_revisiones(estatus) values('En proceso');
 insert into estatus_revisiones(estatus) values('Concluido');
 insert into estatus_revisiones(estatus) values('Aprobado');
+insert into estatus_revisiones(estatus) values('Seguimiento en proceso');
+insert into estatus_revisiones(estatus) values('Seguimiento concluido');
+insert into estatus_revisiones(estatus) values('Seguimiento aprobado');
 insert into dependencias (nombre_dependencia) values ('medicina');
 insert into dependencias (nombre_dependencia) values ('mate');
 insert into dependencias (nombre_dependencia) values ('quimica');
