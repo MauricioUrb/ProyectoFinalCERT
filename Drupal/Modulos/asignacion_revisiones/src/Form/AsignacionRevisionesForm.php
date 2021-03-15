@@ -191,6 +191,8 @@ class AsignacionRevisionesForm extends FormBase{
         'id_estatus'=> $estatus_revision,
         'fecha_inicio_revision' => $fecha,
         'fecha_fin_revision' => NULL,
+        'fecha_inicio_seguimiento' => NULL,
+        'fecha_fin_seguimiento' => NULL,
       ))->execute();
     //revisiones_asignadas
     foreach ($uid_usuarios as $pentester) {
