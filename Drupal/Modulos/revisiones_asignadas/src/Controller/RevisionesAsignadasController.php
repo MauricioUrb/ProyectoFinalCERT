@@ -177,11 +177,11 @@ class RevisionesAsignadasController {
       $revisarSeguimiento = Link::fromTextAndUrl('Revisar', $revisarS);
       $revisarSeguimiento = $revisarSeguimiento->toRenderable();
       $revisarSeguimiento['#attributes'] = array('class' => array('button'));
-      //Botón para borrar revisión
+      /*/Botón para borrar revisión
       $borrarS = Url::fromRoute('borrar_revision.content', array('rev_id' => $result->id_revision));
       $borrarSeguimiento = Link::fromTextAndUrl('Borrar', $borrarS);
       $borrarSeguimiento = $borrarSeguimiento->toRenderable();
-      $borrarSeguimiento['#attributes'] = array('class' => array('button'));
+      $borrarSeguimiento['#attributes'] = array('class' => array('button'));//*/
 
       //Se busca el nombre de los pentesters que fueron asignados a la revision
       Database::setActiveConnection('drupaldb_segundo');
@@ -228,7 +228,7 @@ class RevisionesAsignadasController {
           $result->fecha_inicio_seguimiento,
           $result->fecha_fin_seguimiento,
           render($revisarSeguimiento),
-          render($borrarSeguimiento),
+          //render($borrarSeguimiento),
         ];
       }elseif($result->id_estatus == 5){
         $rowsS[$result->id_revision] = [
@@ -238,7 +238,7 @@ class RevisionesAsignadasController {
           $estatus_revision[0],
           $result->fecha_inicio_seguimiento,
           $txt,
-          render($borrarSeguimiento),
+          //render($borrarSeguimiento),
         ];
       }
     }
@@ -252,7 +252,7 @@ class RevisionesAsignadasController {
       'start' => t('Fecha de asignacion'),
       'last' => t('Fecha de finalización'),
       'edit' => t('Editar'),
-      'delete' => t('Borrar'),
+      //'delete' => t('Borrar'),
     ];
     $headerS2 = [
       'id' => t('ID'),
@@ -261,7 +261,7 @@ class RevisionesAsignadasController {
       'status' => t('Estado'),
       'start' => t('Fecha de asignacion'),
       'activos' => t('Activos asignados'),
-      'delete' => t('Borrar'),
+      //'delete' => t('Borrar'),
     ];
     //se construye la tabla para mostrar
     $segAsig['table'] = [

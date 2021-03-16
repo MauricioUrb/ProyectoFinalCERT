@@ -195,7 +195,7 @@ class RevisionesAprobadasController {
         $coordinador = $select->execute()->fetchCol();
 
         //Botón para descargar reporte
-        list($year,$month,$day) = explode('-', $result->fecha_fin_revision);
+        list($year,$month,$day) = explode('-', $result->fecha_fin_seguimiento);
         if(strlen((string)$month) == 1){
           $mes = '0'.$month;
         }else{$mes = $month;}
@@ -205,7 +205,7 @@ class RevisionesAprobadasController {
           if(sizeof($lista_sitios) == 1){
             $nombreArchivoS = $year.$mes.'_'.$lista_sitios[0].'_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
           }else{
-            $nombreArchivoS = $year.$mes.'_variosSitios_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
+            $nombreArchivoS = $year.$mes.'_VariosSitios_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
           }
         }//*/
         //$nombreArchivo = 'helloWorld.docx';
