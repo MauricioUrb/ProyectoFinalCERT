@@ -95,6 +95,13 @@ class SitiosShowForm extends FormBase{
       '#markup' => render($build)
     ];
     $form['pager'] = array('#type' => 'pager');
+
+    $url = Url::fromRoute('sitios_alta.content', array());
+	$project_link = Link::fromTextAndUrl('Agregar un sitio nuevo', $url);
+	$project_link = $project_link->toRenderable();
+	$project_link['#attributes'] = array('class' => array('button'));
+	$form['boton'] = array('#markup' => render($project_link),);
+
     return $form;
 
   }
