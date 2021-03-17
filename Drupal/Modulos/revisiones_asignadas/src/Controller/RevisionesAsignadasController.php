@@ -302,11 +302,11 @@ class RevisionesAsignadasController {
     $select->fields('r', array('id_revision'));
     $select->fields('r', array('tipo_revision'));
     $select->fields('r', array('id_estatus'));
-    $select->fields('r', array('fecha_inicio_seguimiento'));
+    $select->fields('r', array('fecha_inicio_revision'));
     $select->fields('r', array('fecha_fin_revision'));
     $select->condition('id_usuario',\Drupal::currentUser()->id());
     $select->condition('seguimiento', false);
-    $select->orderBy('fecha_inicio_seguimiento','DESC');
+    $select->orderBy('fecha_inicio_revision','DESC');
     $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
     $datos = $select->execute();
 
@@ -362,7 +362,7 @@ class RevisionesAsignadasController {
           $tipo,
           $estatus_revision[0],
           $txt,
-          $result->fecha_inicio_seguimiento,
+          $result->fecha_inicio_revision,
           $result->fecha_fin_revision,
           $coordinador[0],
         ];
@@ -373,7 +373,7 @@ class RevisionesAsignadasController {
           $estatus_revision[0],
           //$result->id_estatus,
           $txt,
-          $result->fecha_inicio_seguimiento,
+          $result->fecha_inicio_revision,
           $coordinador[0],
           render($project_link),
         ];
@@ -435,11 +435,11 @@ class RevisionesAsignadasController {
     $select->fields('r', array('id_revision'));
     $select->fields('r', array('tipo_revision'));
     $select->fields('r', array('id_estatus'));
-    $select->fields('r', array('fecha_inicio_revision'));
+    $select->fields('r', array('fecha_inicio_seguimiento'));
     $select->fields('r', array('fecha_fin_seguimiento'));
     $select->condition('id_usuario',\Drupal::currentUser()->id());
     $select->condition('seguimiento', false);
-    $select->orderBy('fecha_inicio_revision','DESC');
+    $select->orderBy('fecha_inicio_seguimiento','DESC');
     $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
     $datosS = $select->execute();
 
@@ -494,7 +494,7 @@ class RevisionesAsignadasController {
           $tipo,
           $estatus_revision[0],
           $txt,
-          $result->fecha_inicio_revision,
+          $result->fecha_inicio_seguimiento,
           $result->fecha_fin_seguimiento,
           $coordinador[0],
         ];
@@ -505,7 +505,7 @@ class RevisionesAsignadasController {
           $estatus_revision[0],
           //$result->id_estatus,
           $txt,
-          $result->fecha_inicio_revision,
+          $result->fecha_inicio_seguimiento,
           $coordinador[0],
           render($project_linkS),
         ];
