@@ -41,7 +41,7 @@ class HallazgosAltaForm extends FormBase {
 		$form_state->disableCache();
 		$form['browser'] = array(
 			'#type' => 'fieldset', 
-			'#title' => t('En esta página puede dar de dalta un nuevo hallazgo.'), 
+			'#title' => t('En esta página puede dar de alta un nuevo hallazgo.'), 
 			'#collapsible' => TRUE, 
 			'#description' => t("Llene los campos solicitados o cargue un archivo CSV"), 	
 		); 
