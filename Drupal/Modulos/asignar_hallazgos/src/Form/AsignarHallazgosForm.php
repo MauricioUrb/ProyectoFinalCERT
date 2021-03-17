@@ -123,6 +123,7 @@ class AsignarHallazgosForm extends FormBase{
       '#title' => 'Impacto',
       '#required' => TRUE,
       '#default_value' => $impacto_hall_rev,
+      '#description' => 'Escribe sólo el valor numérico.',
     );
     $form['cvss'] = array(
       '#type' => 'textfield',
