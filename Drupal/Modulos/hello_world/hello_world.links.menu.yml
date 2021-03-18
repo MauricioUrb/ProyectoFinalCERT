@@ -1,6 +1,0 @@
-hello_world.newpage:
-  title: 'hello_world Stuff'
-  description: 'Link to the page hello_world created'
-  route_name: hello_world.content
-  weight: 10
-  menu_name: main

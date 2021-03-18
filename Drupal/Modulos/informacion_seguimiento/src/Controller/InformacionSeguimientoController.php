@@ -37,8 +37,8 @@ class InformacionSeguimientoController{
     $select = Database::getConnection()->select('revisiones', 'r');
     //$select->join('revisiones_hallazgos',"h","r.id_sitio = s.id_sitio");
     $select->fields('r', array('tipo_revision'));
-    $select->fields('r', array('fecha_inicio_revision'));
-    $select->fields('r', array('fecha_fin_revision'));
+    $select->fields('r', array('fecha_inicio_seguimiento'));
+    $select->fields('r', array('fecha_fin_seguimiento'));
     $select->condition('id_revision',$rev_id);
     $results = $select->execute();
 
@@ -74,12 +74,12 @@ class InformacionSeguimientoController{
       $form['inicio'] = array(
         '#type' => 'item',
         '#title' => 'Fecha de asignación:',
-        '#markup' => $result->fecha_inicio_revision,
+        '#markup' => $result->fecha_inicio_seguimiento,
       );
       $form['fecha'] = array(
         '#type' => 'item',
         '#title' => 'Fecha de finalización:',
-        '#markup' => $result->fecha_fin_revision,
+        '#markup' => $result->fecha_fin_seguimiento,
       );
       $form['nombres'] = array(
         '#type' => 'item',

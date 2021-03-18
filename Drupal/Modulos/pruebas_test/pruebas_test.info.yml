@@ -1,7 +1,0 @@
-name: Prueba de modulo
-type: module
-description: 'Modulo de pruebas para visualización y otras pruebas posibles a desarrollar.'
-package: Custom
-core_version_requirement: ^8 || ^9
-core: 8.x
-#configure: sitios.admin_settings
