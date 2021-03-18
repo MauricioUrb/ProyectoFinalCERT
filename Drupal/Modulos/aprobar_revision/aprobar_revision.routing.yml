@@ -2,6 +2,6 @@ aprobar_revision.content:
   path: /revisiones/aprobar/{rev_id}/{seg}
   defaults:
     _form: '\Drupal\aprobar_revision\Form\AprobarRevisionForm'
-    _title: "Aprobar revsion"
+    _title: "Aprobar revisión"
   requirements:
     _permission: 'view aprobar_revision'
