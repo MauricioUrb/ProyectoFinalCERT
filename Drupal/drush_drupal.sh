@@ -157,6 +157,8 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 /var/www/drupal/vendor/bin/drush rcrt 'coordinador de revisiones' 'Coordinador de Revisiones'
 /var/www/drupal/vendor/bin/drush rcrt 'pentester' 'Pentester'
 /var/www/drupal/vendor/bin/drush rcrt 'auxiliar' 'Auxiliar'
+/var/www/drupal/vendor/bin/drush rcrt 'sistemas' 'Seguridad en Sistemas'
+/var/www/drupal/vendor/bin/drush rcrt 'auditoria' 'Auditoria y Nuevas Tecnologias'
 #/var/www/drupal/vendor/bin/drush rcrt '' ''
 
 # Limpiando caché
