@@ -24,6 +24,23 @@ class DeleteHallazgoRevisionForm extends FormBase{
    * (@inheritdoc)
    */
   public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $hall_id = NULL, $rsh = NULL){
+    //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
+    Database::setActiveConnection('drupaldb_segundo');
+    $connection = Database::getConnection();
+    $select = Database::getConnection()->select('revisiones_asignadas', 'r');
+    $select->fields('r', array('id_usuario'));
+    $select->condition('id_revision',$rev_id);
+    $select->condition('seguimiento', false);
+    $results = $select->execute()->fetchCol();
+    //estatus_revision
+    $select = Database::getConnection()->select('revisiones', 'r');
+    $select->fields('r', array('id_estatus'));
+    $select->condition('id_revision',$rev_id);
+    $estatus = $select->execute()->fetchCol();
+    Database::setActiveConnection();
+    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('pentester', \Drupal::currentUser()->getRoles()) || $estatus[0] > 2){
+      return array('#markup' => "No tienes permiso para ver estos formularios.",);
+    }
     global $id;
     $id = $rsh;
     global $id_principal;
