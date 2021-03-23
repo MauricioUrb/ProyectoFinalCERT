@@ -41,7 +41,7 @@ class HallazgosAltaForm extends FormBase {
 		$form_state->disableCache();
 		$form['browser'] = array(
 			'#type' => 'fieldset', 
-			'#title' => t('En esta página puede dar de alta un nuevo hallazgo.'), 
+			'#title' => t('En esta página puede dar de dalta un nuevo hallazgo.'), 
 			'#collapsible' => TRUE, 
 			'#description' => t("Llene los campos solicitados o cargue un archivo CSV"), 	
 		); 
@@ -55,6 +55,12 @@ class HallazgosAltaForm extends FormBase {
 			'#title' => t('Description'),
       			'#type' => 'textarea',
       			'#description' => t('Descripción de la vulnerabilidad/hallazgo'),
+      			'#size' => 60,
+    		);
+		$form['desc_corta'] = array(
+			'#title' => t('Solución corta'),
+      			'#type' => 'textarea',
+      			'#description' => t('Descripción corta de la vulnerabilidad/hallazgo'),
       			'#size' => 60,
     		);
     		$form['solution'] = array(
@@ -83,6 +89,7 @@ class HallazgosAltaForm extends FormBase {
 				'ALTO' => 'ALTO',
 				'MEDIO' => 'MEDIO',
 				'BAJO' => 'BAJO',
+				'SIN IMPACTO' => 'SIN IMPACTO',
 			),
 			'#description' => t('Selecciona el nivel de la vulnerabilidad'),
 		);
@@ -138,7 +145,7 @@ class HallazgosAltaForm extends FormBase {
 		$msg_1 = "El campo de";
 		$msg_2 = "no puede estar vacío";
 		$button_clicked = $form_state->getTriggeringElement()['#name'];
-		$options = ['name', 'description', 'solution', 'references', 'cvss_vector', 'cvss_link', 'resume', 'recomendation', 'level_score'];
+		$options = ['name', 'description', 'solution', 'references', 'cvss_vector', 'cvss_link', 'resume', 'recomendation', 'level_score', 'desc_corta'];
 		$vector = $form_state->getValue("cvss_vector");
 		$score = $form_state->getValue("level_score");
 		$level = $form_state->getValue("level");
@@ -184,6 +191,12 @@ class HallazgosAltaForm extends FormBase {
 								$form_state->setErrorByName("$option", $this->t("$msg_vul BAJA $rango"));
 							}
 							break;
+						case "SIN IMPACTO":
+							$rango = 'es de 0.0 o 0.1';
+							if(!($score == 0 || $score == 0.1)){
+								$form_state->setErrorByName("$option", $this->t("$msg_vul SIN IMPACTO $rango"));
+							}
+							break;
 						}
 					} else {
 						$form_state->setErrorByName("level_score", $this->t("Ingresa un número menor o igual a 10 y mayor a 0, ej. 5.6"));
@@ -216,8 +229,8 @@ class HallazgosAltaForm extends FormBase {
 			$file_content = \Drupal\file\Entity\File::load($file_csv[0]);
 
 			// guardar el archivo de manera permanente en el servidor 
-			//$file_content->setPermanent();
-			//$file_content->save();
+			$file_content->setPermanent();
+			$file_content->save();
       
 			$file_uri = $file_content->getFileUri();
 			$stream_wrapper_manager = \Drupal::service('stream_wrapper_manager')->getViaUri($file_uri);
@@ -251,16 +264,17 @@ class HallazgosAltaForm extends FormBase {
 					// guardamos la informacion del sitio
 					$name = Html::escape($row[0]);
 					$desc = Html::escape($row[1]);
-					$sol = Html::escape($row[2]);
-					$refer = Html::escape($row[3]);
-					$link = Html::escape($row[4]);
-					$resum = Html::escape($row[5]);
-					$reco = Html::escape($row[6]);
-					$vector = $row[7];
-					$level = Html::escape($row[8]);
+					$corta = Html::escape($row[2]);//descripcion corta
+					$sol = Html::escape($row[3]);
+					$refer = Html::escape($row[4]);
+					$link = Html::escape($row[5]);
+					$resum = Html::escape($row[6]);
+					$reco = Html::escape($row[7]);
+					$vector = $row[8];
+					$level = Html::escape($row[9]);
 
 					// validamos que todos los datos hayan sido agregados en el archivo
-					if(!empty($name) && !empty($desc) && !empty($sol) && !empty($refer) && !empty($link) && !empty($resum) && !empty($reco)	&& !empty($vector) && !empty($level)){
+					if(!empty($name) && !empty($desc) && !empty($corta) && !empty($sol) && !empty($refer) && !empty($link) && !empty($resum) && !empty($reco)	&& !empty($vector) && !empty($level)){
 						// dividimos la entrada en score y nivel
 						$nivel = explode(" ", $level);
 						// quitamos los espacios en blanco y pasamos la cadena a mayusculas
@@ -270,7 +284,7 @@ class HallazgosAltaForm extends FormBase {
 							$score = $nivel[0]; // el puntaje de la vulnerabilidad
 							$criti = $nivel[1]; // clasificacion de la vulnerabilidad
 							// valores permitidos
-							$levels = ['CRITICO', 'ALTO', 'MEDIO', 'BAJO'];
+							$levels = ['CRITICO', 'ALTO', 'MEDIO', 'BAJO', 'SIN IMPACTO'];
 
 							// validamos que el nivel ingresado sea valido
 							if(in_array($criti, $levels)){
@@ -310,6 +324,13 @@ class HallazgosAltaForm extends FormBase {
 											$msg_error = "$msg_vul BAJA $rango";
 										}
 										break;
+									// SIN INPACTO
+									case $levels[4]:
+										$rango = 'es de 0.0 o 0.1';
+										if(!($score == 0 || $score == 0.1)){
+											$form_state->setErrorByName("$option", $this->t("$msg_vul SIN IMPACTO $rango"));
+										}
+										break;
 									}
 								} else {
 									$msg_error = "Ingresa un valor menor o igual a 10 y mayor a 0";
@@ -332,8 +353,9 @@ class HallazgosAltaForm extends FormBase {
 										  	// Se agregan los campos a insertar que se obtienen de lo ingresado por el usuario
 											->fields(array(
 											  	'nombre_hallazgo_vulnerabilidad' => $name,
-										  		'descripcion_hallazgo' => $desc,
-										  		//'solucion_recomendacion_hallazgo' => $sol,
+												'descripcion_hallazgo' => $desc,
+												// aqui va lo de la descripcion corta
+										  		'solucion_corta' => $sol,
 										  		'solucion_recomendacion_halazgo' => $sol,
 										  		'referencias_hallazgo' => $refer,
 											  	'recomendacion_general_hallazgo' => $reco,
@@ -373,6 +395,7 @@ class HallazgosAltaForm extends FormBase {
 			// guardamos la informacion del sitio
 			$name = Html::escape($form_state->getValue('name'));
 			$desc = Html::escape($form_state->getValue('description'));
+			$corta = Html::escape($form_state->getValue('desc_corta'));
 			$sol = Html::escape($form_state->getValue('solution'));
 			$refer = Html::escape($form_state->getValue('references'));
 			$link = Html::escape($form_state->getValue('cvss_link'));
@@ -401,8 +424,9 @@ class HallazgosAltaForm extends FormBase {
 					->fields(array(
 					  	'nombre_hallazgo_vulnerabilidad' => $name,
 				  		'descripcion_hallazgo' => $desc,
-			  			'solucion_recomendacion_halazgo' => $sol,
-			  			//'solucion_recomendacion_hallazgo' => $sol,
+						// aqui va lo de la descripcion corta
+			  			'solucion_corta' => $corta,
+			  			'solucion_recomendacion_hallazgo' => $sol,
 				  		'referencias_hallazgo' => $refer,
 					  	'recomendacion_general_hallazgo' => $reco,
 					  	'nivel_cvss' => $full_level,
