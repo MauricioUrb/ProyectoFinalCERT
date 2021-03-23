@@ -16,102 +16,107 @@ class EditarHallazgosForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $id_h = NULL) {
-    global $varh;
-    $varh = $id_h;
-    //conectar a la otra db
-    \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
-    $connection = \Drupal\Core\Database\Database::getConnection();
-    //Se selecciona la tabla
-    $select = Database::getConnection()->select('hallazgos', 'h');
-    //Se especifican las columnas a leer
-    $select->fields('h', array('id_hallazgo'))
-           ->fields('h', array('nombre_hallazgo_vulnerabilidad'))
-           ->fields('h', array('descripcion_hallazgo'))
-           ->fields('h', array('solucion_recomendacion_halazgo'))
-           ->fields('h', array('referencias_hallazgo'))
-           ->fields('h', array('recomendacion_general_hallazgo'))
-           ->fields('h', array('nivel_cvss'))
-           ->fields('h', array('vector_cvss'))
-           ->fields('h', array('enlace_cvss'))
-           ->fields('h', array('r_ejecutivo_hallazgo'));
-    $select->condition('id_hallazgo', $id_h);
-    //Se realiza la consulta
-    $results = $select->execute();
+    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
+      global $varh;
+      $varh = $id_h;
+      //conectar a la otra db
+      \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+      $connection = \Drupal\Core\Database\Database::getConnection();
+      //Se selecciona la tabla
+      $select = Database::getConnection()->select('hallazgos', 'h');
+      //Se especifican las columnas a leer
+      $select->fields('h', array('id_hallazgo'))
+             ->fields('h', array('nombre_hallazgo_vulnerabilidad'))
+             ->fields('h', array('descripcion_hallazgo'))
+             ->fields('h', array('solucion_recomendacion_halazgo'))
+             ->fields('h', array('referencias_hallazgo'))
+             ->fields('h', array('recomendacion_general_hallazgo'))
+             ->fields('h', array('nivel_cvss'))
+             ->fields('h', array('vector_cvss'))
+             ->fields('h', array('enlace_cvss'))
+             ->fields('h', array('r_ejecutivo_hallazgo'));
+      $select->condition('id_hallazgo', $id_h);
+      //Se realiza la consulta
+      $results = $select->execute();
 
-    $txt = '';
-    //se recorren los resultados para después imprimirlos
-    foreach ($results as $result){
+      $txt = '';
+      //se recorren los resultados para después imprimirlos
+      foreach ($results as $result){
 
-      $form['nombre'] = array(
-        '#type' => 'textfield',
-        '#title' => 'Nombre del hallazgo/vulnerabilidad.',
-        '#required' => TRUE,
-        '#size' => 1000,
-        '#default_value' => $result->nombre_hallazgo_vulnerabilidad,
-      );
-      $form['description'] = array(
-        '#title' => t('Description'),
-        '#type' => 'textarea',
-        '#description' => t('Descripción de la vulnerabilidad/hallazgo.'),
-        '#required' => TRUE,
-        '#default_value' => $result->descripcion_hallazgo,
-      );
-      $form['solution'] = array(
-        '#type' => 'textarea',
-        '#title' => t('Solución/Recomendación'),
-        '#description' => t('Solución o recomendación a la vulnerabilidad/hallazgo.'),
-        '#required' => TRUE,
-        '#default_value' => $result->solucion_recomendacion_halazgo,
-      );
-      $form['references'] = array(
-        '#title' => t('References'),
-        '#type' => 'textarea',
-        '#required' => TRUE,
-        '#default_value' => $result->referencias_hallazgo,
-      );
-      //aqui falta el catalogo para el impacto
-      $form['cvss_vector'] = array(
-        '#title' => t('Vector'),
-        '#type' => 'textfield',
-        '#required' => TRUE,
-        '#maxlength' => 108,
-        '#size' => 1000,
-        '#default_value' => $result->vector_cvss,
-      );
-      $form['cvss_enlace'] = array(
-        '#title' => t('Enlace'),
-        '#type' => 'textfield',
-        '#required' => TRUE,
-        '#maxlength' => 159,
-        '#size' => 1000,
-        '#default_value' => $result->enlace_cvss,
-      );
-      $form['resumen_ejecutivo'] = array(
-        '#title' => t('Resumen Ejecutivo'),
-        '#type' => 'textarea',
-        '#description' => t('Descripción de alto nivel, es decir, resumen ejecutivo.'),
-        '#required' => TRUE,
-        '#default_value' => $result->r_ejecutivo_hallazgo,
-      );
-      $form['recomendation'] = array(
-        '#title' => t('Recomendación general'),
-        '#type' => 'textarea',
-        '#required' => TRUE,
-        '#default_value' => $result->recomendacion_general_hallazgo,
-      );
-      $form['submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Actualizar'),
-      );
+        $form['nombre'] = array(
+          '#type' => 'textfield',
+          '#title' => 'Nombre del hallazgo/vulnerabilidad.',
+          '#required' => TRUE,
+          '#size' => 1000,
+          '#default_value' => $result->nombre_hallazgo_vulnerabilidad,
+        );
+        $form['description'] = array(
+          '#title' => t('Description'),
+          '#type' => 'textarea',
+          '#description' => t('Descripción de la vulnerabilidad/hallazgo.'),
+          '#required' => TRUE,
+          '#default_value' => $result->descripcion_hallazgo,
+        );
+        $form['solution'] = array(
+          '#type' => 'textarea',
+          '#title' => t('Solución/Recomendación'),
+          '#description' => t('Solución o recomendación a la vulnerabilidad/hallazgo.'),
+          '#required' => TRUE,
+          '#default_value' => $result->solucion_recomendacion_halazgo,
+        );
+        $form['references'] = array(
+          '#title' => t('References'),
+          '#type' => 'textarea',
+          '#required' => TRUE,
+          '#default_value' => $result->referencias_hallazgo,
+        );
+        //aqui falta el catalogo para el impacto
+        $form['cvss_vector'] = array(
+          '#title' => t('Vector'),
+          '#type' => 'textfield',
+          '#required' => TRUE,
+          '#maxlength' => 108,
+          '#size' => 1000,
+          '#default_value' => $result->vector_cvss,
+        );
+        $form['cvss_enlace'] = array(
+          '#title' => t('Enlace'),
+          '#type' => 'textfield',
+          '#required' => TRUE,
+          '#maxlength' => 159,
+          '#size' => 1000,
+          '#default_value' => $result->enlace_cvss,
+        );
+        $form['resumen_ejecutivo'] = array(
+          '#title' => t('Resumen Ejecutivo'),
+          '#type' => 'textarea',
+          '#description' => t('Descripción de alto nivel, es decir, resumen ejecutivo.'),
+          '#required' => TRUE,
+          '#default_value' => $result->r_ejecutivo_hallazgo,
+        );
+        $form['recomendation'] = array(
+          '#title' => t('Recomendación general'),
+          '#type' => 'textarea',
+          '#required' => TRUE,
+          '#default_value' => $result->recomendacion_general_hallazgo,
+        );
+        $form['submit'] = array(
+          '#type' => 'submit',
+          '#value' => t('Actualizar'),
+        );
+      }
+
+  //    $form['txt']['#markup'] = $txt;
+
+      return $form;
+
+      //regresar a la default
+      \Drupal\Core\Database\Database::setActiveConnection();
+
+    } 
+    else{
+      return array('#markup' => "No tienes permiso para ver estos formularios.",);
     }
-
-//    $form['txt']['#markup'] = $txt;
-
-    return $form;
-
-    //regresar a la default
-    \Drupal\Core\Database\Database::setActiveConnection();
-
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {

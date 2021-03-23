@@ -26,28 +26,34 @@ class EliminarHallazgosForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, $id_h = NULL) {
-    global $idh;
-    $idh = $id_h;
-    $txt = '';
-//    $txt .= '<br />';
-    $txt .= 'Confirmar eliminación de registro';
-    $txt .= '<br />';
-    $txt .= '<br />';
+    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){ 
+      global $idh;
+      $idh = $id_h;
+      $txt = '';
+  //    $txt .= '<br />';
+      $txt .= 'Confirmar eliminación de registro';
+      $txt .= '<br />';
+      $txt .= '<br />';
 
-    $form['txt']['#markup'] = $txt;
+      $form['txt']['#markup'] = $txt;
 
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Aceptar'),
-    );
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Aceptar'),
+      );
 
-    $url = Url::fromRoute('hallazgos_show.content', array());
-    $project_link = Link::fromTextAndUrl('Cancelar', $url);
-    $project_link = $project_link->toRenderable();
-    $project_link['#attributes'] = array('class' => array('button'));
-    $form['cancelar'] = array('#markup' => render($project_link),);
+      $url = Url::fromRoute('hallazgos_show.content', array());
+      $project_link = Link::fromTextAndUrl('Cancelar', $url);
+      $project_link = $project_link->toRenderable();
+      $project_link['#attributes'] = array('class' => array('button'));
+      $form['cancelar'] = array('#markup' => render($project_link),);
 
-    return $form;
+      return $form;
+      
+    }
+    else{
+      return array('#markup' => "No tienes permiso para ver estos formularios.",);
+    }
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {

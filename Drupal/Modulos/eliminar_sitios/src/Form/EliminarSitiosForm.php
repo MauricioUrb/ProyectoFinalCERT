@@ -23,32 +23,38 @@ class EliminarSitiosForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $id_s = NULL) {
-    $node = \Drupal::routeMatch()->getParameter('node');
-    $nid = $node->nid->value;
-    global $ids;
-    $ids = $id_s;
+    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
+      $node = \Drupal::routeMatch()->getParameter('node');
+      $nid = $node->nid->value;
+      global $ids;
+      $ids = $id_s;
 
-    $txt = '';
-//    $txt .= '<br />';
-    $txt .= 'Confirmar eliminación de registro';
-    $txt .= '<br />';
-    $txt .= '<br />';
+      $txt = '';
+  //    $txt .= '<br />';
+      $txt .= 'Confirmar eliminación de registro';
+      $txt .= '<br />';
+      $txt .= '<br />';
 
-    $form['txt']['#markup'] = $txt;
+      $form['txt']['#markup'] = $txt;
 
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Aceptar'),
-    );
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Aceptar'),
+      );
 
-    $url = Url::fromRoute('sitios_show.content', array());
-    $project_link = Link::fromTextAndUrl('Cancelar', $url);
-    $project_link = $project_link->toRenderable();
-//    $project_link['#attributes'] = array('class' => array('button'));
-    $project_link['#attributes'] = array('class' => array('button', 'button-action', 'button--primary', 'button--small'));
-    $form['Cancelar'] = array('#markup' => render($project_link),);
+      $url = Url::fromRoute('sitios_show.content', array());
+      $project_link = Link::fromTextAndUrl('Cancelar', $url);
+      $project_link = $project_link->toRenderable();
+  //    $project_link['#attributes'] = array('class' => array('button'));
+      $project_link['#attributes'] = array('class' => array('button', 'button-action', 'button--primary', 'button--small'));
+      $form['Cancelar'] = array('#markup' => render($project_link),);
 
-    return $form;
+      return $form;
+
+    }
+    else{
+      return array('#markup' => "No tienes permiso para ver estos formularios.",);
+    }
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {

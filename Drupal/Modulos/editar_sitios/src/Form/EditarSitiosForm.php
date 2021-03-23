@@ -19,76 +19,82 @@ class EditarSitiosForm extends FormBase{
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $id_s = NULL, $id_ip = NULL, $id_dep = NULL){
-    //declaramos una variable global para poder usar en otra funcion
-    global $vars, $dependencia_id, $ip_id;
-    $vars = $id_s;
-    $dependencia_id = $id_dep;
-    $ip_id = $id_ip;
+    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
+      //declaramos una variable global para poder usar en otra funcion
+      global $vars, $dependencia_id, $ip_id;
+      $vars = $id_s;
+      $dependencia_id = $id_dep;
+      $ip_id = $id_ip;
 
-    //conectar a la otra db
-    \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
-    $connection = \Drupal\Core\Database\Database::getConnection();
+      //conectar a la otra db
+      \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+      $connection = \Drupal\Core\Database\Database::getConnection();
 
-    $select = Database::getConnection()->select('dependencias', 'd');
-    //Se hace un join con tablas necesarias
-    $select ->join('dependencias_sitios', 'ds', 'd.id_dependencia = ds.id_dependencia');
-    $select ->join('sitios', 's', 's.id_sitio = ds.id_sitio');
-    $select ->join('ip_sitios', 'ips', 's.id_sitio = ips.id_sitio');
-    $select ->join('dir_ip', 'ip', 'ip.id_ip = ips.id_ip');
-    //Se especifican las columnas a leer
-    $select->fields('s', array('id_sitio', 'descripcion_sitio', 'url_sitio'))
-           ->fields('d', array('nombre_dependencia'))
-           ->fields('ip', array('dir_ip_sitios'));
-    //condiciones para mostrar solo los datos requeridos
-    $select->condition('s.id_sitio', $id_s);
-    $select->condition('d.id_dependencia', $id_dep);
-    $select->condition('ip.id_ip', $id_ip);
-    //Se realiza la consulta
-    $results = $select->execute();
+      $select = Database::getConnection()->select('dependencias', 'd');
+      //Se hace un join con tablas necesarias
+      $select ->join('dependencias_sitios', 'ds', 'd.id_dependencia = ds.id_dependencia');
+      $select ->join('sitios', 's', 's.id_sitio = ds.id_sitio');
+      $select ->join('ip_sitios', 'ips', 's.id_sitio = ips.id_sitio');
+      $select ->join('dir_ip', 'ip', 'ip.id_ip = ips.id_ip');
+      //Se especifican las columnas a leer
+      $select->fields('s', array('id_sitio', 'descripcion_sitio', 'url_sitio'))
+             ->fields('d', array('nombre_dependencia'))
+             ->fields('ip', array('dir_ip_sitios'));
+      //condiciones para mostrar solo los datos requeridos
+      $select->condition('s.id_sitio', $id_s);
+      $select->condition('d.id_dependencia', $id_dep);
+      $select->condition('ip.id_ip', $id_ip);
+      //Se realiza la consulta
+      $results = $select->execute();
 
-    $txt = '';
-    //se recorren los resultados para después imprimirlos
-    foreach ($results as $result){
+      $txt = '';
+      //se recorren los resultados para después imprimirlos
+      foreach ($results as $result){
 
-      $form['description'] = array(
-        '#title' => t('Description'),
-        '#type' => 'textarea',
-        '#description' => t('Descripción del sitio.'),
-        '#required' => TRUE,
-        '#default_value' => $result->descripcion_sitio,
-      );
-      $form['ip'] = array(
-        '#type' => 'textfield',
-        '#title' => t('IP'),
-        '#size' => 100,
-        '#maxlength' => 128,
-        '#required' => TRUE,
-        '#default_value' => $result->dir_ip_sitios,
-      );
-      $form['dependencias'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Dependencias'),
-        '#size' => 100,
-        '#maxlength' => 128,
-        '#required' => TRUE,
-        '#default_value' => $result->nombre_dependencia,
-      );
-      $form['enlace'] = array(
-        '#title' => t('URL'),
-        '#type' => 'textfield',
-        '#required' => TRUE,
-        '#maxlength' => 128,
-        '#size' => 1000,
-        '#default_value' => $result->url_sitio,
-      );
-      $form['submit'] = array(
-        '#type' => 'submit',
-        '#value' => t('Actualizar'),
-      );
+        $form['description'] = array(
+          '#title' => t('Description'),
+          '#type' => 'textarea',
+          '#description' => t('Descripción del sitio.'),
+          '#required' => TRUE,
+          '#default_value' => $result->descripcion_sitio,
+        );
+        $form['ip'] = array(
+          '#type' => 'textfield',
+          '#title' => t('IP'),
+          '#size' => 100,
+          '#maxlength' => 128,
+          '#required' => TRUE,
+          '#default_value' => $result->dir_ip_sitios,
+        );
+        $form['dependencias'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Dependencias'),
+          '#size' => 100,
+          '#maxlength' => 128,
+          '#required' => TRUE,
+          '#default_value' => $result->nombre_dependencia,
+        );
+        $form['enlace'] = array(
+          '#title' => t('URL'),
+          '#type' => 'textfield',
+          '#required' => TRUE,
+          '#maxlength' => 128,
+          '#size' => 1000,
+          '#default_value' => $result->url_sitio,
+        );
+        $form['submit'] = array(
+          '#type' => 'submit',
+          '#value' => t('Actualizar'),
+        );
+      }
+      return $form;
+      //regresar a la default
+      \Drupal\Core\Database\Database::setActiveConnection();
+
     }
-    return $form;
-    //regresar a la default
-    \Drupal\Core\Database\Database::setActiveConnection();
+    else{
+      return array('#markup' => "No tienes permiso para ver estos formularios.",);
+    }
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
