@@ -53,7 +53,7 @@ class SitiosAltaForm extends FormBase{
 		// regresamos a la conexion default
 		\Drupal\Core\Database\Database::setActiveConnection();
 
-
+		$options['vacio'] = "--Selecciona una dependencia--";
 		foreach($results as $result){
 			$options[$result->id_dependencia] = $result->nombre_dependencia;
 		}
@@ -63,18 +63,20 @@ class SitiosAltaForm extends FormBase{
 			'#type' => 'fieldset', 
 			'#title' => t('En esta página puede dar de alta sitios.'), 
 			'#collapsible' => TRUE, 
-			'#description' => t("Llene los campos solicitados o cargue un archivo CSV"), 	
+			'#description' => t("Llene los campos solicitados o cargue los datos desde un archivo CSV"),	
 		); 
 		$form['description'] = array(
 			'#title' => t('Descripción del sitio.'),
 			'#type' => 'textarea',
 			'#size' => 60,
+			'#description' => t("Ingresa la descripción del sitio"),
 		);
 		$form['ip'] = array(
-			'#title' => t("<p>Dirección IP del sitio.<br/>"),
+			'#title' => t("Dirección IP del sitio."),
 			'#type' => 'textfield',
 			'#size' => 60,
 			'#maxlength' => 128,
+			'#description' => t("Ingresa una dirección IP para el sitio"),
 		);
 		$form['select'] = array(
 			'#type' => 'select',
@@ -82,20 +84,28 @@ class SitiosAltaForm extends FormBase{
 			'#options' => $options,
 			'#description' => t('Selecciona la dependencia del sitio'),
 		);
+		$form['dependencia'] = array(
+			'#title' => t("Nueva dependencia."),
+			'#type' => 'textfield',
+			'#size' => 60,
+			'#maxlength' => 60,
+			'#description' => t("Ingresa el nombre de la dependencia que desea agregar"),
+		);
 		$form['enlace'] = array(
-			'#title' => t('<p>Dirección URL.<br/>'),
+			'#title' => t('Dirección URL.'),
 			'#type' => 'textfield',
 			'#size' => 60,
 			'#maxlength' => 128,
+			'#description' => t("Ingresa la url del sitio"),
 		);
 		$form['csv_file'] = array(
 			'#type' => 'managed_file',
 			'#title' => t('Archivo CSV.'),
-			'#description' => t('Cargar desde archivo CSV '),
+			'#description' => t('Selecciona un archivo CSV'),
 			'#upload_validators' => array(
 				'file_validate_extensions' => array('csv'),
 			),
-			'#upload_location' => 'public://content/csv_files/alta_sitios/',
+			'#upload_location' => 'public://csv_files/sitios/alta_sitios/',
 		);
 		$form['alta'] = array(
 			'#type' => 'submit',
@@ -131,9 +141,24 @@ class SitiosAltaForm extends FormBase{
 				$form_state->setErrorByName('ip', $this->t('Se debe ingresar una direccion ip valida'));
 			}
 
+			//$form_state->getValue('select');
+							            //'depen']['dependencia'] = array(
+			$depen_name = $form_state->getValue('dependencia');
+		        $depen_select =  $form_state->getValue('select');
+			$msg_1 = "Debe seleccionar una dependencia o ingresar el nombre de una nueva dependencia";
+			$msg_2 = "Sólo puede seleccionar una dependencia o ingresar el nombre de una nueva dependencia";
+			if (strlen($depen_name) <= 0 && $depen_select == "vacio") {
+				$form_state->setErrorByName('select', $this->t("$msg_1"));
+				$form_state->setErrorByName('dependencia', $this->t("$msg_1"));
+			} else if (strlen($depen_name) > 0 && $depen_select != "vacio") {
+				$form_state->setErrorByName('select', $this->t("$msg_2"));
+				$form_state->setErrorByName('dependencia', $this->t("$msg_2"));
+			}
+				
 			// validacion de la url
 			if (strlen($form_state->getValue('enlace')) <= 0) {
 				$form_state->setErrorByName('enlace', $this->t('Se debe ingresar una url'));
+				//$form_state->setErrorByName('enlace', $this->t("$depen_select"));
 			}
 
 		} else if($button_clicked == 'alta_file'){
@@ -162,8 +187,8 @@ class SitiosAltaForm extends FormBase{
 			$file_content = \Drupal\file\Entity\File::load($file_csv[0]);
 
 			// guardar el archivo de manera permanente en el servidor 
-			//$file_content->setPermanent();
-			//$file_content->save();
+			$file_content->setPermanent();
+			$file_content->save();
       
 			$file_uri = $file_content->getFileUri();
 			$stream_wrapper_manager = \Drupal::service('stream_wrapper_manager')->getViaUri($file_uri);
@@ -194,21 +219,39 @@ class SitiosAltaForm extends FormBase{
 				$txn = $connection->startTransaction();
 				$cont++;
 				try{
-					//$nom = $row[0];
+					// valores obtenidos del archivo
 					$desc = $row[0];
 					$url = $row[1];
 					$ip = $row[2];
 					$depen = $row[3];
+					// validamos que tenga la cantidad necesaria valores por registro
 					if(!empty($desc) && !empty($url) && !empty($ip) && !empty($depen)){
+						// validamos que las direcciones ip sean validas
 						if((filter_var($ip, FILTER_VALIDATE_IP) || filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))){
-							// insert del sitio
-							$query_sitios = $connection->insert('sitios')
-							->fields(array(
-								 //'nombre' => $row[0],
-								 'descripcion_sitio' => $desc,
-								 'url_sitio' => $url,
-							))
-							->execute();
+
+							// se consulta a la base de datos para ver si ya existe el sitio
+							// se valida con la url     
+							$select_url = $connection->select('sitios', 's')
+						        ->fields('s', array('id_sitio'))
+							->condition("s.url_sitio", "$url");
+							$results = $select_url->execute()->fetchAll();
+
+							// validamos que la consulta tenga resultados
+							if(!empty($results)){
+								// accedemos al id de la url
+								foreach ($results as $record) {
+									$id_sitio = $record->id_sitio;
+								}
+							} else {
+								// insert del sitio a la tabla de sitios
+								$id_sitio = $connection->insert('sitios')
+								->fields(array(
+									 'descripcion_sitio' => $desc,
+									 'url_sitio' => $url,
+								))
+								->execute();
+							}
+
 					
 							// se consulta a la base de datos para ver si ya existe la ip      
 							$select_ip = $connection->select('dir_ip', 'd')
@@ -229,6 +272,7 @@ class SitiosAltaForm extends FormBase{
 									'dir_ip_sitios' => $ip,
 								)) ->execute();
 							}
+
 							// se consulta a la base de datos para obtener la dependencia
 							$select_dependencia = $connection->select('dependencias', 'd')
 						      	->fields('d', array('id_dependencia'))
@@ -247,11 +291,12 @@ class SitiosAltaForm extends FormBase{
 									'nombre_dependencia' => $depen,
 								)) ->execute();
 							}
+							
 							// insert ip_sitios
 							$query_ip_sitios = $connection->insert('ip_sitios')
 							->fields(array(
 								'id_ip' => $id_ip,
-								'id_sitio' => $query_sitios,
+								'id_sitio' => $id_sitio,
 							))
 							->execute();
 		
@@ -259,7 +304,7 @@ class SitiosAltaForm extends FormBase{
 							$query_ip_sitios = $connection->insert('dependencias_sitios')
 						   	->fields(array(
 								'id_dependencia' => $id_dependencia,
-								'id_sitio' => $query_sitios,
+								'id_sitio' => $id_sitio,
 							))
 							->execute();
 							$messenger_service->addMessage(t("Sitio dado de alta, registro: $cont"));
@@ -278,48 +323,98 @@ class SitiosAltaForm extends FormBase{
 			/* aca termina lo del archivo */
 		} else {
 			// guardamos la informacion del sitio
-			//$sitio = Html::escape($form_state->getValue('nombre'));
 			$desc = Html::escape($form_state->getValue('description'));
 			$url = Html::escape($form_state->getValue('enlace'));
-			$id_depen = $form_state->getValue('select');
+			$id_dependencia = $form_state->getValue('select');
+			$dependencia = $form_state->getValue('dependencia');
 			$ip = $form_state->getValue('ip');
 
 			// transaccion en caso de que algo salga mal al hacer cambios en la base de datos, evita que se modifique
 			$txn = $connection->startTransaction();
+								
 			// hacemos un try catch por si no se ingresa un valor valido, validamos primero que se pueda insertar la ip
 			try{
-				// insert a la tabla de sitios
-				$query_sitios = $connection->insert('sitios')
-				->fields(array(
-					//'nombre' => $sitio,
-					'descripcion_sitio' => $desc,
-					'url_sitio' => $url,
-				))
-				->execute();
-			
-				// insert a la tabla de ip
-				$query_ip = $connection->insert('dir_ip')
-				->fields(array(    
-					'dir_ip_sitios' => $ip,
-				))    
-				->execute();
+				// se consulta a la base de datos para ver si ya existe el sitio
+				// se valida con la url     
+				$select_url = $connection->select('sitios', 's')
+				->fields('s', array('id_sitio'))
+				->condition("s.url_sitio", "$url");
+				$results = $select_url->execute()->fetchAll();
 
-				// insert ip_sitios	      
+				// validamos que la consulta tenga resultados
+				if(!empty($results)){
+					// accedemos al id de la url
+					foreach ($results as $record) {
+						$id_sitio = $record->id_sitio;
+					}
+				// si el sitio no existe, se agrega a la base de datos
+				} else {
+					// insert del sitio a la tabla de sitios
+					$id_sitio = $connection->insert('sitios')
+					->fields(array(
+						 'descripcion_sitio' => $desc,
+						 'url_sitio' => $url,
+					))
+					->execute();
+				}
+
+				// se consulta a la base de datos para ver si ya existe la ip      
+				$select_ip = $connection->select('dir_ip', 'd')
+			        ->fields('d', array('id_ip'))
+				->condition("d.dir_ip_sitios", "$ip");
+				$results = $select_ip->execute()->fetchAll();
+
+				// validamos la consulta tenga resultados
+				if(!empty($results)){
+					// accedemos al id de la ip
+					foreach ($results as $record) {
+						$id_ip = $record->id_ip;
+					}
+				} else {
+					// insert a la tabla de ip
+					$id_ip = $connection->insert('dir_ip')
+	  				->fields(array(   
+						'dir_ip_sitios' => $ip,
+					)) ->execute();
+				}
+
+				if($id_dependencia == 'vacio'){
+					// se consulta a la base de datos para obtener la dependencia
+					$select_dependencia = $connection->select('dependencias', 'd')
+				      	->fields('d', array('id_dependencia'))
+					->condition("d.nombre_dependencia", "$dependencia");
+					$results = $select_dependencia->execute()->fetchAll();
+					
+					if(!empty($results)){
+						// accedemos al id de la dependencia
+						foreach ($results as $record) {
+							$id_dependencia = $record->id_dependencia;
+						}
+					} else {
+						// insert a la tabla de dependencias
+						$id_dependencia = $connection->insert('dependencias')
+				   		->fields(array(   
+							'nombre_dependencia' => $dependencia,
+						)) ->execute();
+					}
+				}
+						
+				// insert ip_sitios
 				$query_ip_sitios = $connection->insert('ip_sitios')
 				->fields(array(
-					'id_ip' => $query_ip,
-					'id_sitio' => $query_sitios,
+					'id_ip' => $id_ip,
+					'id_sitio' => $id_sitio,
 				))
 				->execute();
-	      
+	
 				// insert dependencias_sitios
 				$query_ip_sitios = $connection->insert('dependencias_sitios')
-				->fields(array(
-					'id_dependencia' => $id_depen,
-					'id_sitio' => $query_sitios,	
+			   	->fields(array(
+					'id_dependencia' => $id_dependencia,
+					'id_sitio' => $id_sitio,
 				))
 				->execute();
-	      
+				
 				// mostramos el mensaje de que se hizo el insert
 				$messenger_service->addMessage(t("Se dio de alta el sitio."));
 			} catch(Exception $e) {
