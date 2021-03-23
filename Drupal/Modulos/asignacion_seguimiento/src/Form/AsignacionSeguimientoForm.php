@@ -32,7 +32,16 @@ class AsignacionSeguimientoForm extends FormBase{
     $select->condition('seguimiento', true);
     $seguimiento = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    if (!in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || !in_array('auxiliar', \Drupal::currentUser()->getRoles()) || !in_array('sistemas', \Drupal::currentUser()->getRoles()) || !in_array('auditoria', \Drupal::currentUser()->getRoles()) || $seguimiento[0]){
+    $current_user_roles = \Drupal::currentUser()->getRoles();
+    $rol = TRUE;
+    if (in_array('coordinador de revisiones', $current_user_roles) || in_array('auxiliar', $current_user_roles)){
+      $rol = FALSE;
+    }
+    $grupo = TRUE;
+    if(!$rol){
+      if(in_array('sistemas', $current_user_roles) || in_array('auditoria', $current_user_roles)){$grupo = FALSE;}
+    }
+    if($rol || $grupo || $seguimiento[0]){
       return array('#markup' => "No tienes permiso para ver este formulario.",);
     }
     global $no_rev;

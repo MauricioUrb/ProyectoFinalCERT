@@ -43,7 +43,11 @@ class AprobarRevisionForm extends FormBase{
       $estado = TRUE;
     }else{$estado = FALSE;}
     Database::setActiveConnection();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || !$estado){
+    $rol = TRUE;
+    if (in_array('coordinador de revisiones', $current_user_roles) || in_array('auxiliar', $current_user_roles)){
+      $rol = FALSE;
+    }
+    if (!in_array(\Drupal::currentUser()->id(), $results) || $rol || !$estado){
       return array('#markup' => "No tienes permiso para ver esta página.",);
     }
     global $no_rev;

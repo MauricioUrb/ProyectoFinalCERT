@@ -333,7 +333,7 @@ class RevisionesAsignadasController {
       $select->join('users_field_data',"d","d.uid = u.entity_id");
       $select->fields('d', array('name'));
       $select->condition('d.uid', $usuarios_rev, 'IN');
-      $select->condition('u.roles_target_id', 'coordinador de revisiones');
+      $select->condition('u.roles_target_id', ['coordinador de revisiones','auxiliar'],'IN');
       $coordinador = $select->execute()->fetchCol();
 
       //lista de sitios asignados
@@ -465,7 +465,8 @@ class RevisionesAsignadasController {
       $select->join('users_field_data',"d","d.uid = u.entity_id");
       $select->fields('d', array('name'));
       $select->condition('d.uid', $usuarios_rev, 'IN');
-      $select->condition('u.roles_target_id', 'coordinador de revisiones');
+      $select->condition('u.roles_target_id', ['coordinador de revisiones','auxiliar'],'IN');
+      //$select->condition('u.roles_target_id', 'coordinador de revisiones');
       $coordinador = $select->execute()->fetchCol();
 
       //lista de sitios asignados
@@ -560,7 +561,7 @@ class RevisionesAsignadasController {
   }
 
   public function revisiones(){
-    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
+    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('auxiliar', \Drupal::currentUser()->getRoles())){
       return $this->coordinador();
     }elseif (in_array('pentester', \Drupal::currentUser()->getRoles())){
       return $this->pentester();

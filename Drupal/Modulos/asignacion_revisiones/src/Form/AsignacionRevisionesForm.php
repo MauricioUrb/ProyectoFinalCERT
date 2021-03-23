@@ -24,7 +24,15 @@ class AsignacionRevisionesForm extends FormBase{
    */
   public function buildForm(array $form, FormStateInterface $form_state){
     $current_user_roles = \Drupal::currentUser()->getRoles();
-    if (!in_array('coordinador de revisiones', $current_user_roles) || !in_array('auxiliar', $current_user_roles) || !in_array('sistemas', $current_user_roles) || !in_array('auditoria', $current_user_roles)){
+    $rol = TRUE;
+    if (in_array('coordinador de revisiones', $current_user_roles) || in_array('auxiliar', $current_user_roles)){
+      $rol = FALSE;
+    }
+    $grupo = TRUE;
+    if(!$rol){
+      if(in_array('sistemas', $current_user_roles) || in_array('auditoria', $current_user_roles)){$grupo = FALSE;}
+    }
+    if($rol || $grupo){
       return array('#markup' => "No tienes permiso para ver este formulario.",);
     }
     //Tipo de revision

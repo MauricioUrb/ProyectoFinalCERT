@@ -64,7 +64,8 @@ class RevisionesAprobadasController {
         $select->join('user__roles',"r"," r.entity_id = u.uid");
         $select->fields('u', array('name'));
         $select->condition('uid', $usuarios_rev, 'IN');
-        $select->condition('roles_target_id','coordinador de revisiones');
+        $select->condition('roles_target_id', ['coordinador de revisiones','auxiliar'],'IN');
+        //$select->condition('roles_target_id','coordinador de revisiones');
         $coordinador = $select->execute()->fetchCol();
 
         Database::setActiveConnection('drupaldb_segundo');
@@ -191,7 +192,8 @@ class RevisionesAprobadasController {
         $select->join('user__roles',"r"," r.entity_id = u.uid");
         $select->fields('u', array('name'));
         $select->condition('uid', $usuarios_rev, 'IN');
-        $select->condition('roles_target_id','coordinador de revisiones');
+        $select->condition('roles_target_id', ['coordinador de revisiones','auxiliar'],'IN');
+        //$select->condition('roles_target_id','coordinador de revisiones');
         $coordinador = $select->execute()->fetchCol();
 
         //Botón para descargar reporte
@@ -207,8 +209,7 @@ class RevisionesAprobadasController {
           }else{
             $nombreArchivoS = $year.$mes.'_VariosSitios_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
           }
-        }//*/
-        //$nombreArchivo = 'helloWorld.docx';
+        }
         $urlS = Url::fromUri('http://' . $_SERVER['SERVER_NAME'] . '/reportes/' . $nombreArchivoS);
         $descargarS = Link::fromTextAndUrl('Descargar', $urlS);
         $descargarS = $descargarS->toRenderable();

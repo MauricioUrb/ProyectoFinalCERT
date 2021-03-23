@@ -28,7 +28,11 @@ class InformacionRevisionController{
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || $estatus[0] != 3){
+    $rol = TRUE;
+    if (in_array('coordinador de revisiones', $current_user_roles) || in_array('auxiliar', $current_user_roles)){
+      $rol = FALSE;
+    }
+    if (!in_array(\Drupal::currentUser()->id(), $results) || $rol || $estatus[0] != 3){
     	return array('#markup' => "No tienes permiso para ver esta página.",);
     }
     //Se obtienen los sitios correspondientes a esta revision
