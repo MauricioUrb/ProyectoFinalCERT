@@ -55,93 +55,150 @@ class EstadisticasForm extends FormBase {
 	 * (@inheritdoc)
 	 */
 	public function buildForm(array $form, FormStateInterface $form_state){
-		/*$connection = \Drupal\Core\Database\Database::getConnection();
-		$select = $connection->select('dependencias', 'r');
-		$select->fields('r', array('id_dependencia', 'nombre_dependencia'));
-		$select->orderBy('nombre_dependencia');
+		//conectar a la otra db
+		\Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+	        $connection = \Drupal\Core\Database\Database::getConnection();
+
+		// consulta para traer los sitios
+		$select = $connection->select('sitios', 's');
+		$select->fields('s', array('id_sitio', 'url_sitio'));
+		$select->orderBy('url_sitio');
 		$results = $select->execute();
+
+		$options = array();
+		$options['vacio'] = "--Selecciona un sitio--";
+		// acomodamos el resultado de la consulta en un arreglo
 		foreach($results as $result){
-			$options[$result->id_dependencia] = $result->nombre_dependencia;
-		}*/
+			$options[$result->id_sitio] = $result->url_sitio;
+		}
+
 		$form_state->disableCache();
-		/*
-		 */
-		/*$form['browser'] = array(
+
+		// grafica 1	
+		$titulo = "Hallazgos más comunes encontrados en las revisiones de seguridad.";
+		$form["hallazgos_comunes"] = array(
 			'#type' => 'fieldset', 
-			'#title' => t('En esta página puede dar de alta sitios.'), 
+			'#title' => t("$titulo"), 
+			'#open' => TRUE, 
 			'#collapsible' => TRUE, 
-			'#description' => t("Llene los campos solicitados o cargue un archivo CSV"), 	
 		); 
-		$form['description'] = array(
-			'#title' => t('Descripción del sitio.'),
-			'#type' => 'textarea',
-			'#size' => 60,
+		$form["hallazgos_comunes"]["button"] = array(
+			'#type' => 'submit',
+			'#value' => t('Descargar graficas'),
+			'#name' => "hallazgos_comunes",
+			'#button_type' => 'primary',
 		);
-		$form['ip'] = array(
-			'#title' => t("<p>Dirección IP del sitio.<br/>"),
-			'#type' => 'textfield',
-			'#size' => 60,
-			'#maxlength' => 128,
-		);*/
+		// titulos de las graficas que requieren fechas
 		$titulos = array(
-			"Mostrar gráfica general con los hallazgos más comunes encontrados en las revisiones de seguridad.",
-			"Número de revisiones hechas por departamento (por mes y año).",
-			"Número de hallazgos con impacto (Critico, Alto, Medio, Bajo y Sin impacto x Mes y/o Año)",
-			"Número de revisiones por dependencia. (Por mes y por año)",
-			"Número de hallazgos por dependencia. (Por mes y por año)",
-			"Estadísticas por sitio.",
-			"Estadísticas por hallazgo (Cantidad de ocurrencias x Mes y/o Año)",
-			"Estadísticas por Pentester (Cantidad de revisiones concluidas x Mes y/o Año)",
-			"Estadísticas por IP o segmento de red (Cantidad de hallazgos identificados)",
-			"Filtrar búsquedas por fecha, año, mes, impacto, sitio, etc.",
-			"Comparativas por año."
+			"Número de revisiones por dependencia.",
+			"Número de hallazgos por dependencia.",
+			"Número de hallzagos con impacto.",
+			"Cantidad de hallazgos encontrados en periodo de tiempo",
+		);
+		$buttons = array(
+			'revisiones_dependencia',
+			'hallazgos_dependencia',
+			'hallazgos_impacto',
+			'hallazgos_date',
 		);
 		$num = 0;
+		// graficas de la 2 a la 5
 		foreach($titulos as $titulo){
-			$form["fieldset_$num"] = array(
+			$form["date_$num"] = array(
 				'#type' => 'fieldset', 
 				'#title' => t("$titulo"), 
 				'#open' => TRUE, 
 				'#collapsible' => TRUE, 
+				'#tree' => TRUE,
 			); 
-			$form["fieldset_$num"]["b_$num"] = array(
+			$form["date_$num"]['fecha1'] = array (
+				'#type' => 'date',
+				'#title' => t('Fecha inicial'),
+				'#default_value' => '',
+				'#date_date_format' => 'Y/m/d',
+				'#description' => date('d/m/Y', time()),
+			);
+			$form["date_$num"]['fecha2'] = array (
+				'#type' => 'date',
+				'#title' => t('Fecha final'),
+				'#default_value' => '',
+				'#date_date_format' => 'Y/m/d',
+				'#description' => date('d/m/Y', time()),
+			);
+			$form["date_$num"]['submit'] = array(
 				'#type' => 'submit',
 				'#value' => t('Descargar graficas'),
-				'#name' => "b_$num",
+				'#name' => $buttons[$num],
 				'#button_type' => 'primary',
 			);
 			$num++;
 		}
-		/*$form['alta_file'] = array(
+		// grafica 6
+		$titulo = "Estadisticas por sitio";
+		$form["sites"] = array(
+			'#type' => 'fieldset', 
+			'#title' => t("$titulo"), 
+			'#open' => TRUE, 
+			'#collapsible' => TRUE, 
+			'#tree' => TRUE,
+		); 
+		$form['sites']['sitio'] = array (
+			'#type' => 'select',
+			'#title' => t('Listado de sitios'),
+			'#options' => $options,
+			'#description' => "Selecciona un sitio",
+		);
+		$form['sites']['submit'] = array(
 			'#type' => 'submit',
-			'#value' => t('Cargar archivo'),
-			'#name' => 'alta_file',
+			'#value' => t('Descargar graficas'),
+			'#name' => "sitio",
 			'#button_type' => 'primary',
-		);*/
+		);
+		// grafica 7
+		$titulo = "Hallazgos identificados por ip.";
+		$form["hallazgos_ip"] = array(
+			'#type' => 'fieldset', 
+			'#title' => t("$titulo"), 
+			'#open' => TRUE, 
+			'#collapsible' => TRUE, 
+		); 
+		$form["hallazgos_ip"]["button"] = array(
+			'#type' => 'submit',
+			'#value' => t('Descargar graficas'),
+			'#name' => "hallazgos_ip",
+			'#button_type' => 'primary',
+		);
+
 		return $form;
 	}
 	/*
  	 *
 	 */
-/*	
+	
 	public function validateForm(array &$form, FormStateInterface $form_state) {
 		$button_clicked = $form_state->getTriggeringElement()['#name'];
-		if($button_clicked == 'alta'){
-			$ip = $form_state->getValue('ip');
-			if (strlen($form_state->getValue('description')) <= 0) {
-				$form_state->setErrorByName('description', $this->t('Se debe agregar una descripcion del sitio'));
-			}
-			if (strlen($ip) <= 0) {
-				$form_state->setErrorByName('ip', $this->t('Se debe ingresar una direccion ip'));
-			} else if(!(filter_var($ip, FILTER_VALIDATE_IP) || filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))){
-				$form_state->setErrorByName('ip', $this->t('Se debe ingresar una direccion ip valida'));
-			}
-			if (strlen($form_state->getValue('enlace')) <= 0) {
-				$form_state->setErrorByName('enlace', $this->t('Se debe ingresar una url'));
-			}
-		} else if($button_clicked == 'alta_file'){
-			if ($form_state->getValue('csv_file') == NULL) {
-				$form_state->setErrorByName('csv_file', $this->t('No se puede subir el archivo seleccionado'));
+
+		$buttons_list = [
+			'revisiones_dependencia' => 'date_0',
+			'hallazgos_dependencia' => 'date_1',
+			'hallazgos_impacto' => 'date_2',
+			'hallazgos_date' => 'date_3',
+		];
+		// validacion de los elementos ingresados
+		if(array_key_exists($button_clicked, $buttons_list)){
+			$field = $buttons_list["$button_clicked"];
+			$date1 = $form_state->getValue(["$field",'fecha1']);
+			$date2 = $form_state->getValue(["$field",'fecha2']);
+			
+			if(empty($date1) || empty($date2)){
+				$form_state->setErrorByName("$field", $this->t("Se deben de ingresar ambas fechas"));
+			} else if(strtotime($date1) > strtotime($date2)){
+				$form_state->setErrorByName("$field", $this->t("La fecha inicial '$date1' es mayor a la fecha final '$date2'"));
+			}	
+		} else if($button_clicked == "sitio"){
+			$sitio = $form_state->getValue(['sites', 'sitio']); 
+			if($sitio == "vacio"){
+				$form_state->setErrorByName('sites', t("Se debe seleccionar un sitio."));
 			}
 		}
 	}
@@ -153,256 +210,421 @@ class EstadisticasForm extends FormBase {
 		\Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
 	        $connection = \Drupal\Core\Database\Database::getConnection();
 
-		/*
-		//Estadísticas por IP o segmento de red(Cantidad de hallazgos identificados)
-		$select = $connection->select('dir_ip', 'ip');
-		//se hace join con tablas necesarias
-		$select ->join('ip_sitios', 'ips', 'ip.id_ip = ips.id_ip');
-		$select ->join('sitios', 's', 's.id_sitio = ips.id_sitio');
-		$select ->join('revisiones_sitios', 'rs', 'rs.id_sitio = s.id_sitio');
-		$select ->join('revisiones_hallazgos', 'rh', 'rh.id_rev_sitio = rs.id_rev_sitio');
-		$select ->join('hallazgos', 'h', 'h.id_hallazgo = rh.id_hallazgo');
-		//Se especifican las columnas a leet
-		$select->fields('ip', array('dir_ip_sitios'));
-		$select->addExpression('COUNT(*)', 'cuenta');
-		$select->groupBy('dir_ip_sitios');
-		$select->range(0,10);
-		$results = $select->execute();
- 		*/
+		// verificamos que boton se presiono, con esto sabemos que se va a graficar
+		$button_clicked = $form_state->getTriggeringElement()['#name'];
 
-		$select = $connection->select('hallazgos', 'h');
-		//Se especifican las columnas a leer
-		$select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
-		//Se cuenta la aparicion de los hallazgos
-		$select->addExpression('COUNT(*)', 'count');
-		//Se agrupan por nombre
-		$select->groupBY('nombre_hallazgo_vulnerabilidad');
-		//Se muestran solo los primeros 10 resultados
-		$select->range(0,10);
-		$results = $select->execute();
-		
-
-		// agregamos los valores de la consulta a un arreglo
+		// arreglo que contendra los valores a greficar
 		$valores = array();
-		$valores[0] = ["", "Cantidad"]; 
-		$contador = 1;
-		foreach($results as $result){
-			//$valores["$result->nombre_hallazgo_vulnerabilidad"] = $result->count;
-			$valores["$contador"] = [$result->nombre_hallazgo_vulnerabilidad, $result->count];
-			$contador++;
-		}	
-		/* Inicio de Prueba 1, esto ya crea un archivo csv */
-		/*
-		$response = new Response();
-		$response->headers->set('Pragma', 'no-cache');
-    		$response->headers->set('Expires', '0');
-    		$response->headers->set('Content-Type', 'application/vnd.ms-excel');
-    		$response->headers->set('Content-Disposition', 'attachment; filename=demo.xlsx');
+		$contador = 3;
+
+		$titulo_chart = "Top 10 ";
+		switch($button_clicked){
+		case "revisiones_dependencia":
+			// nombre del archivo
+			$name = "revisiones_dependencia.xlsx"; 
+
+			// obtenemos las fechas
+			$date1 = $form_state->getValue(['date_0','fecha1']);
+			$date2 = $form_state->getValue(['date_0','fecha2']);
+			$date1 = str_replace("-","/",$date1);
+			$date2 = str_replace("-","/",$date2);
+
+			// titulo que tendra el grafico hasta arriba
+			$titulo_excel = "Revisiones de dependencias ($date1 - $date2)";
+			
+			// titulo que tendran las graficas
+			$titulo_chart .= "revisiones ($date1 - $date2)";
+			
+			$valores[0] = ["", "$titulo_excel"]; 
+			$valores[1] = ["", ""];
+			$valores[2] = ["", "Cantidad"];
+			
+			// realizamos la consulta
+			$select = $connection->select('dependencias', 'd');
+			//se hace join con tablas necesarias
+			$select->join('dependencias_sitios', 'ds', 'd.id_dependencia = ds.id_dependencia');
+			$select->join('sitios', 's', 's.id_sitio = ds.id_sitio');
+			$select->join('revisiones_sitios', 'rs', 'rs.id_sitio = s.id_sitio');
+			$select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+			//Se especifican las columnas a leer
+			$select->fields('d', array('nombre_dependencia'));
+			$select->addExpression('COUNT(*)', 'cuenta');
+			$select->condition('fecha_inicio_revision', array($date1, $date2), 'BETWEEN');
+			$select->groupBy('nombre_dependencia');
+			$select->orderBy('cuenta', 'DESC');
+			$results = $select->execute();
+
+			// agregamos los valores de la consulta a un arreglo
+			foreach($results as $result){
+				$valores["$contador"] = [$result->nombre_dependencia, $result->cuenta];
+				$contador++;
+			}	
+
+			break;
+		case "hallazgos_comunes":
+			// nombre del archivo
+			$name = "hallazgos_comunes.xlsx"; 
+
+			// titulo que tendra el grafico hasta arriba
+			$titulo_excel = "Hallazgos más comunes en revisiones";
+
+			// titulo que tendran las graficas
+			$titulo_chart .= "hallazgos más comunes";
+
+			$valores[0] = ["", "$titulo_excel"]; 
+			$valores[1] = ["", ""];
+			$valores[2] = ["", "Cantidad"];
+
+			$select = $connection->select('hallazgos', 'h');
+			$select->join('revisiones_hallazgos', 'rh', 'h.id_hallazgo = rh.id_hallazgo');
+			$select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
+			$select->addExpression('COUNT(*)', 'cuenta');
+			$select->groupBy('nombre_hallazgo_vulnerabilidad');
+			$select->orderBy('cuenta', 'DESC');
+			$results = $select->execute();
+
+			// agregamos los valores de la consulta a un arreglo
+			foreach($results as $result){
+				$valores["$contador"] = [$result->nombre_hallazgo_vulnerabilidad, $result->cuenta];
+				$contador++;
+			}	
+
+			break;
+		case "hallazgos_dependencia":
+			// nombre del archivo
+			$name = "hallazgos_dependencia.xlsx"; 
+
+			// obtenemos las fechas
+			$date1 = $form_state->getValue(['date_1','fecha1']);
+			$date2 = $form_state->getValue(['date_1','fecha2']);
+			$date1 = str_replace("-","/",$date1);
+			$date2 = str_replace("-","/",$date2);
+
+			// titulo que tendra el grafico hasta arriba
+			$titulo_excel = "Hallazgos en dependencias ($date1 - $date2)";
+			
+			// titulo que tendran las graficas
+			$titulo_chart .= "dependencias con más hallazgos ($date1 - $date2)";
+			
+			$valores[0] = ["", "$titulo_excel"]; 
+			$valores[1] = ["", ""];
+			$valores[2] = ["", "Cantidad"];
+
+			//Número de hallazgos por dependencia. (Por mes y por año)
+			$select = $connection->select('dependencias', 'd');
+			//se hace join con tablas necesarias
+			$select->join('dependencias_sitios', 'ds', 'd.id_dependencia = ds.id_dependencia');
+			$select->join('sitios', 's', 's.id_sitio = ds.id_sitio');
+			$select->join('revisiones_sitios', 'rs', 'rs.id_sitio = s.id_sitio');
+			$select->join('revisiones_hallazgos', 'rh', 'rh.id_rev_sitio = rs.id_rev_sitio');
+			$select->join('hallazgos', 'h', 'h.id_hallazgo = rh.id_hallazgo');
+			$select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+	                //Se especifican las columnas a leer
+			$select->fields('d', array('nombre_dependencia'));
+			$select->addExpression('COUNT(*)', 'cuenta');
+			$select->condition('fecha_inicio_revision', array($date1, $date2), 'BETWEEN');
+			$select->groupBy('nombre_dependencia');
+			$select->orderBy('cuenta', 'DESC');
+			$results = $select->execute();
+
+			// agregamos los valores de la consulta a un arreglo
+			foreach($results as $result){
+				$valores["$contador"] = [$result->nombre_dependencia, $result->cuenta];
+				$contador++;
+			}	
+			break;
+
+		case 'sitio':
+			// nombre del archivo
+			$name = "sitio.xlsx"; 
+
+			// id del sitio
+			$id_sitio = $form_state->getValue(['sites','sitio']);
+
+			// consulta para traer los sitios
+			$select = $connection->select('sitios', 's');
+			$select->fields('s', array('url_sitio'));
+			$select->condition('id_sitio', $id_sitio);
+			$results = $select->execute();
+
+			foreach($results as $result){
+				$sitio = $result->url_sitio;
+			}	
+			
+			// titulo que tendra el grafico hasta arriba
+			$titulo_excel = "Estadisticas del sitio $sitio";
+			
+			// titulo que tendran las graficas
+			$titulo_chart = "Sitio '$sitio'";
+			
+			$valores[0] = ["", "$titulo_excel"]; 
+			$valores[1] = ["", ""];
+			$valores[2] = ["", "Cantidad"];
+			
+			$select = $connection->select('revisiones_hallazgos', 'rh');
+			$select->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
+			$select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+			$select->fields('rh', array('impacto_hall_rev'));
+			$select->condition('rs.id_sitio', $id_sitio);
+			$results = $select->execute();
+
+			// criticidad
+			$critico = array(
+				"CRITICO" => 0,
+				"ALTO" => 0,
+				"MEDIO" => 0,
+				"BAJO" => 0,
+				"SIN IMPACTO" => 0,
+			);
+			// obtenemos los resultados de las consultas
+			foreach($results as $result){
+				$nivel = explode(" ", $result->impacto_hall_rev);
+				$critico["$nivel[1]"] += 1;
+			}
+
+			foreach($critico as $level => $value){
+				$valores[$contador] = ["$level", "$value"];
+				$contador++;
+			}
+
+			break;
+
+		case 'hallazgos_impacto':
+			// nombre del archivo
+			$name = "hallazgos_impacto.xlsx"; 
+
+			// obtenemos las fechas
+			$date1 = $form_state->getValue(['date_2','fecha1']);
+			$date2 = $form_state->getValue(['date_2','fecha2']);
+			$date1 = str_replace("-","/",$date1);
+			$date2 = str_replace("-","/",$date2);
+
+			// titulo que tendra el grafico hasta arriba
+			$titulo_excel = "Hallazgos por impacto ($date1 - $date2)";
+			
+			// titulo que tendran las graficas
+			$titulo_chart = "Cantidad de hallazgos ($date1 - $date2)";
+			
+			$valores[0] = ["", "$titulo_excel"]; 
+			$valores[1] = ["", ""];
+			$valores[2] = ["", "Cantidad"];
+			
+			$select = $connection->select('revisiones_hallazgos', 'rh');
+			$select->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
+			$select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+			$select->fields('rh', array('impacto_hall_rev'));
+			$select->condition('fecha_inicio_revision', array($date1, $date2), 'BETWEEN');
+			$results = $select->execute();
+
+			// criticidad
+			$critico = array(
+				"CRITICO" => 0,
+				"ALTO" => 0,
+				"MEDIO" => 0,
+				"BAJO" => 0,
+				"SIN IMPACTO" => 0,
+			);
+			// obtenemos los resultados de las consultas
+			foreach($results as $result){
+				$nivel = explode(" ", $result->impacto_hall_rev);
+				$critico["$nivel[1]"] += 1;
+			}
+
+			foreach($critico as $level => $value){
+				$valores[$contador] = ["$level", "$value"];
+				$contador++;
+			}
+
+			break;
+		case "hallazgos_date":
+			// nombre del archivo
+			$name = "hallazgos_fecha.xlsx"; 
+
+			// obtenemos las fechas
+			$date1 = $form_state->getValue(['date_3','fecha1']);
+			$date2 = $form_state->getValue(['date_3','fecha2']);
+			$date1 = str_replace("-","/",$date1);
+			$date2 = str_replace("-","/",$date2);
+
+			// titulo que tendra el grafico hasta arriba
+			$titulo_excel = "Hallazgos por concurencia ($date1 - $date2)";
+			
+			// titulo que tendran las graficas
+			$titulo_chart .= "hallazgos ($date1 - $date2)";
+			
+			$valores[0] = ["", "$titulo_excel"]; 
+			$valores[1] = ["", ""];
+			$valores[2] = ["", "Cantidad"];
+			
+			// realizamos la consulta
+			$select = $connection->select('hallazgos', 'h');
+			//se hace join con tablas necesarias
+			$select ->join('revisiones_hallazgos', 'rh', 'h.id_hallazgo = rh.id_hallazgo');
+			$select ->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
+			$select ->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+			//Se especifican las columnas a leer
+			$select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
+			$select->addExpression('COUNT(*)', 'cuenta');
+			$select->condition('fecha_inicio_revision', array($date1, $date2), 'BETWEEN');
+			$select->groupBy('nombre_hallazgo_vulnerabilidad');
+			$select->orderBy('cuenta', 'DESC');
+			$results = $select->execute();
+
+			// agregamos los valores de la consulta a un arreglo
+			foreach($results as $result){
+				$valores["$contador"] = [$result->nombre_hallazgo_vulnerabilidad, $result->cuenta];
+				$contador++;
+			}	
+
+			break;
+		case "hallazgos_ip":
+			// nombre del archivo
+			$name = "hallazgos_ip.xlsx"; 
+
+			// titulo que tendra el grafico hasta arriba
+			$titulo_excel = "Hallazgos identificados por IP";
+
+			// titulo que tendran las graficas
+			$titulo_chart .= "hallazgos por IP";
+
+			$valores[0] = ["", "$titulo_excel"]; 
+			$valores[1] = ["", ""];
+			$valores[2] = ["", "Cantidad"];
+
+			$select = $connection->select('dir_ip', 'ip');
+			//se hace join con tablas necesarias
+			$select ->join('ip_sitios', 'ips', 'ip.id_ip = ips.id_ip');
+			$select ->join('sitios', 's', 's.id_sitio = ips.id_sitio');
+			$select ->join('revisiones_sitios', 'rs', 'rs.id_sitio = s.id_sitio');
+			$select ->join('revisiones_hallazgos', 'rh', 'rh.id_rev_sitio = rs.id_rev_sitio');
+			$select ->join('hallazgos', 'h', 'h.id_hallazgo = rh.id_hallazgo');
+			//Se especifican las columnas a leet
+			$select->fields('ip', array('dir_ip_sitios'));
+			$select->addExpression('COUNT(*)', 'cuenta');
+			$select->groupBy('dir_ip_sitios');
+			$select->orderBy('cuenta', 'DESC');
+			$results = $select->execute();
+
+			// agregamos los valores de la consulta a un arreglo
+			foreach($results as $result){
+				$valores["$contador"] = [$result->dir_ip_sitios, $result->cuenta];
+				$contador++;
+			}	
+
+			break;
+		}
 		
-		//object of the Spreadsheet class to create the excel data
-		$spreadsheet = new Spreadsheet();
-		
-		//add some data in excel cells
-		$spreadsheet->setActiveSheetIndex(0)
-	     	->setCellValue('A1', 'Domain')
-		->setCellValue('B1', 'Category')
-		->setCellValue('C1', 'Nr. Pages');
-
-		$spreadsheet->setActiveSheetIndex(0)
- 		->setCellValue('A2', 'CoursesWeb.net')
- 		->setCellValue('B2', 'Web Development')
- 		->setCellValue('C2', '4000');
-
-		$spreadsheet->setActiveSheetIndex(0)
- 		->setCellValue('A3', 'MarPlo.net')
- 		->setCellValue('B3', 'Courses & Games')
- 		->setCellValue('C3', '15000');
-
-		//set style for A1,B1,C1 cells
-		$cell_st =[
-			'font' =>['bold' => true],
- 			'alignment' =>['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
- 			'borders'=>['bottom' =>['style'=> \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM]]
-		];
-		$spreadsheet->getActiveSheet()->getStyle('A1:C1')->applyFromArray($cell_st);
-
-		//set columns width
-		$spreadsheet->getActiveSheet()->getColumnDimension('A')->setWidth(16);
-		$spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(18);
-
-		$spreadsheet->getActiveSheet()->setTitle('Simple'); //set a title for Worksheet
-
-		//make object of the Xlsx class to save the excel file
-		//$writer = new Xlsx($spreadsheet);
-		$writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-		$fxls ='excel-file_1.xlsx';
-		//ob_start();
-		$writer->save("public://$fxls");
-
-		$writer1 = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
-		//$writer1 = IOFactory::createWriter($spreadsheet, 'csv');
-		$writer1->setSheetIndex(0);   // Select which sheet to export.
-		$writer1->setDelimiter(';');
-		$writer1->save("public://test.csv");
- */
-
+		/* En esta parte se inicia la graficacion  */	
 
 		// nos dice las celdas que se toman para graficar 
 		$cont_1 = $contador + 1;
 		// nos dice el numero de la celda donde se inserta la grafica
 		$cont_2 = $contador + 2;
-		$sitio = "Sitio_1";
+		
 		$spreadsheet = new Spreadsheet();
+		// unimos las celdas que usamos para el titulo del excel
+		$spreadsheet->getActiveSheet()->mergeCells("B1:G1");
+		$cell_st =[
+			'font' =>['bold' => true],
+ 			'alignment' =>['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+ 			'borders'=>['bottom' =>['style'=> \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM]]
+		];
+
+		$spreadsheet->getActiveSheet()->getStyle('B1:F1')->applyFromArray($cell_st);
 		$worksheet = $spreadsheet->getActiveSheet();
-		/*$worksheet->fromArray(
-		    [
-		        ['', "$sitio"],
-		        ['Critico', 2],
-		        ['Alto', 4],
-		        ['Medio', 5],
-		        ['Bajo', 1],
-		    ]
-	    );*/
+		
 		$worksheet->fromArray($valores);
 
-		/*$colors = [
-		    'c00000', 'ff0000', 'ffff00', '00b050',
-	    ];*/
+		$len_array = count($valores);
 
-		// Set the Labels for each data series we want to plot
-		//     Datatype
-		//     Cell reference for data
-		//     Format Code
-		//     Number of datapoints in series
-		//     Data values
-		//     Data Marker
+		$res = $len_array - 3 < 10 ? $len_array : 13;
+
 		$dataSeriesLabels1 = [
-		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$B$1', null, 1), // 2011
+		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$B$3', null, 1), // 2011
 		];
-		// Set the X-Axis Labels
-		//     Datatype
-		//     Cell reference for data
-		//     Format Code
-		//     Number of datapoints in series
-		//     Data values
-		//     Data Marker
 		
 		$xAxisTickValues1 = [
-		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$A$2:$A$'.$contador, null, 4), // Q1 to Q4
+		    //new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$A$2:$A$'.$contador, null, 4), // Q1 to Q4
+		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$A$4:$A$'.$res, null, 4), // Q1 to Q4
 		];
-		// Set the Data values for each data series we want to plot
-		//     Datatype
-		//     Cell reference for data
-		//     Format Code
-		//     Number of datapoints in series
-		//     Data values
-		//     Data Marker
+		
 		$dataSeriesValues1 = [
-			new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Worksheet!$B$2:$B$'.$contador, null, 4),
+			//new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Worksheet!$B$2:$B$'.$contador, null, 4),
+			new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Worksheet!$B$4:$B$'.$res, null, 4),
 			//new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Worksheet!$B$2:$B$'.$cont_1, null, 4, [], null, $colors),
 		];
-		//$dataSeriesValues1->setFillColor($colors);
 	
 		// Build the dataseries
 		$series1 = new DataSeries(
-		    DataSeries::TYPE_PIECHART, // plotType
-		    null, // plotGrouping (Pie charts don't have any grouping)
-		    range(0, count($dataSeriesValues1) - 1), // plotOrder
-		    $dataSeriesLabels1, // plotLabel
-		    $xAxisTickValues1, // plotCategory
-		    $dataSeriesValues1          // plotValues
+		    DataSeries::TYPE_PIECHART, 			// plotType
+		    null,	 				// plotGrouping (Pie charts don't have any grouping)
+		    range(0, count($dataSeriesValues1) - 1), 	// plotOrder
+		    $dataSeriesLabels1, 			// plotLabel
+		    $xAxisTickValues1, 				// plotCategory
+		    $dataSeriesValues1          		// plotValues
 		);
 	
 		// Set up a layout object for the Pie chart
 		$layout1 = new Layout();
 		$layout1->setShowVal(true);
-		//$layout1->setShowPercent(true);
 
 		// Set the series in the plot area
 		$plotArea1 = new PlotArea($layout1, [$series1]);
+
 		// Set the chart legend
 		$legend1 = new Legend(Legend::POSITION_RIGHT, null, false);
 	
-		$title1 = new Title("Test $sitio pie");
+		$title1 = new Title("$titulo_chart");
 	
 		// Create the chart
 		$chart1 = new Chart(
-		    'chart1', // name
-		    $title1, // title
-		    $legend1, // legend
-		    $plotArea1, // plotArea
-		    true, // plotVisibleOnly
-		    DataSeries::EMPTY_AS_GAP, // displayBlanksAs
-		    null, // xAxisLabel
-		    null   // yAxisLabel - Pie charts don't have a Y-Axis
+		    'chart1', 			// name
+		    $title1, 			// title
+		    $legend1, 			// legend
+		    $plotArea1, 		// plotArea
+		    true, 			// plotVisibleOnly
+		    DataSeries::EMPTY_AS_GAP, 	// displayBlanksAs
+		    null, 			// xAxisLabel
+		    null   			// yAxisLabel - Pie charts don't have a Y-Axis
 		);
 
 		
 		// Set the position where the chart should appear in the worksheet
-		$chart1->setTopLeftPosition('A'.$cont_2);
-		$chart1->setBottomRightPosition('H20');
+		$chart1->setTopLeftPosition('D3');
+		$chart1->setBottomRightPosition('M20');
 		
 		// Add the chart to the worksheet
 		$worksheet->addChart($chart1);
 	
-		// Set the Labels for each data series we want to plot
-		//     Datatype
-		//     Cell reference for data
-		//     Format Code
-		//     Number of datapoints in series
-		//     Data values
-		//     Data Marker
-
-
-
-
 		/* de a qui en adelante es el segundo chart */
-		
-		
-		
 		$dataSeriesLabels2 = [
 		    //new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$C$1', null, 1), // 2011
-		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$B$1', null, 1), // 2010
+		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$B$3', null, 1), // 2010
 		    //new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$C$1', null, 1), // 2011
 		    //new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$D$1', null, 1), // 2012
 		];
-		// Set the X-Axis Labels
-		//     Datatype
-		//     Cell reference for data
-		//     Format Code
-		//     Number of datapoints in series
-		//     Data values
-		//     Data Marker
 		$xAxisTickValues2 = [
-		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$A$2:$A$'.$contador, null, 4), // Q1 to Q4
+		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_STRING, 'Worksheet!$A$4:$A$'.$res, null, 4), // Q1 to Q4
 		];
-		// Set the Data values for each data series we want to plot
-		//     Datatype
-		//     Cell reference for data
-		//     Format Code
-		//     Number of datapoints in series
-		//     Data values
-		//     Data Marker
 		$dataSeriesValues2 = [
 		    //new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Worksheet!$C$2:$C$5', null, 4),
-		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Worksheet!$B$2:$B$'.$contador, null, 4),
+		    new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Worksheet!$B$4:$B$'.$res, null, 4),
 		    //new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Worksheet!$C$2:$C$5', null, 4),
 		    //new DataSeriesValues(DataSeriesValues::DATASERIES_TYPE_NUMBER, 'Worksheet!$D$2:$D$5', null, 4),
 		];
 
 		// Build the dataseries
 		$series2 = new DataSeries(
-			DataSeries::TYPE_BARCHART, // plotType
-			DataSeries::GROUPING_STANDARD, // plotGrouping 
-    			//null, // plotGrouping (Donut charts don't have any grouping) Estamos cambiando por columnas
-		    range(0, count($dataSeriesValues2) - 1), // plotOrder
-		    $dataSeriesLabels2, // plotLabel
-		    $xAxisTickValues2, // plotCategory
-		    $dataSeriesValues2        // plotValues
+			DataSeries::TYPE_BARCHART, 			// plotType
+			DataSeries::GROUPING_STANDARD, 			// plotGrouping 
+		    range(0, count($dataSeriesValues2) - 1), 		// plotOrder
+		    $dataSeriesLabels2, 				// plotLabel
+		    $xAxisTickValues2, 					// plotCategory
+		    $dataSeriesValues2        				// plotValues
 		);
 
 		// Set additional dataseries parameters
-		//     Make it a vertical column rather than a horizontal bar graph
+		// Make it a vertical column rather than a horizontal bar graph
 		$series2->setPlotDirection(DataSeries::DIRECTION_COL);
 		
 		// Set up a layout object for the Column chart
@@ -411,210 +633,46 @@ class EstadisticasForm extends FormBase {
 		$layout2->setShowCatName(true);
 
 		// Set the series in the plot area
-		//$plotArea2 = new PlotArea($layout2, [$series2]);
 		$plotArea2 = new PlotArea(null, [$series2]);
 
 		// Set the chart legend
 		$legend = new Legend(Legend::POSITION_RIGHT, null, false);
 
 		//$title2 = new Title('Test Donut Chart');
-		$title2 = new Title("Test $sitio Column");
+		$title2 = new Title("$titulo_chart");
 
 		$yAxisLabel = new Title('Value ($k)');
 
 		// Create the chart
 		$chart2 = new Chart(
-		    'chart2', // name
-		    $title2, // title
-		    $legend, // legend
-		    $plotArea2, // plotArea
-		    true, // plotVisibleOnly
-		    DataSeries::EMPTY_AS_GAP, // displayBlanksAs
-		    null, // xAxisLabel
-		    null   // yAxisLabel - Like Pie charts, Donut charts don't have a Y-Axis
+		    'chart2', 			// name
+		    $title2, 			// title
+		    $legend, 			// legend
+		    $plotArea2, 		// plotArea
+		    true, 			// plotVisibleOnly
+		    DataSeries::EMPTY_AS_GAP, 	// displayBlanksAs
+		    null, 			// xAxisLabel
+		    null   			// yAxisLabel - Like Pie charts, Donut charts don't have a Y-Axis
 		);
 
 		// Set the position where the chart should appear in the worksheet
-		$chart2->setTopLeftPosition('I'.$cont_2);
-		$chart2->setBottomRightPosition('P20');
+		$chart2->setTopLeftPosition('D22');
+		$chart2->setBottomRightPosition('M39');
 	
 		// Add the chart to the worksheet
 		$worksheet->addChart($chart2);
 
-		//$path = "public://Templates";
-		// Save Excel 2007 file
-		$filename = "poc_1.xlsx";//$helper->getFilename(__FILE__);
+		$date = date("Y-m-d_H-i-s");
+		$filename = "$date" . "_" . "$name";
 		$writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
 		$writer->setIncludeCharts(true);
 		$callStartTime = microtime(true);
-		$writer->save("public://Templates/$filename");
-		//$helper->logWrite($writer, $filename, $callStartTime);
+		$writer->save("public://Graficas/$filename");
 
-
-		// funciona
-		//$redirect = new RedirectResponse(Url::fromUserInput("/sites/default/files/Templates/$filename")->toString());
-		//$redirect->send();
-
-		//prueba
-		//$redirect = new RedirectResponse("/sites/default/files/Templates/$filename");
-		//$redirect->send();
-		//return $redirect;
-		$uri = "/sites/default/files/Templates/$filename";
-		//$response = new BinaryFileResponse("$uri");
-		//$headers = array(
-			        //'Content-Type'     => 'application/pdf',
-		//	        'Content-Disposition' => 'attachment;filename="'.$fileName.'"');
-		//$response->setContentDisposition('attachment', $filename);
-		//$form_state->setResponse($response);
-
-		//return new BinaryFileResponse($uri, 200, $headers, true);
-
-		$content = file_get_contents("public://Templates/$filename");
-	        $file_size = strlen($content);
-	        header('Content-Description: File Transfer');
-		header('Content-Type: xlsx'); //Im assuming it is audio file you can have your own logic to assign content type dynamically for your file types
-		header("Content-Disposition: attachment; filename=$filename"); //Im assuming it is audio mp3 file you can have your own logic to  assign file extension dynamically for your files 
-		header('Expires: 0');
-		header('Cache-Control: must-revalidate');
-		header('Pragma: public');
-		header('Content-Length: ' . $file_size);
-		//flush();
-		
-		
-		// funciona
-		$redirect = new RedirectResponse(Url::fromUserInput("/estadisticas")->toString());
-		
-		flush();
-		echo($content);
+		// se hace la redireccion a donde se encuentra el archivo y se descarga
+		$redirect = new RedirectResponse(Url::fromUserInput("/sites/default/files/Graficas/$filename")->toString());
 		$redirect->send();
-		drupal_flush_all_caches();
-		$messenger_service = \Drupal::service('messenger');
-		$messenger_service->addMessage(t("Se dio de alta el sitio."));
-		
-/*		$connection = \Drupal\Core\Database\Database::getConnection();
-		$messenger_service = \Drupal::service('messenger');
-		if($form_state->getTriggeringElement()['#name'] == 'alta_file'){
-			$file_csv = $form_state->getValue('csv_file');
-			$file_content = \Drupal\file\Entity\File::load($file_csv[0]);
-			$file_uri = $file_content->getFileUri();
-			$stream_wrapper_manager = \Drupal::service('stream_wrapper_manager')->getViaUri($file_uri);
-			$file_path = $stream_wrapper_manager->realpath();
-			$spreadsheet = IOFactory::load($file_path);
-			$sheetData = $spreadsheet->getActiveSheet();
-			$rows = array();
-			foreach ($sheetData->getRowIterator() as $row) {  
-				$cellIterator = $row->getCellIterator();
-				$cellIterator->setIterateOnlyExistingCells(FALSE); 
-				$cells = [];
-				foreach ($cellIterator as $cell) {
-					$cells[] = $cell->getValue();
-				}
-				$rows[] = $cells; 
-			}
-			array_shift($rows);
-			$cont = 0;
-			foreach($rows as $row){
-				$txn = $connection->startTransaction();
-				$cont++;
-				try{
-					$desc = $row[0];
-					$url = $row[1];
-					$ip = $row[2];
-					$depen = $row[3];
-					if(!empty($desc) && !empty($url) && !empty($ip) && !empty($depen)){
-						if((filter_var($ip, FILTER_VALIDATE_IP) || filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6))){
-							$query_sitios = $connection->insert('sitios')
-				  ->fields(array(
-					  'descripcion_sitio' => $desc,
-					  'url_sitio' => $url,
-				  ))
-				  ->execute();
-							$select_ip = $connection->select('dir_ip', 'd')
-			       ->fields('d', array('id_ip'))
-			       ->condition("d.dir_ip_sitios", "$ip");
-							$results = $select_ip->execute()->fetchAll();
-							if(!empty($results)){
-								foreach ($results as $record) {
-									$id_ip = $record->id_ip;
-								}
-							} else {
-								$id_ip = $connection->insert('dir_ip')
-			    ->fields(array(   
-				    'dir_ip_sitios' => $ip,
-			    )) ->execute();
-							}
-							$select_dependencia = $connection->select('dependencias', 'd')
-					->fields('d', array('id_dependencia'))
-					->condition("d.nombre_dependencia", "$depen");
-							$results = $select_dependencia->execute()->fetchAll();
-							if(!empty($results)){
-								foreach ($results as $record) {
-									$id_dependencia = $record->id_dependencia;
-								}
-							} else {
-								$id_dependencia = $connection->insert('dependencias')
-				     ->fields(array(   
-					     'nombre_dependencia' => $depen,
-				     )) ->execute();
-							}
-							$query_ip_sitios = $connection->insert('ip_sitios')
-				     ->fields(array(
-					     'id_ip' => $id_ip,
-					     'id_sitio' => $query_sitios,
-				     ))
-				     ->execute();
-							$query_ip_sitios = $connection->insert('dependencias_sitios')
-				     ->fields(array(
-					     'id_dependencia' => $id_dependencia,
-					     'id_sitio' => $query_sitios,
-				     ))
-				     ->execute();
-							$messenger_service->addMessage(t("Sitio dado de alta, registro: $cont"));
-						} else {
-							$messenger_service->addError(t("Ingreda una direccion ip valida, registro: $cont"));
-						}
-					} else {
-						$messenger_service->addError(t("Valida la información ingresada, registro: $cont"));
-					}
-				} catch(Exception $e) {
-					$txn->rollBack();
-				}
-			}
-		} else {
-			$desc = Html::escape($form_state->getValue('description'));
-			$url = Html::escape($form_state->getValue('enlace'));
-			$id_depen = $form_state->getValue('select');
-			$ip = $form_state->getValue('ip');
-			$txn = $connection->startTransaction();
-			try{
-				$query_sitios = $connection->insert('sitios')
-			       ->fields(array(
-				       'descripcion_sitio' => $desc,
-				       'url_sitio' => $url,
-			       ))
-			       ->execute();
-				$query_ip = $connection->insert('dir_ip')
-			   ->fields(array(    
-				   'dir_ip_sitios' => $ip,
-			   ))    
-			   ->execute();
-				$query_ip_sitios = $connection->insert('ip_sitios')
-				  ->fields(array(
-					  'id_ip' => $query_ip,
-					  'id_sitio' => $query_sitios,
-				  ))
-				  ->execute();
-				$query_ip_sitios = $connection->insert('dependencias_sitios')
-				  ->fields(array(
-					  'id_dependencia' => $id_depen,
-					  'id_sitio' => $query_sitios,	
-				  ))
-				  ->execute();
-				$messenger_service->addMessage(t("Se dio de alta el sitio."));
-			} catch(Exception $e) {
-				$txn->rollBack();
-			}
-		}*/
+
 	}
 }
 ?>
