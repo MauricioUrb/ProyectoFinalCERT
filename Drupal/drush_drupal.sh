@@ -167,3 +167,7 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 #https://www.drupal.org/docs/creating-custom-modules/basic-structure
 # Status del sitio
 /var/www/drupal/vendor/bin/drupal site:status --root=/var/www/drupal
+
+#Crear carpeta para guardar las estadisticas
+mkdir /var/www/drupal/web/sites/default/files/Graficas
+chown www-data:www-data /var/www/drupal/web/sites/default/files/Graficas
