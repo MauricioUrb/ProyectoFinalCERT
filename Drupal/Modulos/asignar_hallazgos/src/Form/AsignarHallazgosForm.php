@@ -135,6 +135,11 @@ class AsignarHallazgosForm extends FormBase{
       '#required' => TRUE,
       '#default_value' => $recursos_afectador,
     );
+    $urlT = Url::fromUri('https://www.first.org/cvss/calculator/3.1');
+    $project_linkT = Link::fromTextAndUrl(t('Calculadora CVSS 3.1'), $urlT);
+    $project_linkT = $project_linkT->toRenderable();
+    $project_linkT['#attributes'] = array('class' => array('button'));
+    $form['calculadora'] = array('#markup' => render($project_linkT),);
     $form['impacto'] =array(
       '#type' => 'textfield',
       '#title' => 'Impacto',
@@ -144,7 +149,7 @@ class AsignarHallazgosForm extends FormBase{
     );
     $form['cvss'] = array(
       '#type' => 'textfield',
-      '#title' => 'CVSS',
+      '#title' => 'Vector CVSS',
       '#required' => TRUE,
       '#default_value' => $cvss_hallazgos,
     );
@@ -158,6 +163,7 @@ class AsignarHallazgosForm extends FormBase{
     $project_link = $project_link->toRenderable();
     $project_link['#attributes'] = array('class' => array('button'));
     $form['cancelar'] = array('#markup' => render($project_link),);
+    
     return $form;    
   }
   /*
