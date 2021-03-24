@@ -37,104 +37,110 @@ class HallazgosAltaForm extends FormBase {
 	 * {@inheritdoc}
 	 */
 	public function buildForm(array $form, FormStateInterface $form_state) {
+		if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles()) || in_array('auxiliar', \Drupal::currentUser()->getRoles())){  	
+			$form_state->disableCache();
+			$form['browser'] = array(
+				'#type' => 'fieldset', 
+				'#title' => t('En esta página puede dar de dalta un nuevo hallazgo.'), 
+				'#collapsible' => TRUE, 
+				'#description' => t("Llene los campos solicitados o cargue un archivo CSV"), 	
+			); 
 
-		$form_state->disableCache();
-		$form['browser'] = array(
-			'#type' => 'fieldset', 
-			'#title' => t('En esta página puede dar de dalta un nuevo hallazgo.'), 
-			'#collapsible' => TRUE, 
-			'#description' => t("Llene los campos solicitados o cargue un archivo CSV"), 	
-		); 
+			$form['name'] = array(
+				'#type' => 'textfield',
+				'#title' => 'Nombre del hallazgo/vulnerabilidad',
+	      			'#size' => 60,
+	    		);
+			$form['description'] = array(
+				'#title' => t('Description'),
+	      			'#type' => 'textarea',
+	      			'#description' => t('Descripción de la vulnerabilidad/hallazgo'),
+	      			'#size' => 60,
+	    		);
+			$form['desc_corta'] = array(
+				'#title' => t('Solución corta'),
+	      			'#type' => 'textarea',
+	      			'#description' => t('Descripción corta de la vulnerabilidad/hallazgo'),
+	      			'#size' => 60,
+	    		);
+	    		$form['solution'] = array(
+	      			'#type' => 'textarea',
+	      			'#title' => t('Solución/Recomendación'),
+	      			'#description' => t('Solución o recomendación a la vulnerabilidad/hallazgo'),
+	    		);
+	    		$form['references'] = array(
+	      			'#title' => t('Referencias'),
+	      			'#type' => 'textarea',
+	      			'#size' => 60,
+	    		);
+	    		//aqui falta el catalogo para el impacto
+	    		$form['cvss_vector'] = array(
+	      			'#title' => t('Vector CVSS'),
+	      			'#type' => 'textfield',
+	      			'#maxlength' => 108,
+	      			'#size' => 100,
+				'#description' => t('Vector CVSS de la vulnerabilidad'),
+	    		);
+			$form['level'] = array(
+				'#type' => 'select',
+				'#title' => t("Nivel de la vulnerabilidad"),
+				'#options' => array(
+					'CRITICO' => 'CRITICO',
+					'ALTO' => 'ALTO',
+					'MEDIO' => 'MEDIO',
+					'BAJO' => 'BAJO',
+					'SIN IMPACTO' => 'SIN IMPACTO',
+				),
+				'#description' => t('Selecciona el nivel de la vulnerabilidad'),
+			);
+			$form['level_score'] = array(
+	      			'#type' => 'textfield',
+				'#description' => t('Ingresa el score de la vulnerabilidad'),
+	      			'#size' => 10,
+			);
+	    		$form['cvss_link'] = array(
+	      			'#title' => t('Enlace'),
+				'#type' => 'textfield',
+			      	'#maxlength' => 159,
+	      			'#size' => 60,
+	    		);
+	    		$form['resume'] = array(
+	      			'#title' => t('Resumen Ejecutivo'),
+	      			'#type' => 'textarea',
+	      			'#description' => t('Descripción de alto nivel, es decir, resumen ejecutivo'),
+	      			'#size' => 60,
+	    		);
+	    		$form['recomendation'] = array(
+	      			'#title' => t('Recomendación general'),
+	      			'#type' => 'textarea',
+	      			'#size' => 60,
+	   	 	);
+			$form['csv_file'] = array(
+				'#type' => 'managed_file',
+				'#title' => t('Archivo CSV.'),
+				'#description' => t('Cargar desde archivo CSV '),
+				'#upload_validators' => array(
+					'file_validate_extensions' => array('csv'),
+				),
+				'#upload_location' => 'public://content/csv_files/alta_hallazgos/',
+			);
+	    		$form['alta'] = array(
+	      			'#type' => 'submit',
+				'#value' => t('Dar de alta'),
+				'#name' => 'alta',
+	    		);
+			$form['alta_file'] = array(
+				'#type' => 'submit',
+				'#value' => t('Cargar archivo'),
+				'#name' => 'alta_file',
+			);
+	   		return $form;
+   		
+   		}
+    	else{
+    		return array('#markup' => "No tienes permiso para ver estos formularios.",);
+    	}
 
-		$form['name'] = array(
-			'#type' => 'textfield',
-			'#title' => 'Nombre del hallazgo/vulnerabilidad',
-      			'#size' => 60,
-    		);
-		$form['description'] = array(
-			'#title' => t('Description'),
-      			'#type' => 'textarea',
-      			'#description' => t('Descripción de la vulnerabilidad/hallazgo'),
-      			'#size' => 60,
-    		);
-		$form['desc_corta'] = array(
-			'#title' => t('Solución corta'),
-      			'#type' => 'textarea',
-      			'#description' => t('Descripción corta de la vulnerabilidad/hallazgo'),
-      			'#size' => 60,
-    		);
-    		$form['solution'] = array(
-      			'#type' => 'textarea',
-      			'#title' => t('Solución/Recomendación'),
-      			'#description' => t('Solución o recomendación a la vulnerabilidad/hallazgo'),
-    		);
-    		$form['references'] = array(
-      			'#title' => t('Referencias'),
-      			'#type' => 'textarea',
-      			'#size' => 60,
-    		);
-    		//aqui falta el catalogo para el impacto
-    		$form['cvss_vector'] = array(
-      			'#title' => t('Vector CVSS'),
-      			'#type' => 'textfield',
-      			'#maxlength' => 108,
-      			'#size' => 100,
-			'#description' => t('Vector CVSS de la vulnerabilidad'),
-    		);
-		$form['level'] = array(
-			'#type' => 'select',
-			'#title' => t("Nivel de la vulnerabilidad"),
-			'#options' => array(
-				'CRITICO' => 'CRITICO',
-				'ALTO' => 'ALTO',
-				'MEDIO' => 'MEDIO',
-				'BAJO' => 'BAJO',
-				'SIN IMPACTO' => 'SIN IMPACTO',
-			),
-			'#description' => t('Selecciona el nivel de la vulnerabilidad'),
-		);
-		$form['level_score'] = array(
-      			'#type' => 'textfield',
-			'#description' => t('Ingresa el score de la vulnerabilidad'),
-      			'#size' => 10,
-		);
-    		$form['cvss_link'] = array(
-      			'#title' => t('Enlace'),
-			'#type' => 'textfield',
-		      	'#maxlength' => 159,
-      			'#size' => 60,
-    		);
-    		$form['resume'] = array(
-      			'#title' => t('Resumen Ejecutivo'),
-      			'#type' => 'textarea',
-      			'#description' => t('Descripción de alto nivel, es decir, resumen ejecutivo'),
-      			'#size' => 60,
-    		);
-    		$form['recomendation'] = array(
-      			'#title' => t('Recomendación general'),
-      			'#type' => 'textarea',
-      			'#size' => 60,
-   	 	);
-		$form['csv_file'] = array(
-			'#type' => 'managed_file',
-			'#title' => t('Archivo CSV.'),
-			'#description' => t('Cargar desde archivo CSV '),
-			'#upload_validators' => array(
-				'file_validate_extensions' => array('csv'),
-			),
-			'#upload_location' => 'public://content/csv_files/alta_hallazgos/',
-		);
-    		$form['alta'] = array(
-      			'#type' => 'submit',
-			'#value' => t('Dar de alta'),
-			'#name' => 'alta',
-    		);
-		$form['alta_file'] = array(
-			'#type' => 'submit',
-			'#value' => t('Cargar archivo'),
-			'#name' => 'alta_file',
-		);
-   		return $form;
 	}
 
 	/*

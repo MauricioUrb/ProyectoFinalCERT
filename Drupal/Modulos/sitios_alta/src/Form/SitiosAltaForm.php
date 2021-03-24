@@ -39,87 +39,93 @@ class SitiosAltaForm extends FormBase{
 	 * (@inheritdoc)
 	 */
 	public function buildForm(array $form, FormStateInterface $form_state){
-		// conexion a la base de datos secundaria
-		\Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
-		$connection = \Drupal\Core\Database\Database::getConnection();
+		if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('auxiliar', \Drupal::currentUser()->getRoles())){	
+			// conexion a la base de datos secundaria
+			\Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+			$connection = \Drupal\Core\Database\Database::getConnection();
 
-		// Obtenemos la lista de dependencias
-		$select = $connection->select('dependencias', 'r');
-		$select->fields('r', array('id_dependencia', 'nombre_dependencia'));
-		$select->orderBy('nombre_dependencia');
-		$results = $select->execute();
+			// Obtenemos la lista de dependencias
+			$select = $connection->select('dependencias', 'r');
+			$select->fields('r', array('id_dependencia', 'nombre_dependencia'));
+			$select->orderBy('nombre_dependencia');
+			$results = $select->execute();
 
 
-		// regresamos a la conexion default
-		\Drupal\Core\Database\Database::setActiveConnection();
+			// regresamos a la conexion default
+			\Drupal\Core\Database\Database::setActiveConnection();
 
-		$options['vacio'] = "--Selecciona una dependencia--";
-		foreach($results as $result){
-			$options[$result->id_dependencia] = $result->nombre_dependencia;
+			$options['vacio'] = "--Selecciona una dependencia--";
+			foreach($results as $result){
+				$options[$result->id_dependencia] = $result->nombre_dependencia;
+			}
+	      
+			$form_state->disableCache();
+			$form['browser'] = array(
+				'#type' => 'fieldset', 
+				'#title' => t('En esta página puede dar de alta sitios.'), 
+				'#collapsible' => TRUE, 
+				'#description' => t("Llene los campos solicitados o cargue los datos desde un archivo CSV"),	
+			); 
+			$form['description'] = array(
+				'#title' => t('Descripción del sitio.'),
+				'#type' => 'textarea',
+				'#size' => 60,
+				'#description' => t("Ingresa la descripción del sitio"),
+			);
+			$form['ip'] = array(
+				'#title' => t("Dirección IP del sitio."),
+				'#type' => 'textfield',
+				'#size' => 60,
+				'#maxlength' => 128,
+				'#description' => t("Ingresa una dirección IP para el sitio"),
+			);
+			$form['select'] = array(
+				'#type' => 'select',
+				'#title' => t("Dependencies"),
+				'#options' => $options,
+				'#description' => t('Selecciona la dependencia del sitio'),
+			);
+			$form['dependencia'] = array(
+				'#title' => t("Nueva dependencia."),
+				'#type' => 'textfield',
+				'#size' => 60,
+				'#maxlength' => 60,
+				'#description' => t("Ingresa el nombre de la dependencia que desea agregar"),
+			);
+			$form['enlace'] = array(
+				'#title' => t('Dirección URL.'),
+				'#type' => 'textfield',
+				'#size' => 60,
+				'#maxlength' => 128,
+				'#description' => t("Ingresa la url del sitio"),
+			);
+			$form['csv_file'] = array(
+				'#type' => 'managed_file',
+				'#title' => t('Archivo CSV.'),
+				'#description' => t('Selecciona un archivo CSV'),
+				'#upload_validators' => array(
+					'file_validate_extensions' => array('csv'),
+				),
+				'#upload_location' => 'public://csv_files/sitios/alta_sitios/',
+			);
+			$form['alta'] = array(
+				'#type' => 'submit',
+				'#value' => t('Dar de alta'),
+				'#name' => 'alta',
+				'#button_type' => 'primary',
+			);
+			$form['alta_file'] = array(
+				'#type' => 'submit',
+				'#value' => t('Cargar archivo'),
+				'#name' => 'alta_file',
+				'#button_type' => 'primary',
+			);
+			return $form;
+
 		}
-      
-		$form_state->disableCache();
-		$form['browser'] = array(
-			'#type' => 'fieldset', 
-			'#title' => t('En esta página puede dar de alta sitios.'), 
-			'#collapsible' => TRUE, 
-			'#description' => t("Llene los campos solicitados o cargue los datos desde un archivo CSV"),	
-		); 
-		$form['description'] = array(
-			'#title' => t('Descripción del sitio.'),
-			'#type' => 'textarea',
-			'#size' => 60,
-			'#description' => t("Ingresa la descripción del sitio"),
-		);
-		$form['ip'] = array(
-			'#title' => t("Dirección IP del sitio."),
-			'#type' => 'textfield',
-			'#size' => 60,
-			'#maxlength' => 128,
-			'#description' => t("Ingresa una dirección IP para el sitio"),
-		);
-		$form['select'] = array(
-			'#type' => 'select',
-			'#title' => t("Dependencies"),
-			'#options' => $options,
-			'#description' => t('Selecciona la dependencia del sitio'),
-		);
-		$form['dependencia'] = array(
-			'#title' => t("Nueva dependencia."),
-			'#type' => 'textfield',
-			'#size' => 60,
-			'#maxlength' => 60,
-			'#description' => t("Ingresa el nombre de la dependencia que desea agregar"),
-		);
-		$form['enlace'] = array(
-			'#title' => t('Dirección URL.'),
-			'#type' => 'textfield',
-			'#size' => 60,
-			'#maxlength' => 128,
-			'#description' => t("Ingresa la url del sitio"),
-		);
-		$form['csv_file'] = array(
-			'#type' => 'managed_file',
-			'#title' => t('Archivo CSV.'),
-			'#description' => t('Selecciona un archivo CSV'),
-			'#upload_validators' => array(
-				'file_validate_extensions' => array('csv'),
-			),
-			'#upload_location' => 'public://csv_files/sitios/alta_sitios/',
-		);
-		$form['alta'] = array(
-			'#type' => 'submit',
-			'#value' => t('Dar de alta'),
-			'#name' => 'alta',
-			'#button_type' => 'primary',
-		);
-		$form['alta_file'] = array(
-			'#type' => 'submit',
-			'#value' => t('Cargar archivo'),
-			'#name' => 'alta_file',
-			'#button_type' => 'primary',
-		);
-		return $form;
+    	else{
+    		return array('#markup' => "No tienes permiso para ver estos formularios.",);
+    	}
 	}
 	/*
 	 *

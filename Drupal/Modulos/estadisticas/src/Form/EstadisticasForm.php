@@ -55,6 +55,7 @@ class EstadisticasForm extends FormBase {
 	 * (@inheritdoc)
 	 */
 	public function buildForm(array $form, FormStateInterface $form_state){
+		if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
 		//conectar a la otra db
 		\Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
 	        $connection = \Drupal\Core\Database\Database::getConnection();
@@ -170,6 +171,11 @@ class EstadisticasForm extends FormBase {
 		);
 
 		return $form;
+		
+		}
+    	else{
+      		return array('#markup' => "No tienes permiso para ver estos formularios.",);
+    	}
 	}
 	/*
  	 *
