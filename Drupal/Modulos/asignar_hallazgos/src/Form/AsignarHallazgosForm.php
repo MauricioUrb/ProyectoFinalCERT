@@ -23,7 +23,7 @@ class AsignarHallazgosForm extends FormBase{
   /*
    * (@inheritdoc)
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $hall_id = NULL){){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $hall_id = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -38,7 +38,7 @@ class AsignarHallazgosForm extends FormBase{
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('pentester', \Drupal::currentUser()->getRoles()) || $estatus[0] > 2){
+    if (!in_array(\Drupal::currentUser()->id(), $results) || $estatus[0] > 2){
       return array('#markup' => "No tienes permiso para ver estos formularios.",);
     }
     global $id_principal;

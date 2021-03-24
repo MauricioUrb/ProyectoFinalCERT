@@ -38,6 +38,11 @@ class RevisionesAsignadasController {
       $project_linkB = Link::fromTextAndUrl('Borrar', $urlB);
       $project_linkB = $project_linkB->toRenderable();
       $project_linkB['#attributes'] = array('class' => array('button'));
+      //Editar revision
+      $urlEC = Url::fromRoute('edit_revision.content', array('rev_id' => $result->id_revision));
+      $project_linkEC = Link::fromTextAndUrl('Editar', $urlEC);
+      $project_linkEC = $project_linkEC->toRenderable();
+      $project_linkEC['#attributes'] = array('class' => array('button'));
 
       //Se busca el nombre de los pentesters que fueron asignados a la revision
       Database::setActiveConnection('drupaldb_segundo');
@@ -45,7 +50,8 @@ class RevisionesAsignadasController {
       $select = Database::getConnection()->select('revisiones_asignadas', 'r');
       $select->fields('r', array('id_usuario'));
       $select->condition('id_revision', $result->id_revision);
-      $select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
+      $select->condition('seguimiento', false);
+      //$select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
       $usuarios_rev = $select->execute()->fetchCol();
 
       //estatus_revision
@@ -94,6 +100,7 @@ class RevisionesAsignadasController {
           $estatus_revision[0],
           $result->fecha_inicio_revision,
           $txt,
+          render($project_linkEC),
           render($project_linkB),
         ];
       }
@@ -117,6 +124,7 @@ class RevisionesAsignadasController {
       'status' => t('Estado'),
       'start' => t('Fecha de asignacion'),
       'activos' => t('Activos asignados'),
+      'edit' => t('Editar'),
       'delete' => t('Borrar'),
     ];
     //se construye la tabla para mostrar
@@ -162,7 +170,7 @@ class RevisionesAsignadasController {
     $select->fields('r', array('id_estatus'));
     $select->fields('r', array('fecha_inicio_seguimiento'));
     $select->fields('r', array('fecha_fin_seguimiento'));
-    $select->condition('seguimiento', false);
+    $select->condition('seguimiento', true);
     $select->condition('id_usuario',\Drupal::currentUser()->id());
     $select->orderBy('fecha_inicio_seguimiento','DESC');
     $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
@@ -177,11 +185,11 @@ class RevisionesAsignadasController {
       $revisarSeguimiento = Link::fromTextAndUrl('Revisar', $revisarS);
       $revisarSeguimiento = $revisarSeguimiento->toRenderable();
       $revisarSeguimiento['#attributes'] = array('class' => array('button'));
-      /*/Botón para borrar revisión
-      $borrarS = Url::fromRoute('borrar_revision.content', array('rev_id' => $result->id_revision));
-      $borrarSeguimiento = Link::fromTextAndUrl('Borrar', $borrarS);
-      $borrarSeguimiento = $borrarSeguimiento->toRenderable();
-      $borrarSeguimiento['#attributes'] = array('class' => array('button'));//*/
+      //Botón para editar revisión
+      $editarS = Url::fromRoute('edit_seguimiento.content', array('rev_id' => $result->id_revision));
+      $editarSeguimiento = Link::fromTextAndUrl('Editar', $editarS);
+      $editarSeguimiento = $editarSeguimiento->toRenderable();
+      $editarSeguimiento['#attributes'] = array('class' => array('button'));//*/
 
       //Se busca el nombre de los pentesters que fueron asignados a la revision
       Database::setActiveConnection('drupaldb_segundo');
@@ -189,7 +197,8 @@ class RevisionesAsignadasController {
       $select = Database::getConnection()->select('revisiones_asignadas', 'r');
       $select->fields('r', array('id_usuario'));
       $select->condition('id_revision', $result->id_revision);
-      $select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
+      $select->condition('seguimiento', true);
+      //$select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
       $usuarios_rev = $select->execute()->fetchCol();
 
       //estatus_revision
@@ -228,7 +237,7 @@ class RevisionesAsignadasController {
           $result->fecha_inicio_seguimiento,
           $result->fecha_fin_seguimiento,
           render($revisarSeguimiento),
-          //render($borrarSeguimiento),
+          //render($editarSeguimiento),
         ];
       }elseif($result->id_estatus == 5){
         $rowsS[$result->id_revision] = [
@@ -238,7 +247,7 @@ class RevisionesAsignadasController {
           $estatus_revision[0],
           $result->fecha_inicio_seguimiento,
           $txt,
-          //render($borrarSeguimiento),
+          render($editarSeguimiento),
         ];
       }
     }
@@ -261,6 +270,7 @@ class RevisionesAsignadasController {
       'status' => t('Estado'),
       'start' => t('Fecha de asignacion'),
       'activos' => t('Activos asignados'),
+      'edit' => t('Editar'),
       //'delete' => t('Borrar'),
     ];
     //se construye la tabla para mostrar
@@ -315,7 +325,6 @@ class RevisionesAsignadasController {
     foreach ($datos as $result){
       if($result->tipo_revision){$tipo = 'Circular';}else{$tipo = 'Oficio';}
       $url = Url::fromRoute('edit_revision.content', array('rev_id' => $result->id_revision));
-      //$url = Url::fromRoute('asignacion_revisiones.content', array('rev_id' => $result->id_revision));
       $project_link = Link::fromTextAndUrl('Editar', $url);
       $project_link = $project_link->toRenderable();
       $project_link['#attributes'] = array('class' => array('button'));
@@ -333,7 +342,8 @@ class RevisionesAsignadasController {
       $select->join('users_field_data',"d","d.uid = u.entity_id");
       $select->fields('d', array('name'));
       $select->condition('d.uid', $usuarios_rev, 'IN');
-      $select->condition('u.roles_target_id', ['coordinador de revisiones','auxiliar'],'IN');
+      $select->condition('seguimiento', false);
+      $select->condition('u.roles_target_id', 'coordinador de revisiones');
       $coordinador = $select->execute()->fetchCol();
 
       //lista de sitios asignados
@@ -458,6 +468,7 @@ class RevisionesAsignadasController {
       $select = Database::getConnection()->select('revisiones_asignadas', 'r');
       $select->fields('r', array('id_usuario'));
       $select->condition('id_revision', $result->id_revision);
+      $select->condition('seguimiento', true);
       $usuarios_rev = $select->execute()->fetchCol();
       Database::setActiveConnection();
 
@@ -465,8 +476,7 @@ class RevisionesAsignadasController {
       $select->join('users_field_data',"d","d.uid = u.entity_id");
       $select->fields('d', array('name'));
       $select->condition('d.uid', $usuarios_rev, 'IN');
-      $select->condition('u.roles_target_id', ['coordinador de revisiones','auxiliar'],'IN');
-      //$select->condition('u.roles_target_id', 'coordinador de revisiones');
+      $select->condition('u.roles_target_id', 'coordinador de revisiones');
       $coordinador = $select->execute()->fetchCol();
 
       //lista de sitios asignados
@@ -561,7 +571,7 @@ class RevisionesAsignadasController {
   }
 
   public function revisiones(){
-    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('auxiliar', \Drupal::currentUser()->getRoles())){
+    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
       return $this->coordinador();
     }elseif (in_array('pentester', \Drupal::currentUser()->getRoles())){
       return $this->pentester();

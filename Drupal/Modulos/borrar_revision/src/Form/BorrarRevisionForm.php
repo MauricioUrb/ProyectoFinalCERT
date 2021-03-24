@@ -33,8 +33,7 @@ class BorrarRevisionForm extends FormBase{
     $select->condition('id_revision',$rev_id);
     $results = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    if (!in_array('coordinador de revisiones', $current_user_roles) || !in_array('auxiliar', $current_user_roles) || !in_array(\Drupal::currentUser()->id(), $results) || !in_array('sistemas', \Drupal::currentUser()->getRoles()) || !in_array('auditoria', \Drupal::currentUser()->getRoles()) || $seguimiento[0]){
-      return array(){
+    if (!in_array('coordinador de revisiones', $current_user_roles) || !in_array(\Drupal::currentUser()->id(), $results) || $seguimiento[0]){
       return array('#markup' => "No tienes permiso para ver este formulario.",);
     }
     global $regresar;

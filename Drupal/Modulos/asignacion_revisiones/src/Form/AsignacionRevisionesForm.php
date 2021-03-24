@@ -24,15 +24,9 @@ class AsignacionRevisionesForm extends FormBase{
    */
   public function buildForm(array $form, FormStateInterface $form_state){
     $current_user_roles = \Drupal::currentUser()->getRoles();
-    $rol = TRUE;
-    if (in_array('coordinador de revisiones', $current_user_roles) || in_array('auxiliar', $current_user_roles)){
-      $rol = FALSE;
-    }
     $grupo = TRUE;
-    if(!$rol){
-      if(in_array('sistemas', $current_user_roles) || in_array('auditoria', $current_user_roles)){$grupo = FALSE;}
-    }
-    if($rol || $grupo){
+    if(in_array('sistemas', $current_user_roles) || in_array('auditoria', $current_user_roles)){$grupo = FALSE;}
+    if(!in_array('coordinador de revisiones', $current_user_roles) || $grupo){
       return array('#markup' => "No tienes permiso para ver este formulario.",);
     }
     //Tipo de revision
@@ -211,12 +205,14 @@ class AsignacionRevisionesForm extends FormBase{
           'seguimiento' => 0,
         ))->execute();
     }
-    $result = $connection->insert('revisiones_asignadas')
-      ->fields(array(
-        'id_revision' => $id_revisiones,
-        'id_usuario' => \Drupal::currentUser()->id(),
-        'seguimiento' => 0,
-      ))->execute();
+    if(!in_array(\Drupal::currentUser()->id(), $uid_usuarios)){
+      $result = $connection->insert('revisiones_asignadas')
+        ->fields(array(
+          'id_revision' => $id_revisiones,
+          'id_usuario' => \Drupal::currentUser()->id(),
+          'seguimiento' => 0,
+        ))->execute();
+    }
     //revisiones_sitios
     foreach ($id_sitios as $sitios) {
       $result = $connection->insert('revisiones_sitios')

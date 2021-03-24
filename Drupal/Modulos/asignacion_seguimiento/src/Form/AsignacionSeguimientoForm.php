@@ -33,15 +33,9 @@ class AsignacionSeguimientoForm extends FormBase{
     $seguimiento = $select->execute()->fetchCol();
     Database::setActiveConnection();
     $current_user_roles = \Drupal::currentUser()->getRoles();
-    $rol = TRUE;
-    if (in_array('coordinador de revisiones', $current_user_roles) || in_array('auxiliar', $current_user_roles)){
-      $rol = FALSE;
-    }
     $grupo = TRUE;
-    if(!$rol){
-      if(in_array('sistemas', $current_user_roles) || in_array('auditoria', $current_user_roles)){$grupo = FALSE;}
-    }
-    if($rol || $grupo || $seguimiento[0]){
+    if(in_array('sistemas', $current_user_roles) || in_array('auditoria', $current_user_roles)){$grupo = FALSE;}
+    if(!in_array('coordinador de revisiones', $current_user_roles) || $grupo){
       return array('#markup' => "No tienes permiso para ver este formulario.",);
     }
     global $no_rev;
@@ -238,12 +232,14 @@ class AsignacionSeguimientoForm extends FormBase{
           'seguimiento' => true,
         ))->execute();
     }
-    $result = $connection->insert('revisiones_asignadas')
-      ->fields(array(
-        'id_revision' => $no_rev,
-        'id_usuario' => \Drupal::currentUser()->id(),
-        'seguimiento' => true,
-      ))->execute();
+    if(!in_array(\Drupal::currentUser()->id(), $uid_usuarios)){
+      $result = $connection->insert('revisiones_asignadas')
+        ->fields(array(
+          'id_revision' => $no_rev,
+          'id_usuario' => \Drupal::currentUser()->id(),
+          'seguimiento' => true,
+        ))->execute();
+    }
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);

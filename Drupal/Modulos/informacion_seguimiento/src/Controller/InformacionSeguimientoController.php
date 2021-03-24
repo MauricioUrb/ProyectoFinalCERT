@@ -28,11 +28,8 @@ class InformacionSeguimientoController{
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    $rol = TRUE;
-    if (in_array('coordinador de revisiones', $current_user_roles) || in_array('auxiliar', $current_user_roles)){
-      $rol = FALSE;
-    }
-    if (!in_array(\Drupal::currentUser()->id(), $results) || $rol || $estatus[0] != 6){
+    $current_user_roles = \Drupal::currentUser()->getRoles();
+    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', $current_user_roles) || $estatus[0] != 6){
     	return array('#markup' => "No tienes permiso para ver esta página.",);
     }
     //Se obtienen los sitios correspondientes a esta revision
@@ -51,13 +48,15 @@ class InformacionSeguimientoController{
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision', $rev_id);
     $select->condition('seguimiento', true);
-    $select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
+    //$select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
     $usuarios_rev = $select->execute()->fetchCol();
 
     Database::setActiveConnection();
     $select = Database::getConnection()->select('users_field_data', 'u');
+    $select->join('user__roles','r','r.entity_id = u.uid');
     $select->fields('u', array('name'));
     $select->condition('uid', $usuarios_rev, 'IN');
+    $select->condition('roles_target_id','pentester');
     $pentesters = $select->execute()->fetchCol();
     $nombres = '';
     foreach ($pentesters as $pentester) {$nombres .= $pentester.', ';}

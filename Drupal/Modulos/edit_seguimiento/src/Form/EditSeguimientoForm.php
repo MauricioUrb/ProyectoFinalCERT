@@ -39,7 +39,7 @@ class EditSeguimientoForm extends FormBase{
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('pentester', \Drupal::currentUser()->getRoles()) || $estatus[0] != 5){
+    if (!in_array(\Drupal::currentUser()->id(), $results) || $estatus[0] != 5){
     	return array('#markup' => "No tienes permiso para ver estos formularios.",);
     }
     global $id_rev;
