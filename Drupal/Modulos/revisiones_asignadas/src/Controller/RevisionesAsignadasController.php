@@ -335,6 +335,7 @@ class RevisionesAsignadasController {
       $select = Database::getConnection()->select('revisiones_asignadas', 'r');
       $select->fields('r', array('id_usuario'));
       $select->condition('id_revision', $result->id_revision);
+      $select->condition('seguimiento', false);
       $usuarios_rev = $select->execute()->fetchCol();
       Database::setActiveConnection();
 
@@ -342,7 +343,6 @@ class RevisionesAsignadasController {
       $select->join('users_field_data',"d","d.uid = u.entity_id");
       $select->fields('d', array('name'));
       $select->condition('d.uid', $usuarios_rev, 'IN');
-      $select->condition('seguimiento', false);
       $select->condition('u.roles_target_id', 'coordinador de revisiones');
       $coordinador = $select->execute()->fetchCol();
 
@@ -448,7 +448,7 @@ class RevisionesAsignadasController {
     $select->fields('r', array('fecha_inicio_seguimiento'));
     $select->fields('r', array('fecha_fin_seguimiento'));
     $select->condition('id_usuario',\Drupal::currentUser()->id());
-    $select->condition('seguimiento', false);
+    $select->condition('seguimiento', true);
     $select->orderBy('fecha_inicio_seguimiento','DESC');
     $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
     $datosS = $select->execute();
