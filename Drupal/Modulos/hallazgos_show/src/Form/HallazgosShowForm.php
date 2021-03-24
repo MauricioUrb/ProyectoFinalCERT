@@ -125,50 +125,7 @@ class HallazgosShowForm extends FormBase{
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state) {
-	$messenger_service = \Drupal::service('messenger');
-	$messenger_service->addMessage(t('The form is working.'));
-
-	//conectar a la otra db
-	\Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
-    	$connection = \Drupal\Core\Database\Database::getConnection();
-
-	//Se selecciona la tabla en modo lectura
-	$select = $connection->select('hallazgos', 'h');
-	//Se especifican las columnas a leer
-	$select->fields('h', array('id_hallazgo'))
-		->fields('h', array('nombre_hallazgo_vulnerabilidad'))//1
-       		->fields('h', array('descripcion_hallazgo'))//2
-       		->fields('h', array('solucion_recomendacion_halazgo'))//4
-       		->fields('h', array('referencias_hallazgo'))//5
-       		->fields('h', array('recomendacion_general_hallazgo'))//8
-       		->fields('h', array('nivel_cvss'))//10
-       		->fields('h', array('vector_cvss'))//9
-       		->fields('h', array('enlace_cvss'))//6
-       		->fields('h', array('r_ejecutivo_hallazgo'))//7
-       		->fields('h', array('solucion_corta'));//3
-	$select->orderBy('nombre_hallazgo_vulnerabilidad');
-	//Se realiza la consulta
-	$results = $select->execute();
-	$valores = array();
-	$valores[0] = ["nombre del hallazgo", "descripcion del hallazgo", "solucion corta", "solucion/recomendacion", "referencias", "enlace del cvss", "resumen ejecutivo", "recomendacion general", "vector cvss","criticidad"];
-	$cont = 1;
-	foreach($results as $r){
-		$valores[$cont] = ["$r->nombre_hallazgo_vulnerabilidad", "$r->descripcion_hallazgo", "$r->solucion_corta", "$r->solucion_recomendacion_halazgo", "$r->referencias_hallazgo", "$r->enlace_cvss", "$r->r_ejecutivo_hallazgo", "$r->recomendacion_general_hallazgo", "$r->vector_cvss", "$r->nivel_cvss"];
-		$cont++;
-	}	
-
-	$spreadsheet = new Spreadsheet();
-	$worksheet = $spreadsheet->getActiveSheet();
-	$worksheet->fromArray($valores);
-    
-	$date = date("Y-m-d_H-i-s");
-	$filename = "$date" . "_hallazgos.csv";
-
-	$writer1 = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
-	$writer1->setSheetIndex(0);   // Select which sheet to export.
-	$writer1->save("public://csv_files/hallazgos/export/$filename");
-
-	$response = new RedirectResponse("/sites/default/files/csv_files/hallazgos/export/$filename", 302);
-	$response->send();
+    $messenger_service = \Drupal::service('messenger');
+    $messenger_service->addMessage(t('The form is working.'));
   }
 }
