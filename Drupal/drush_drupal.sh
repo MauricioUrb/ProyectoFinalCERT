@@ -105,8 +105,8 @@ chown www-data:www-data /var/www/drupal/web/sites/default/files/Graficas
 
 echo "Descargando bootstrap..."
 echo 'yes' | composer require drupal/bootstrap --with-all-dependencies --working-dir=/var/www/drupal
-cp logo.svg /var/www/drupal/web/themes/contrib/bootstrap/logo.svg
-cp screenshot.jpg /var/www/drupal/web/themes/contrib/bootstrap/screenshot.jpg
+cp logo.svg /var/www/drupal/web/themes/contrib/bootstrap/.
+cp favicon.ico /var/www/drupal/web/themes/contrib/bootstrap/.
 
 # Para descargar los módulos
 #https://docs.acquia.com/resource/module-install-d8/
