@@ -55,7 +55,6 @@ class EstadisticasForm extends FormBase {
 	 * (@inheritdoc)
 	 */
 	public function buildForm(array $form, FormStateInterface $form_state){
-		if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
 		//conectar a la otra db
 		\Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
 	        $connection = \Drupal\Core\Database\Database::getConnection();
@@ -94,16 +93,18 @@ class EstadisticasForm extends FormBase {
 			"Número de revisiones por dependencia.",
 			"Número de hallazgos por dependencia.",
 			"Número de hallzagos con impacto.",
-			"Cantidad de hallazgos encontrados en periodo de tiempo",
+			"Cantidad de hallazgos encontrados en periodo de tiempo.",
+			"Estadisticas por pentester.",
 		);
 		$buttons = array(
 			'revisiones_dependencia',
 			'hallazgos_dependencia',
 			'hallazgos_impacto',
 			'hallazgos_date',
+			'pentester',
 		);
 		$num = 0;
-		// graficas de la 2 a la 5
+		// graficas de la 2 a la 6
 		foreach($titulos as $titulo){
 			$form["date_$num"] = array(
 				'#type' => 'fieldset', 
@@ -134,7 +135,7 @@ class EstadisticasForm extends FormBase {
 			);
 			$num++;
 		}
-		// grafica 6
+		// grafica 7
 		$titulo = "Estadisticas por sitio";
 		$form["sites"] = array(
 			'#type' => 'fieldset', 
@@ -155,7 +156,7 @@ class EstadisticasForm extends FormBase {
 			'#name' => "sitio",
 			'#button_type' => 'primary',
 		);
-		// grafica 7
+		// grafica 8
 		$titulo = "Hallazgos identificados por ip.";
 		$form["hallazgos_ip"] = array(
 			'#type' => 'fieldset', 
@@ -169,13 +170,42 @@ class EstadisticasForm extends FormBase {
 			'#name' => "hallazgos_ip",
 			'#button_type' => 'primary',
 		);
+		// grafica 9
+		$titulo = "Estadisticas por departamento.";
+		$form["date_5"] = array(
+			'#type' => 'fieldset', 
+			'#title' => t("$titulo"), 
+			'#open' => TRUE, 
+			'#collapsible' => TRUE, 
+			'#tree' => TRUE,
+		); 
+		$form["date_5"]['depto'] = array(
+        		'#type' => 'textfield',
+		        '#description' => t('Departamento.'),
+		        '#maxlength' => 20,
+		);
+		$form["date_5"]['fecha1'] = array (
+			'#type' => 'date',
+			'#title' => t('Fecha inicial'),
+			'#default_value' => '',
+			'#date_date_format' => 'Y/m/d',
+			'#description' => date('d/m/Y', time()),
+		);
+		$form["date_5"]['fecha2'] = array (
+			'#type' => 'date',
+			'#title' => t('Fecha final'),
+			'#default_value' => '',
+			'#date_date_format' => 'Y/m/d',
+			'#description' => date('d/m/Y', time()),
+		);
+		$form["date_5"]['submit'] = array(
+			'#type' => 'submit',
+			'#value' => t('Descargar graficas'),
+			'#name' => 'departamento',
+			'#button_type' => 'primary',
+		);
 
 		return $form;
-		
-		}
-    	else{
-      		return array('#markup' => "No tienes permiso para ver estos formularios.",);
-    	}
 	}
 	/*
  	 *
@@ -189,6 +219,8 @@ class EstadisticasForm extends FormBase {
 			'hallazgos_dependencia' => 'date_1',
 			'hallazgos_impacto' => 'date_2',
 			'hallazgos_date' => 'date_3',
+			'pentester' => 'date_4',
+			'departamento' => 'date_5',
 		];
 		// validacion de los elementos ingresados
 		if(array_key_exists($button_clicked, $buttons_list)){
@@ -200,7 +232,14 @@ class EstadisticasForm extends FormBase {
 				$form_state->setErrorByName("$field", $this->t("Se deben de ingresar ambas fechas"));
 			} else if(strtotime($date1) > strtotime($date2)){
 				$form_state->setErrorByName("$field", $this->t("La fecha inicial '$date1' es mayor a la fecha final '$date2'"));
-			}	
+			}
+
+			if($button_clicked == 'departamento'){
+				$dep = $form_state->getValue(["$field",'depto']);
+				if(strlen($dep) <= 0){
+					$form_state->setErrorByName("$field", $this->t("Se debe ingresar un departamento."));
+				}
+			} 
 		} else if($button_clicked == "sitio"){
 			$sitio = $form_state->getValue(['sites', 'sitio']); 
 			if($sitio == "vacio"){
@@ -518,6 +557,101 @@ class EstadisticasForm extends FormBase {
 			}	
 
 			break;
+		case 'pentester':
+			// nombre del archivo
+			$name = "pentesters.xlsx"; 
+
+			// titulo que tendra el grafico hasta arriba
+			$titulo_excel = "Estadisticas por pentester";
+
+			// titulo que tendran las graficas
+			$titulo_chart = "Pentesters";
+
+			$valores[0] = ["", "$titulo_excel"]; 
+			$valores[1] = ["", ""];
+			$valores[2] = ["", "Cantidad"];
+
+
+			// obtenemos los pentesters
+			\Drupal\Core\Database\Database::setActiveConnection();
+			$select = Database::getConnection()->select('users_field_data', 'u');
+  		 	$select ->join('user__roles', 'ur', 'ur.entity_id = u.uid');
+			$select->fields('u', array('name', 'uid'));
+			$select->condition('roles_target_id', 'pentester');
+			$pentesters = $select->execute();
+		    
+			foreach ($pentesters as $pts){
+				//coneccion a la base de datos secundaria
+				\Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+				$connection = \Drupal\Core\Database\Database::getConnection();
+				$select = Database::getConnection()->select('revisiones_asignadas', 'rs');
+				$select ->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+				$select->fields('rs', array('id_usuario'));
+				$select->addExpression('COUNT(*)', 'cuenta');
+				$select->condition('id_usuario', $pts->uid);
+				//$select->condition('fecha_fin_revision', array('2015/01/1', '2016/12/30'), 'BETWEEN');
+				$select->condition('fecha_fin_revision', array($form_state->getValue('fecha1'), $form_state->getValue('fecha2')), 'BETWEEN');
+				$select->groupBy('id_usuario');
+				$results = $select->execute();
+				foreach ( $results as $result){
+					$name = $pts->name;
+					$cant = $result->cuenta;
+					$valores[$contador] = ["$name", "$cant"];
+					$contador++;
+				}
+			}
+		case 'departamento':
+			// nombre del archivo
+			$name = "departamento.xlsx"; 
+
+			// titulo que tendra el grafico hasta arriba
+			$titulo_excel = "Estadisticas por departamento";
+
+			// titulo que tendran las graficas
+			$titulo_chart = "Departamento";
+
+			$valores[0] = ["", "$titulo_excel"]; 
+			$valores[1] = ["", ""];
+			$valores[2] = ["", "Cantidad"];
+
+			\Drupal\Core\Database\Database::setActiveConnection();
+			//se obtiene el uid y el nombre de los usuarios que sean pentesters
+    			$select = Database::getConnection()->select('users_field_data', 'u');
+   	 		$select ->join('user__roles', 'ur', 'ur.entity_id = u.uid');
+    			$select->fields('u', array('name', 'uid', ));
+    			$select->fields('ur', array('roles_target_id'));
+    			$select->condition('roles_target_id', $form_state->getValue('depto'));
+			$departamento = $select->execute();
+
+    			$messenger_service = \Drupal::service('messenger');
+    			foreach ($departamento as $dpto){
+      				$txt .= ''.
+      				$messenger_service->addMessage(t($dpto->roles_target_id));
+	      			//coneccion a la base de datos secundaria
+      				\Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+      				$connection = \Drupal\Core\Database\Database::getConnection();
+      				$select = Database::getConnection()->select('revisiones_asignadas', 'rs');
+      				$select ->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+      				$select->addExpression('COUNT(*)', 'cuenta');
+      				$select->condition('id_usuario', $dpto->uid );
+      				$select->condition('fecha_fin_revision', array($form_state->getValue('fecha1'), $form_state->getValue('fecha2')), 'BETWEEN');
+      				$select->groupBy('id_usuario');
+
+		      		$select2 = $connection->select($select, 'usuarios');
+      				$select2->addExpression('SUM(usuarios.cuenta)', 'total');
+      				$results = $select->execute();
+
+				$val = 0;
+				foreach ( $results as $result){
+					$num = (int)$result->cuenta;
+					$val += $num;
+     				 }
+				
+				$name = $dpto->roles_target_id;
+				$cant = $val;
+				$valores[$contador] = ["$name", "$cant"];
+				$contador++;
+			}
 		}
 		
 		/* En esta parte se inicia la graficacion  */	
