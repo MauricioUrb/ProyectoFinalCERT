@@ -122,7 +122,7 @@ class HallazgosAltaForm extends FormBase {
 				'#upload_validators' => array(
 					'file_validate_extensions' => array('csv'),
 				),
-				'#upload_location' => 'public://content/csv_files/alta_hallazgos/',
+				'#upload_location' => 'public://csv_files/hallazgos/alta_hallazgos/',
 			);
 	    		$form['alta'] = array(
 	      			'#type' => 'submit',
