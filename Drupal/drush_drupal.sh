@@ -98,6 +98,16 @@ chmod 757 /var/www/drupal/web/reportes
 cp -r plantillas /var/www/drupal/web/reportes/.
 echo "Sitio instalado. Instalando modulos..."
 
+
+#Crear carpeta para guardar las estadisticas
+mkdir /var/www/drupal/web/sites/default/files/Graficas
+chown www-data:www-data /var/www/drupal/web/sites/default/files/Graficas
+
+echo "Descargando bootstrap..."
+echo 'yes' | composer require drupal/bootstrap --with-all-dependencies --working-dir=/var/www/drupal
+cp logo.svg /var/www/drupal/web/themes/contrib/bootstrap/logo.svg
+cp screenshot.jpg /var/www/drupal/web/themes/contrib/bootstrap/screenshot.jpg
+
 # Para descargar los módulos
 #https://docs.acquia.com/resource/module-install-d8/
 # Para descargar los módulos
@@ -112,6 +122,8 @@ echo 'yes' | composer require 'drupal/phpmailer_smtp:^2.0' --working-dir=/var/ww
 # Módulos custom
 cp -r Modulos/* /var/www/drupal/web/modules/.
 
+#Habilitando tema
+echo 'yes' | /var/www/drupal/vendor/bin/drush theme:enable bootstrap
 # Para habilitar los módulos
 #/var/www/drupal/vendor/bin/drush en 
 /var/www/drupal/vendor/bin/drush en simple_ldap
@@ -152,6 +164,7 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 /var/www/drupal/vendor/bin/drush en eliminar_sitios
 /var/www/drupal/vendor/bin/drush en sitios_alta
 /var/www/drupal/vendor/bin/drush en sitios_show
+/var/www/drupal/vendor/bin/drush en estadisticas
 
 # Creacion de roles
 /var/www/drupal/vendor/bin/drush rcrt 'coordinador de revisiones' 'Coordinador de Revisiones'
@@ -167,7 +180,3 @@ cp -r Modulos/* /var/www/drupal/web/modules/.
 #https://www.drupal.org/docs/creating-custom-modules/basic-structure
 # Status del sitio
 /var/www/drupal/vendor/bin/drupal site:status --root=/var/www/drupal
-
-#Crear carpeta para guardar las estadisticas
-mkdir /var/www/drupal/web/sites/default/files/Graficas
-chown www-data:www-data /var/www/drupal/web/sites/default/files/Graficas
