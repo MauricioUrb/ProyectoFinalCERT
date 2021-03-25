@@ -5,4 +5,4 @@ estadisticas.content:
     _form: Drupal\estadisticas\Form\EstadisticasForm
     _title: "Título de la pagina"
   requirements:
-    _permission: 'access content'
+    _permission: 'view estadisticas'
