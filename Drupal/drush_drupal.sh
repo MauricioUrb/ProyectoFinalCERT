@@ -110,7 +110,6 @@ mkdir -p /var/www/drupal/web/sites/default/files/csv_files/sitios/export
 mkdir -p /var/www/drupal/web/sites/default/files/csv_files/sitios/alta_sitios
 chown -R www-data:www-data /var/www/drupal/web/sites/default/files/csv_files
 
-
 echo "Descargando bootstrap..."
 echo 'yes' | composer require drupal/bootstrap --with-all-dependencies --working-dir=/var/www/drupal
 cp logo.svg /var/www/drupal/web/themes/contrib/bootstrap/.
