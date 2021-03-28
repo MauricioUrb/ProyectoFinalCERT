@@ -117,6 +117,13 @@ class HallazgosShowForm extends FormBase{
       $project_link['#attributes'] = array('class' => array('button'));
       $form['boton'] = array('#markup' => render($project_link),);
 
+      $form["button"] = array(	  
+        '#type' => 'submit',  
+        '#value' => t('Exportar a CSV'),
+        '#name' => "export",
+        '#button_type' => 'primary',    
+      );
+      
       return $form;
     }
     else{
