@@ -171,7 +171,7 @@ class EditRevisionForm extends FormBase{
       //Se manda el correo al coordinador
       $langcode = \Drupal::currentUser()->getPreferredLangcode();
       $params['context']['subject'] = "Revision concluida";
-      $params['context']['message'] = 'Los pentesters han conlcuido la revision #'.$rev_id.' que les fue asignada.';
+      $params['context']['message'] = 'Los pentesters han conlcuido la revision #'.$id_rev.' que les fue asignada.';
       $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $mail[0], $langcode, $params);
       if(!$email){$mensaje = "Ocurrió algún error y no se ha podido enviar el correo de notificación.";}
       //UPDATE EN LA BD
