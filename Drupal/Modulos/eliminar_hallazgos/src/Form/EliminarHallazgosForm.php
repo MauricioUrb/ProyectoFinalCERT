@@ -78,5 +78,6 @@ class EliminarHallazgosForm extends FormBase {
 	  }
 	  //regresar a la db default
 	  \Drupal\Core\Database\Database::setActiveConnection();
+    $form_state->setRedirectUrl(Url::fromRoute('hallazgos_show.content'));
   }
 }
