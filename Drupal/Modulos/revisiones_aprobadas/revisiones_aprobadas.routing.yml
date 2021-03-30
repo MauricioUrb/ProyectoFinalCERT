@@ -1,7 +1,7 @@
 revisiones_aprobadas.content:
   path: /revisiones/aprobadas
   defaults:
-    _controller: Drupal\revisiones_aprobadas\Controller\RevisionesAprobadasController::revisiones
+    _form: Drupal\revisiones_aprobadas\Form\RevisionesAprobadasForm
     _title: "Revisiones aprobadas"
   requirements:
     _permission: 'view revisiones_aprobadas'

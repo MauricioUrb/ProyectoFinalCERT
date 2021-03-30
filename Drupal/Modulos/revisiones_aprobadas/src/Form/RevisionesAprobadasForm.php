@@ -1,12 +1,18 @@
 <?php
 
-namespace Drupal\revisiones_aprobadas\Controller;
+namespace Drupal\revisiones_aprobadas\Form;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\Core\Database\Database;
 
-class RevisionesAprobadasController {
-  public function revisiones(){
+class RevisionesAprobadasForm extends FormBase{
+  public function getFormId(){
+    return 'revisiones_aprobadas_form';
+  }
+
+  public function buildForm(array $form, FormStateInterface $form_state){
     if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
       //Campos de revisiones
       Database::setActiveConnection('drupaldb_segundo');
@@ -306,5 +312,10 @@ class RevisionesAprobadasController {
       return array('#markup' => "No tienes permiso para ver esta página",);
     }
     return $form;
+  }
+  
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $messenger_service = \Drupal::service('messenger');
+    $messenger_service->addMessage(t('The form is working.'));
   }
 }
