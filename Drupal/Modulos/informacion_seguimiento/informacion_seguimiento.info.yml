@@ -1,7 +1,0 @@
-name: Listado de revisiones de seguimiento asignadas (Coordinador)
-type: module
-description: Pagina para visualizar las revisiones de seguimiento que fueron asignadas
-package: Custom
-core_version_requirement: ^8 || ^9
-core: 8.x
-#configure: sitios.admin_settings
