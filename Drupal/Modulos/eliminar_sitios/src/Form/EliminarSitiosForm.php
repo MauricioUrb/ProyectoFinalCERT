@@ -86,5 +86,6 @@ class EliminarSitiosForm extends FormBase {
                   $messenger_service = \Drupal::service('messenger');
                   $messenger_service->addMessage(t('No existe el registro'));
           }
+    $form_state->setRedirectUrl(Url::fromRoute('sitios_show.content'));
   }
 }
