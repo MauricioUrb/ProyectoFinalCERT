@@ -148,6 +148,7 @@ echo 'yes' | /var/www/drupal/vendor/bin/drush theme:enable bootstrap
 /var/www/drupal/vendor/bin/drush en asignacion_revisiones
 /var/www/drupal/vendor/bin/drush en revisiones_asignadas
 /var/www/drupal/vendor/bin/drush en asignar_hallazgos
+/var/www/drupal/vendor/bin/drush en select_hallazgo
 /var/www/drupal/vendor/bin/drush en delete_hallazgo_revision
 /var/www/drupal/vendor/bin/drush en edit_revision
 /var/www/drupal/vendor/bin/drush en comentar_revision
