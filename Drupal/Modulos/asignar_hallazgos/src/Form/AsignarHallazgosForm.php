@@ -70,48 +70,6 @@ class AsignarHallazgosForm extends FormBase{
       '#title' => t('Hallazgo'),
       '#markup' => $nombre_hallazgo[0],
     );
-    /*if($hall_id == 0){
-      //Traemos todas las opciones de hallazgos/vulnerabilidades para que los seleccione
-      $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
-      $select->fields('h', array('id_hallazgo'));
-      $select->condition('id_rev_sitio',$id_rev_sitio);
-      $hallazgos_no = $select->execute()->fetchCol();
-      $select = Database::getConnection()->select('hallazgos', 'h');
-      $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
-      if(sizeof($hallazgos_no)){
-        $select->condition('id_hallazgo',$hallazgos_no,'NOT IN');
-      }
-      $hallazgos = $select->execute()->fetchCol();
-      $hall_arr = $hallazgos;
-      
-      $form['hallazgos'] = array(
-        '#type' => 'select',
-        '#title' => t('Selecciona el hallazgo a agregar:'),
-        '#options' => $hallazgos,
-        '#required' => TRUE,
-      );
-    }else{
-      $pos = 0;
-      $select = Database::getConnection()->select('hallazgos', 'h');
-      $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
-      $hallazgos = $select->execute()->fetchCol();
-      $hall_arr = $hallazgos;
-      $select = Database::getConnection()->select('hallazgos', 'h');
-      $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
-      $select->condition('id_hallazgo',$hall_id);
-      $nombre_hallazgo = $select->execute()->fetchCol();
-      foreach ($hallazgos as $hallazgo) {
-        if($hallazgo == $nombre_hallazgo[0]){break;}
-        $pos++;
-      }
-      $form['hallazgos'] = array(
-        '#type' => 'select',
-        '#title' => t('Selecciona el hallazgo a editar:'),
-        '#options' => $hallazgos,
-        '#required' => TRUE,
-        '#default_value' => $pos,
-      );
-    }*/
     //Se obtienen valores si ya existen
     $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
     $select->fields('h', array('descripcion_hall_rev'));
@@ -223,7 +181,6 @@ class AsignarHallazgosForm extends FormBase{
     $mensaje = 'Hallazgo actualizado.';
       $result = $connection->update('revisiones_hallazgos')
       ->fields(array(
-        'id_hallazgo' => $id_hallazgo[0],
         'descripcion_hall_rev' => $form_state->getValue(['descripcion']),
         'recursos_afectador' => $form_state->getValue(['recursos']),
         'impacto_hall_rev' => $form_state->getValue(['impacto']),
