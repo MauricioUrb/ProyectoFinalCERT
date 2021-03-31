@@ -2,6 +2,6 @@ informacion_revision.content:
   path: /revisiones/info/{rev_id}
   defaults:
     _form: \Drupal\informacion_revision\Form\InformacionRevisionForm
-    _title: "Informacion de revision"
+    _title: "Información de revisión"
   requirements:
     _permission: 'view informacion_revision'

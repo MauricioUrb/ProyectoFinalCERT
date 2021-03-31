@@ -2,6 +2,6 @@ informacion_seguimiento.content:
   path: /seguimiento/info/{rev_id}
   defaults:
     _form: \Drupal\informacion_seguimiento\Form\InformacionSeguimientoForm
-    _title: "Informacion de revisión de seguimiento"
+    _title: "Información de revisión de seguimiento"
   requirements:
     _permission: 'view informacion_seguimiento'

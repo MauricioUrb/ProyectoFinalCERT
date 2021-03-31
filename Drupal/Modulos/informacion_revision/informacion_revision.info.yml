@@ -1,6 +1,6 @@
 name: Listado de revisiones asignadas (Coordinador)
 type: module
-description: Pagina para visualizar las revisiones que fueron asignadas
+description: Página para visualizar las revisiones que fueron asignadas.
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

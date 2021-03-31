@@ -1,5 +1,5 @@
 sitios_show.newpage:
-  title: 'Catalogo Sitios'
+  title: 'Catálogo Sitios'
   description: 'Link a la página de Sitios'
   route_name: sitios_show.content
   weight: 10

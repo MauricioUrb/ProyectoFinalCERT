@@ -1,6 +1,6 @@
-name: Asignacion de revisiones de seguimiento
+name: Asignación de revisiones de seguimiento
 type: module
-description: Pagina para generar una revisión de seguimiento.
+description: Página para generar una revisión de seguimiento.
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

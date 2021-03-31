@@ -1,6 +1,6 @@
 name: Alta de hallazgos
 type: module
-description: Pagina para dar de alta los hallzgos
+description: Página para dar de alta los hallzgos
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

@@ -2,6 +2,6 @@ edit_seguimiento.content:
   path: /seguimiento/edit/{rev_id}
   defaults:
     _form: '\Drupal\edit_seguimiento\Form\EditSeguimientoForm'
-    _title: "Edicion de revisión de seguimiento"
+    _title: "Edición de revisión de seguimiento"
   requirements:
     _permission: 'view edit_seguimiento'

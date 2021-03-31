@@ -58,7 +58,7 @@ class ComentarRevisionForm extends FormBase{
     );
     $form['comentario'] = array(
       '#type' => 'textarea',
-      '#title' => t('Comenttaio:'),
+      '#title' => t('Comentario:'),
       '#required' => TRUE,
     );
     $form['aprobar'] = array(

@@ -2,6 +2,6 @@ hallazgos_show.content:
   path: /hallazgos
   defaults:
     _form: '\Drupal\hallazgos_show\Form\HallazgosShowForm'
-    _title: "Catalogo Hallazgos"
+    _title: "Catálogo Hallazgos"
   requirements:
     _permission: 'view hallazgos_show'

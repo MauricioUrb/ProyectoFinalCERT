@@ -1,6 +1,6 @@
 name: Eliminar hallazgos
 type: module
-description: Pagina para eliminar los hallazgos
+description: Página para eliminar los hallazgos
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

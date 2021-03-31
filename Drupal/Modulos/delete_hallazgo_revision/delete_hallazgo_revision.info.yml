@@ -1,6 +1,6 @@
-name: Borrar hallazgo de revision
+name: Borrar hallazgo de revisión
 type: module
-description: Pagina para confirmar el borrado de un hallazgo en una revision
+description: Página para confirmar el borrado de un hallazgo en una revisión.
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

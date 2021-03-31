@@ -1,6 +1,6 @@
-name: Edicion de la revisión de seguimiento asignada
+name: Edición de la revisión de seguimiento asignada
 type: module
-description: Página para editar las revisiones de seguimiento que fueron asignadas
+description: Página para editar las revisiones de seguimiento que fueron asignadas.
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

@@ -1,6 +1,6 @@
-name: Edicion de la revision asignada
+name: Edición de la revisión asignada
 type: module
-description: Pagina para editar las revisiones que fueron asignadas
+description: Página para editar las revisiones que fueron asignadas.
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

@@ -1,6 +1,6 @@
 name: Borrar revision
 type: module
-description: Página para confirmar el borrado de una revision
+description: Página para confirmar el borrado de una revisión.
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

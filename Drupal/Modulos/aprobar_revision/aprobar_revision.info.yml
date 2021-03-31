@@ -1,6 +1,6 @@
-name: Aprobacion de revision (Coordinador)
+name: Aprobación de revisión (Coordinador)
 type: module
-description: Pagina para aprobar la revision
+description: Página para aprobar la revisión.
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

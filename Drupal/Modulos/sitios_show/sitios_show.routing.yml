@@ -2,6 +2,6 @@ sitios_show.content:
   path: /sitios
   defaults:
     _form: '\Drupal\sitios_show\Form\SitiosShowForm'
-    _title: "Catalogo Sitios"
+    _title: "Catálogo Sitios"
   requirements:
     _permission: 'view sitios_show'

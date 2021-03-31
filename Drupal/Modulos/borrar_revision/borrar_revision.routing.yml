@@ -2,6 +2,6 @@ borrar_revision.content:
   path: /eliminar/revision/{rev_id}
   defaults:
     _form: '\Drupal\borrar_revision\Form\BorrarRevisionForm'
-    _title: "¿Deseas borrar la revision?"
+    _title: "¿Deseas borrar la revisión?"
   requirements:
     _permission: 'view borrar_revision'
