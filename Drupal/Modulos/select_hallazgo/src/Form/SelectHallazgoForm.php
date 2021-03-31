@@ -68,6 +68,7 @@ class SelectHallazgoForm extends FormBase{
     $select = Database::getConnection()->select('hallazgos', 'h');
     $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
     if(sizeof($id_hallz)){$select->condition('id_hallazgo',$id_hallz,'NOT IN');}
+    $select->orderBy('nombre_hallazgo_vulnerabilidad');
     $hallazgos = $select->execute()->fetchCol();
     $hall_arr = $hallazgos;
     $form['hallazgos'] = array(
