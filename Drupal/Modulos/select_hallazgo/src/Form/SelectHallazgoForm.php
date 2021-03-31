@@ -1,9 +1,9 @@
 <?php
 /*
  * @file
- * Contains \Drupal\delete_hallazgo_revision\Form\DeleteHallazgoRevisionForm
+ * Contains \Drupal\select_hallazgo\Form\SelectHallazgoForm
  */
-namespace Drupal\delete_hallazgo_revision\Form;
+namespace Drupal\select_hallazgo\Form;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -13,17 +13,17 @@ use Drupal\Core\Link;
 /*
  *
  */
-class DeleteHallazgoRevisionForm extends FormBase{
+class SelectHallazgoForm extends FormBase{
 /*
    * (@inheritdoc)
    */
   public function getFormId(){
-    return 'delete_hallazgo_revision_form';
+    return 'select_hallazgo_form';
   }
   /*
    * (@inheritdoc)
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $hall_id = NULL, $rsh = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -41,14 +41,11 @@ class DeleteHallazgoRevisionForm extends FormBase{
     if (!in_array(\Drupal::currentUser()->id(), $results) || $estatus[0] > 2){
       return array('#markup' => "No tienes permiso para ver estos formularios.",);
     }
-    global $id;
-    $id = $rsh;
     global $id_principal;
     $id_principal = $id_rev_sitio;
     global $regresar;
     $regresar = $rev_id;
-    global $id_hall;
-    $id_hall = $hall_id;
+    global $hall_arr;
     //Consulta de la URL del sitio para imprimirlo
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -59,92 +56,91 @@ class DeleteHallazgoRevisionForm extends FormBase{
     $activo = $select->execute()->fetchCol();
     $form['sitio'] = array(
       '#type' => 'item',
-      '#title' => t('Activo'),
+      '#title' => t('Agregar hallazgo al activo:'),
       '#markup' => $activo[0],
     );
+    //Se revisa si el activo ya contiene algún hallazgo
+    $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
+    $select->fields('h', array('id_hallazgo'));
+    $select->condition('id_rev_sitio',$id_rev_sitio);
+    $id_hallz = $select->execute()->fetchCol();
+
     $select = Database::getConnection()->select('hallazgos', 'h');
     $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
-    $select->condition('id_hallazgo',$hall_id);
-    $nombre_hallazgo = $select->execute()->fetchCol();
+    if(sizeof($id_hallz)){$select->condition('id_hallazgo',$id_hallz,'NOT IN');}
+    $hallazgos = $select->execute()->fetchCol();
+    $hall_arr = $hallazgos;
     $form['hallazgos'] = array(
-      '#type' => 'item',
-      '#title' => t('Hallazgo:'),
-      '#markup' => $nombre_hallazgo[0],
+      '#type' => 'checkboxes',
+      '#title' => t('Selecciona los hallazgos a agregar:'),
+      '#options' => $hallazgos,
+      '#required' => TRUE,
     );
-    //Se obtienen valores si ya existen
-    $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
-    $select->fields('h', array('descripcion_hall_rev'));
-    $select->fields('h', array('recursos_afectador'));
-    $select->fields('h', array('impacto_hall_rev'));
-    $select->fields('h', array('cvss_hallazgos'));
-    $select->condition('id_rev_sitio',$id_rev_sitio);
-    $select->condition('id_hallazgo',$hall_id);
-    $results = $select->execute();
-    Database::setActiveConnection();
-    $descripcion_hall_rev = '';
-    $recursos_afectador = '';
-    $impacto_hall_rev = '';
-    $cvss_hallazgos = '';
-    foreach ($results as $result) {
-      $descripcion_hall_rev = $result->descripcion_hall_rev;
-      $recursos_afectador = $result->recursos_afectador;
-      $impacto_hall_rev = $result->impacto_hall_rev;
-      $cvss_hallazgos = $result->cvss_hallazgos;
-    }
-    $form['descripcion'] = array(
-      '#type' => 'item',
-      '#title' => t('Description'),
-      '#markup' => $descripcion_hall_rev,
-    );
-    $form['recursos'] =array(
-      '#type' => 'item',
-      '#title' => 'Recursos afectados',
-      '#markup' => $recursos_afectador,
-    );
-    $form['impacto'] =array(
-      '#type' => 'item',
-      '#title' => 'Impacto',
-      '#markup' => $impacto_hall_rev,
-    );
-    $form['cvss'] = array(
-      '#type' => 'item',
-      '#title' => 'CVSS',
-      '#markup' => $cvss_hallazgos,
-    );
+    
     //Boton para enviar el formulario
     $form['submit'] = array(
       '#type' => 'submit',
-      '#value' => t('Borrar hallazgo'),
+      '#value' => t('Guardar'),
     );
     $url = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
     $project_link = Link::fromTextAndUrl('Cancelar', $url);
     $project_link = $project_link->toRenderable();
     $project_link['#attributes'] = array('class' => array('button'));
     $form['cancelar'] = array('#markup' => render($project_link),);
+    
     return $form;    
   }
   /*
    * (@inheritdoc)
+   * Validacion de los datos ingresados
    */
   public function submitForm(array &$form, FormStateInterface $form_state){
-    global $id;
+    global $hall_arr;
     global $id_principal;
     global $regresar;
-    global $id_hall;
-    $mensaje = 'Hallazgo eliminado.';
+    $mensaje = 'Hallazgo agregado a la revision.';
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    $borrar = $connection->delete('revisiones_hallazgos')
-      ->condition('id_rev_sitio', $id_principal)
-      ->condition('id_hallazgo', $id_hall)
+    //Obtener el id_hallazgo
+    $tmp = '';
+    $id_hall = $form_state->getValue(['hallazgos']);
+    foreach($id_hall as $valores){ $tmp .= $valores.'-'; }
+    $valores = explode('-',$tmp);
+    while(end($valores) == 0 && sizeof($valores) > 1){$tmp = array_pop($valores);}
+    $tmp = 0;
+    foreach($valores as $pos){
+      $nombres[$tmp] = $form['hallazgos']['#options'][$pos];
+      $tmp++;
+    }
+    $consulta = Database::getConnection()->select('hallazgos', 'h');
+    $consulta->fields('h', array('id_hallazgo'));
+    $consulta->fields('h', array('descripcion_hallazgo'));
+    $consulta->fields('h', array('nivel_cvss'));
+    $consulta->fields('h', array('vector_cvss'));
+    $consulta->condition('nombre_hallazgo_vulnerabilidad',$nombres,'IN');
+    $datosH = $consulta->execute();
+    //Insercion en la BD
+    foreach ($datosH as $dato) {
+      $impacto = $dato->nivel_cvss;
+      preg_match('/[\d]+.\d/', $dato->nivel_cvss, $impacto);
+      $result = $connection->insert('revisiones_hallazgos')
+        ->fields(array(
+          'id_rev_sitio' => $id_principal,
+          'id_hallazgo' => $dato->id_hallazgo,
+          'descripcion_hall_rev' => $dato->descripcion_hallazgo,
+          'recursos_afectador' => '/',
+          'impacto_hall_rev' => $impacto[0],
+          'cvss_hallazgos' => $dato->vector_cvss,
+          'estatus' => 1,
+        ))->execute();
+    }
+    $result = $connection->update('revisiones')
+      ->fields(array(
+        'id_estatus' => 2,
+      ))
+      ->condition('id_revision', $regresar)
       ->execute();
     Database::setActiveConnection();
-    $connection = \Drupal::service('database');
-    //se elimina un regitro de la tabla file_managed
-    $elimina = $connection->delete('file_managed')
-      //se agrega la condicion id_sitio
-      ->condition('id_rev_sh', $id)
-      ->execute();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
   	$form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));

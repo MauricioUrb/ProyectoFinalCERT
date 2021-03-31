@@ -1,6 +1,6 @@
-name: Edición de hallazgos en revisión
+name: Asignacion de hallazgos en revisión
 type: module
-description: Pagina para editar hallazgos en un revisión
+description: Página para asignar hallazgos en un revisión
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x

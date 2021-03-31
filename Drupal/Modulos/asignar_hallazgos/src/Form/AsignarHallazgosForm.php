@@ -61,7 +61,16 @@ class AsignarHallazgosForm extends FormBase{
       '#title' => t('Activo'),
       '#markup' => $activo[0],
     );
-    if($hall_id == 0){
+    $select = Database::getConnection()->select('hallazgos', 'h');
+    $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
+    $select->condition('id_hallazgo',$hall_id);
+    $nombre_hallazgo = $select->execute()->fetchCol();
+    $form['hallazgo'] = array(
+      '#type' => 'item',
+      '#title' => t('Hallazgo'),
+      '#markup' => $nombre_hallazgo[0],
+    );
+    /*if($hall_id == 0){
       //Traemos todas las opciones de hallazgos/vulnerabilidades para que los seleccione
       $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
       $select->fields('h', array('id_hallazgo'));
@@ -102,7 +111,7 @@ class AsignarHallazgosForm extends FormBase{
         '#required' => TRUE,
         '#default_value' => $pos,
       );
-    }
+    }*/
     //Se obtienen valores si ya existen
     $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
     $select->fields('h', array('descripcion_hall_rev'));
@@ -144,6 +153,7 @@ class AsignarHallazgosForm extends FormBase{
       '#type' => 'textfield',
       '#title' => 'Impacto',
       '#required' => TRUE,
+      '#size' => 10,
       '#default_value' => $impacto_hall_rev,
       '#description' => 'Escribe sólo el valor numérico.',
     );
@@ -151,6 +161,7 @@ class AsignarHallazgosForm extends FormBase{
       '#type' => 'textfield',
       '#title' => 'Vector CVSS',
       '#required' => TRUE,
+      '#size' => 200,
       '#default_value' => $cvss_hallazgos,
     );
     //Boton para enviar el formulario
@@ -203,37 +214,24 @@ class AsignarHallazgosForm extends FormBase{
     $mensaje = 'Hallazgo agregado a la revision.';
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    //Obtener el id_hallazgo
+    /*/Obtener el id_hallazgo
     $consulta = Database::getConnection()->select('hallazgos', 'h');
     $consulta->fields('h', array('id_hallazgo'));
     $consulta->condition('nombre_hallazgo_vulnerabilidad',$hall_arr[$form_state->getValue(['hallazgos'])]);
-    $id_hallazgo = $consulta->execute()->fetchCol();
+    $id_hallazgo = $consulta->execute()->fetchCol();//*/
     //Insercion en la BD
-    if($id_hall == 0){
-      $result = $connection->insert('revisiones_hallazgos')
-        ->fields(array(
-          'id_rev_sitio' => $id_principal,
-          'id_hallazgo' => $id_hallazgo[0],
-          'descripcion_hall_rev' => $form_state->getValue(['descripcion']),
-          'recursos_afectador' => $form_state->getValue(['recursos']),
-          'impacto_hall_rev' => $form_state->getValue(['impacto']),
-          'cvss_hallazgos' => $form_state->getValue(['cvss']),
-          'estatus' => 1,
-        ))->execute();
-      }else{
-        $mensaje = 'Hallazgo actualizado.';
-        $result = $connection->update('revisiones_hallazgos')
-        ->fields(array(
-          'id_hallazgo' => $id_hallazgo[0],
-          'descripcion_hall_rev' => $form_state->getValue(['descripcion']),
-          'recursos_afectador' => $form_state->getValue(['recursos']),
-          'impacto_hall_rev' => $form_state->getValue(['impacto']),
-          'cvss_hallazgos' => $form_state->getValue(['cvss']),
-        ))
-        ->condition('id_hallazgo', $id_hall)
-        ->condition('id_rev_sitio', $id_principal)
-        ->execute();
-      }
+    $mensaje = 'Hallazgo actualizado.';
+      $result = $connection->update('revisiones_hallazgos')
+      ->fields(array(
+        'id_hallazgo' => $id_hallazgo[0],
+        'descripcion_hall_rev' => $form_state->getValue(['descripcion']),
+        'recursos_afectador' => $form_state->getValue(['recursos']),
+        'impacto_hall_rev' => $form_state->getValue(['impacto']),
+        'cvss_hallazgos' => $form_state->getValue(['cvss']),
+      ))
+      ->condition('id_hallazgo', $id_hall)
+      ->condition('id_rev_sitio', $id_principal)
+      ->execute();
     $result = $connection->update('revisiones')
       ->fields(array(
         'id_estatus' => 2,

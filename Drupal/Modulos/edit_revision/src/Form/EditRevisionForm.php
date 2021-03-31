@@ -114,7 +114,8 @@ class EditRevisionForm extends FormBase{
         '#rows' => $rows[$contador],
         '#empty' => t('No tienes hallazgos asignados a este activo.'),
       ];
-      $url = Url::fromRoute('asignar_hallazgos.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => 0));
+      //$url = Url::fromRoute('asignar_hallazgos.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => 0));
+      $url = Url::fromRoute('select_hallazgo.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio));
       $project_link = Link::fromTextAndUrl('Agregar hallazgo', $url);
       $project_link = $project_link->toRenderable();
       $project_link['#attributes'] = array('class' => array('button'));
