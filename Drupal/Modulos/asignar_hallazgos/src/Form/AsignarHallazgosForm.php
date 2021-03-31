@@ -172,11 +172,6 @@ class AsignarHallazgosForm extends FormBase{
     $mensaje = 'Hallazgo agregado a la revision.';
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    /*/Obtener el id_hallazgo
-    $consulta = Database::getConnection()->select('hallazgos', 'h');
-    $consulta->fields('h', array('id_hallazgo'));
-    $consulta->condition('nombre_hallazgo_vulnerabilidad',$hall_arr[$form_state->getValue(['hallazgos'])]);
-    $id_hallazgo = $consulta->execute()->fetchCol();//*/
     //Insercion en la BD
     $mensaje = 'Hallazgo actualizado.';
       $result = $connection->update('revisiones_hallazgos')
