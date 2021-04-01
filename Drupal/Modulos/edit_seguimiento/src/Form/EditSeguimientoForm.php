@@ -70,6 +70,7 @@ class EditSeguimientoForm extends FormBase{
       $select->fields('r', array('impacto_hall_rev'));
       $select->fields('r', array('cvss_hallazgos'));
       $select->fields('r', array('id_hallazgo'));
+      $select->fields('r', array('estatus'));
       $select->condition('id_rev_sitio',$id->id_rev_sitio);
       $select->orderBy('impacto_hall_rev','DESC');
       $datHall = $select->execute();
@@ -112,24 +113,30 @@ class EditSeguimientoForm extends FormBase{
           '#markup' => $hallazgo->cvss_hallazgos,
         );
         array_push($hallazgos, $hallazgo->id_rev_sitio_hall);
-        //$form[$id->id_rev_sitio][$hallazgo->id_rev_sitio_hall]['select'] = array('#markup' => $id->id_rev_sitio.':'.$hallazgo->id_rev_sitio_hall,);
+        if($hallazgo->estatus){$estatus = 0;}else{$estatus = 1;}
         $form[$id->id_rev_sitio][$hallazgo->id_rev_sitio_hall]['select'.$tmp] = array(
           '#type' => 'radios',
           '#title' => t('Estatus:'),
-          '#default_value' => 0,
+          '#default_value' => $estatus,
           '#options' => ['Persistente', 'Mitigado'],
           '#required' => TRUE,
-        );//*/
+        );
         $tmp++;
       }
       $arreglo_global[$id->id_rev_sitio] = $hallazgos;
     }
     Database::setActiveConnection();
-    
+    //Estatus
+    $form['estatus'] = array(
+      '#type' => 'radios',
+      '#title' => t('Actualizar estatus:'),
+      '#default_value' => 0,
+      '#options' => array(0 => 'En proceso', 1 => 'Concluir'),
+    );
     //Boton para enviar el formulario
     $form['submit'] = array(
       '#type' => 'submit',
-      '#value' => t('Enviar'),
+      '#value' => t('Guardar'),
     );
     return $form;
   }
@@ -137,7 +144,7 @@ class EditSeguimientoForm extends FormBase{
    * (@inheritdoc)
    */
   public function submitForm(array &$form, FormStateInterface $form_state){
-    $mensaje = 'Seguimiento mandado para aprobación.';
+    $mensaje = 'Seguimiento guardado.';
     //$concluido = $form_state->getValue(['estatus']);
     global $id_rev;
     global $arreglo_global;
@@ -171,37 +178,40 @@ class EditSeguimientoForm extends FormBase{
     }
     $fecha = getdate();
     $hoy = $fecha['year'].'-'.$fecha['mon'].'-'.$fecha['mday'];
+    if($form_state->getValue(['estatus'])){$id_estatus = 6;}else{$id_estatus = 5;}
     $result = $connection->update('revisiones')
       ->fields(array(
-        'id_estatus' => 6,
+        'id_estatus' => $id_estatus,
         'fecha_fin_seguimiento' => $hoy,
       ))
     ->condition('id_revision', $id_rev)
     ->execute();
     Database::setActiveConnection();
-    //Se busca el nombre del coordinador que asignó la revision
-    Database::setActiveConnection('drupaldb_segundo');
-    $connection = Database::getConnection();
-    $select = Database::getConnection()->select('revisiones_asignadas', 'r');
-    $select->fields('r', array('id_usuario'));
-    $select->condition('id_revision', $id_rev);
-    $select->condition('seguimiento', true);
-    $usuarios_rev = $select->execute()->fetchCol();
-    Database::setActiveConnection();
+    if($form_state->getValue(['estatus'])){
+      $mensaje = 'Seguimiento mandado para aprobación.';
+      //Se busca el nombre del coordinador que asignó la revision
+      Database::setActiveConnection('drupaldb_segundo');
+      $connection = Database::getConnection();
+      $select = Database::getConnection()->select('revisiones_asignadas', 'r');
+      $select->fields('r', array('id_usuario'));
+      $select->condition('id_revision', $id_rev);
+      $select->condition('seguimiento', true);
+      $usuarios_rev = $select->execute()->fetchCol();
+      Database::setActiveConnection();
 
-    $select = Database::getConnection()->select('user__roles', 'u');
-    $select->join('users_field_data',"d","d.uid = u.entity_id");
-    $select->fields('d', array('mail'));
-    $select->condition('d.uid', $usuarios_rev, 'IN');
-    $select->condition('u.roles_target_id', 'coordinador de revisiones');
-    $mail = $select->execute()->fetchCol();
-    //Se manda el correo al coordinador
-    $langcode = \Drupal::currentUser()->getPreferredLangcode();
-    $params['context']['subject'] = "Revision concluida";
-    $params['context']['message'] = 'Los pentesters han conlcuido la revision de seguimiento #'.$id_rev.' que les fue asignada.';
-    $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $mail[0], $langcode, $params);
-    if(!$email){$mensaje = "Ocurrió algún error y no se ha podido enviar el correo de notificación.";}
-  	
+      $select = Database::getConnection()->select('user__roles', 'u');
+      $select->join('users_field_data',"d","d.uid = u.entity_id");
+      $select->fields('d', array('mail'));
+      $select->condition('d.uid', $usuarios_rev, 'IN');
+      $select->condition('u.roles_target_id', 'coordinador de revisiones');
+      $mail = $select->execute()->fetchCol();
+      //Se manda el correo al coordinador
+      $langcode = \Drupal::currentUser()->getPreferredLangcode();
+      $params['context']['subject'] = "Revision concluida";
+      $params['context']['message'] = 'Los pentesters han conlcuido la revision de seguimiento #'.$id_rev.' que les fue asignada.';
+      $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $mail[0], $langcode, $params);
+      if(!$email){$mensaje = "Ocurrió algún error y no se ha podido enviar el correo de notificación.";}
+  	}
 
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
