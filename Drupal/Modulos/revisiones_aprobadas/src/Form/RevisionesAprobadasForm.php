@@ -22,7 +22,7 @@ class RevisionesAprobadasForm extends FormBase{
       $select->fields('r', array('id_revision'));
       $select->fields('r', array('tipo_revision'));
       $select->condition('seguimiento', 0);
-      $select->condition('id_estatus',4,'>=');
+      $select->condition('id_estatus',4);
       $select->orderBy('fecha','DESC');
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();

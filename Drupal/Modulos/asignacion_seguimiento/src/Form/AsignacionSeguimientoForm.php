@@ -26,16 +26,37 @@ class AsignacionSeguimientoForm extends FormBase{
   public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL){
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    $select = Database::getConnection()->select('revisiones_asignadas', 'r');
-    $select->fields('r', array('seguimiento'));
-    $select->condition('id_revision', $rev_id);
-    $select->condition('seguimiento', true);
-    $seguimiento = $select->execute()->fetchCol();
+    //estatus_revision
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->addExpression('MAX(id_estatus)','actividad');
+    $select->condition('id_revision',$rev_id);
+    $estatus = $select->execute()->fetchCol();
+    //Revisar si no hay un seguimiento en proceso
+    $select = Database::getConnection()->select('revisiones', 'r');
+    $select->fields('r',array('id_revision'));
+    $select->condition('id_seguimiento',$rev_id);
+    $rev_seg = $select->execute()->fetchCol();
+    //Se revisa si tiene revisiones de seguimiento
+    $seguimiento = FALSE;
+    if(sizeof($rev_seg)){
+      $select = Database::getConnection()->select('revisiones', 'r');
+      $select->addExpression('MAX(id_revision)','revisiones');
+      $select->condition('id_seguimiento',$rev_id);
+      $max_seg = $select->execute()->fetchCol();
+      //estatus_revision_seguimiento
+      $select = Database::getConnection()->select('actividad', 'a');
+      $select->addExpression('MAX(id_estatus)','actividad');
+      $select->condition('id_revision',$max_seg[0]);
+      $estatusS = $select->execute()->fetchCol();
+      if($estatusS[0] < 4){$seguimiento = TRUE;}
+    }
+    //$select->join('actividad','a','a.id_revision = r.id_revision');
+
     Database::setActiveConnection();
     $current_user_roles = \Drupal::currentUser()->getRoles();
     $grupo = TRUE;
     if(in_array('sistemas', $current_user_roles) || in_array('auditoria', $current_user_roles)){$grupo = FALSE;}
-    if(!in_array('coordinador de revisiones', $current_user_roles) || $grupo){
+    if(!in_array('coordinador de revisiones', $current_user_roles) || $grupo || $estatus[0] != 4 || $seguimiento){
       return array('#markup' => "No tienes permiso para ver este formulario.",);
     }
     global $no_rev;
@@ -91,9 +112,7 @@ class AsignacionSeguimientoForm extends FormBase{
     $ids = $select->execute();
     foreach ($ids as $id) {
       $select = Database::getConnection()->select('revisiones_hallazgos', 'r');
-      //$select->fields('r', array('id_rev_sitio_hall'));
       $select->fields('r', array('descripcion_hall_rev'));
-      //$select->fields('r', array('recursos_afectador'));
       $select->fields('r', array('impacto_hall_rev'));
       $select->fields('r', array('cvss_hallazgos'));
       $select->fields('r', array('id_hallazgo'));
@@ -211,34 +230,75 @@ class AsignacionSeguimientoForm extends FormBase{
     $consulta->condition('name',$nombresPentester, 'IN');
     $uid_usuarios = $consulta->execute()->fetchCol();
     
-    //Insercion en la BD}
+    //Insercion en la BD
     $fecha = getdate();
     $hoy = $fecha['year'].'-'.$fecha['mon'].'-'.$fecha['mday'];
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    $update = $connection->update('revisiones')
+    //Nuevo id_revision
+    $consulta = Database::getConnection()->select('revisiones', 'r');
+    $consulta->addExpression('MAX(id_revision)','revisiones');
+    $resultado = $consulta->execute()->fetchCol();
+    $id_revisiones = $resultado[0] + 1;
+    //Tipo revision
+    $select = Database::getConnection()->select('revisiones', 'r');
+    $select->fields('r', array('tipo_revision'));
+    $select->condition('id_revision',$no_rev);
+    $results = $select->execute()->fetchCol();
+    if($results[0]){$tipo = 1;}else{$tipo = 0;}
+    //Obtener número de revision de seguimiento
+    $consulta = Database::getConnection()->select('revisiones', 'r');
+    $consulta->addExpression('COUNT(id_seguimiento)','revisiones');
+    $consulta->condition('id_revision',$no_rev);
+    $resultado = $consulta->execute()->fetchCol();
+    $num_seg = $resultado[0] + 1;
+    //revisiones
+    $result = $connection->insert('revisiones')
       ->fields(array(
-        'id_estatus' => 5,
-        'fecha_inicio_seguimiento' => $hoy,
-      ))
-      ->condition('id_revision',$no_rev)
-      ->execute();
+        'id_revision' => $id_revisiones,
+        'tipo_revision' => $tipo,
+        'seguimiento' => $num_seg,
+        'id_seguimiento' => $no_rev,
+      ))->execute();
+    //actividad
+    $result = $connection->insert('actividad')
+      ->fields(array(
+        'id_revision' => $id_revisiones,
+        'id_estatus' => 1,
+        'fecha' => $hoy,
+      ))->execute();
     //revisiones_asignadas
     foreach ($uid_usuarios as $pentester) {
       $result = $connection->insert('revisiones_asignadas')
         ->fields(array(
-          'id_revision' => $no_rev,
+          'id_revision' => $id_revisiones,
           'id_usuario' => $pentester,
-          'seguimiento' => true,
         ))->execute();
     }
     if(!in_array(\Drupal::currentUser()->id(), $uid_usuarios)){
       $result = $connection->insert('revisiones_asignadas')
         ->fields(array(
-          'id_revision' => $no_rev,
+          'id_revision' => $id_revisiones,
           'id_usuario' => \Drupal::currentUser()->id(),
-          'seguimiento' => true,
         ))->execute();
+    }
+    //sitios
+    $consulta = Database::getConnection()->select('revisiones_sitios', 'r');
+    $consulta->addExpression('MAX(id_rev_sitio)','revisiones_sitios');
+    $resultado = $consulta->execute()->fetchCol();
+    $id_rev_sitio = $resultado[0] + 1;
+    $select = Database::getConnection()->select('revisiones_sitios', 'r');
+    $select->fields('r', array('id_sitio'));
+    $select->condition('id_revision',$no_rev);
+    $id_sitios = $select->execute()->fetchCol();
+    foreach ($id_sitios as $sitios) {
+      $result = $connection->insert('revisiones_sitios')
+        ->fields(array(
+          'id_rev_sitio' => $id_rev_sitio,
+          'id_revision' => $id_revisiones,
+          'id_sitio' => $sitios,
+        ))->execute();
+      $id_rev_sitio++;
     }
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
