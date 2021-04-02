@@ -50,14 +50,14 @@ class AsignacionSeguimientoForm extends FormBase{
       $estatusS = $select->execute()->fetchCol();
       if($estatusS[0] < 4){$seguimiento = TRUE;}
     }
-    //$select->join('actividad','a','a.id_revision = r.id_revision');
-
     Database::setActiveConnection();
     $current_user_roles = \Drupal::currentUser()->getRoles();
     $grupo = TRUE;
     if(in_array('sistemas', $current_user_roles) || in_array('auditoria', $current_user_roles)){$grupo = FALSE;}
-    if(!in_array('coordinador de revisiones', $current_user_roles) || $grupo || $estatus[0] != 4 || $seguimiento){
+    if(!in_array('coordinador de revisiones', $current_user_roles) || $grupo || $estatus[0] != 4){
       return array('#markup' => "No tienes permiso para ver este formulario.",);
+    }elseif ($seguimiento) {
+      return array('#markup' => "Esta revisión ya está en seguimiento.",);
     }
     global $no_rev;
     $no_rev = $rev_id;
