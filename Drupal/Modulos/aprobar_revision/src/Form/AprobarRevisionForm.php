@@ -24,34 +24,38 @@ class AprobarRevisionForm extends FormBase{
   /*
    * (@inheritdoc)
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $seg = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento', $seg);
     $results = $select->execute()->fetchCol();
     //estatus_revision
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->addExpression('MAX(id_estatus)','actividad');
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
-    if($seg && $estatus[0] == 6){$estado = TRUE;}
-    elseif (!$seg && $estatus[0] == 3) {
-      $estado = TRUE;
-    }else{$estado = FALSE;}
     Database::setActiveConnection();
     $current_user_roles = \Drupal::currentUser()->getRoles();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', $current_user_roles) || !$estado){
+    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', $current_user_roles) || $estatus[0] != 3){
       return array('#markup' => "No tienes permiso para ver esta página.",);
     }
     global $no_rev;
     global $seguimiento;
     $seguimiento = $seg;
     $no_rev = $rev_id;
-    if($seg){
+    //Se busca si es revisión de seguimiento o no
+    Database::setActiveConnection('drupaldb_segundo');
+    $connection = Database::getConnection();
+    $select = Database::getConnection()->select('revisiones', 'r');
+    $select->fields('r', array('seguimiento'));
+    $select->condition('id_revision',$rev_id);
+    $seg = $select->execute()->fetchCol();
+    Database::setActiveConnection();
+    $seguimiento = $seg;
+    if($seg[0] != 0){
       $form['text'] = array(
         '#type' => 'item',
         '#title' => '¿Deseas aprobar esta revision de seguimiento?',
@@ -67,7 +71,7 @@ class AprobarRevisionForm extends FormBase{
       '#type' => 'submit',
       '#value' => t('Aprobar'),
     );
-    if($seg){
+    if($seg[0] != 0){
       $url = Url::fromRoute('informacion_seguimiento.content', array('rev_id' => $rev_id));
     }else{
       $url = Url::fromRoute('informacion_revision.content', array('rev_id' => $rev_id));
@@ -114,23 +118,12 @@ class AprobarRevisionForm extends FormBase{
     //////////////////////////////////////////////
     $fecha = getdate();
     $hoy = $fecha['year'].'-'.$fecha['mon'].'-'.$fecha['mday'];
-    if($seguimiento){
-      $update = $connection->update('revisiones')
-        ->fields(array(
-          'id_estatus' => 7,
-          'fecha_fin_seguimiento' => $hoy,
-        ))
-        ->condition('id_revision',$no_rev)
-        ->execute();
-    }else{
-      $update = $connection->update('revisiones')
-        ->fields(array(
-          'id_estatus' => 4,
-          'fecha_fin_revision' => $hoy,
-        ))
-        ->condition('id_revision',$no_rev)
-        ->execute();
-    }
+    $result = $connection->insert('actividad')
+      ->fields(array(
+        'id_revision' => $no_rev,
+        'id_estatus' => 4,
+        'fecha' => $hoy,
+      ))->execute();
     Database::setActiveConnection();
     //En esta parte se crea el reporte
     //Se obtiene el tipo y la cantidad de sitios
@@ -142,7 +135,7 @@ class AprobarRevisionForm extends FormBase{
     $tipo_revision = $select->execute()->fetchCol();
     Database::setActiveConnection();
     //////////////////////////////////////////////
-    if(!$seguimiento){
+    if($seguimiento[0] == 0){
       //If reporte tipo corto (circular) tipo_revision == true
       if($tipo_revision[0]){
         $fecha = getdate();
@@ -155,7 +148,6 @@ class AprobarRevisionForm extends FormBase{
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision',$no_rev);
-        $select->condition('seguimiento ',false);
         $usuarios_rev = $select->execute()->fetchCol();
         Database::setActiveConnection();
         $select = Database::getConnection()->select('users_field_data', 'u');
@@ -346,7 +338,6 @@ class AprobarRevisionForm extends FormBase{
           $select = Database::getConnection()->select('revisiones_asignadas', 'r');
           $select->fields('r', array('id_usuario'));
           $select->condition('id_revision',$no_rev);
-          $select->condition('seguimiento ',false);
           $usuarios_rev = $select->execute()->fetchCol();
           Database::setActiveConnection();
           $select = Database::getConnection()->select('users_field_data', 'u');
@@ -637,7 +628,6 @@ class AprobarRevisionForm extends FormBase{
           $select = Database::getConnection()->select('revisiones_asignadas', 'r');
           $select->fields('r', array('id_usuario'));
           $select->condition('id_revision',$no_rev);
-          $select->condition('seguimiento ',false);
           $usuarios_rev = $select->execute()->fetchCol();
           Database::setActiveConnection();
           $select = Database::getConnection()->select('users_field_data', 'u');
@@ -1097,7 +1087,6 @@ class AprobarRevisionForm extends FormBase{
       $select = Database::getConnection()->select('revisiones_asignadas', 'r');
       $select->fields('r', array('id_usuario'));
       $select->condition('id_revision',$no_rev);
-      $select->condition('seguimiento',true);
       $usuarios_rev = $select->execute()->fetchCol();
       Database::setActiveConnection();
       $select = Database::getConnection()->select('users_field_data', 'u');

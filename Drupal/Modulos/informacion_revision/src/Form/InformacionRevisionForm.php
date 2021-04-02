@@ -188,8 +188,6 @@ class InformacionRevisionForm extends FormBase{
           '#type' => '#markup',
           '#markup' => render($build[$id->id_rev_sitio][$hallazgo->id_hallazgo]),
         ];
-        //$form['regresar'] = array('#markup' => $id_rev_sitio_hall[0],);
-
         $form[$id->id_rev_sitio][$hallazgo->id_hallazgo]['impacto'] = array(
           '#type' => 'item',
           '#title' => 'Impacto',
@@ -209,7 +207,7 @@ class InformacionRevisionForm extends FormBase{
     $comentar = Link::fromTextAndUrl('Realizar un comentario', $urlComentar);
     $comentar = $comentar->toRenderable();
     $comentar['#attributes'] = array('class' => array('button'));
-    $urlAprobar = Url::fromRoute('aprobar_revision.content', array('rev_id' => $rev_id, 'seg' => 0));
+    $urlAprobar = Url::fromRoute('aprobar_revision.content', array('rev_id' => $rev_id));
     $aprobacion = Link::fromTextAndUrl('Aprobar revision', $urlAprobar);
     $aprobacion = $aprobacion->toRenderable();
     $aprobacion['#attributes'] = array('class' => array('button'));
