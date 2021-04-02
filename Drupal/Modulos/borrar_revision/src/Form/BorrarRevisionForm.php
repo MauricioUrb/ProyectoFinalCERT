@@ -48,9 +48,9 @@ class BorrarRevisionForm extends FormBase{
     $connection = Database::getConnection();
     //tipo de revision
     $select = Database::getConnection()->select('revisiones', 'r');
-    $select->join('estatus_revisiones',"s","r.id_estatus = s.id_estatus");
+    //$select->join('estatus_revisiones',"s","r.id_estatus = s.id_estatus");
     $select->fields('r', array('tipo_revision'));
-    $select->fields('s', array('estatus'));
+    //$select->fields('s', array('estatus'));
     $select->condition('id_revision',$rev_id);
     $datos = $select->execute();
     foreach ($datos as $dato) {
@@ -60,11 +60,11 @@ class BorrarRevisionForm extends FormBase{
         '#title' => t('Tipo de revisión:'),
         '#markup' => $tipo,
       );
-      $form['estatus'] = array(
+      /*$form['estatus'] = array(
         '#type' => 'item',
         '#title' => t('Estatus de la revisión:'),
         '#markup' => $dato->estatus,
-      );
+      );*/
     }
     
     //sitios
@@ -179,6 +179,9 @@ class BorrarRevisionForm extends FormBase{
       ->condition('id_rev_sitio', $resultados, 'IN')
       ->execute();
     $borrar = $connection->delete('revisiones_asignadas')
+      ->condition('id_revision',$regresar)
+      ->execute();
+    $borrar = $connection->delete('actividad')
       ->condition('id_revision',$regresar)
       ->execute();
     $borrar = $connection->delete('revisiones')

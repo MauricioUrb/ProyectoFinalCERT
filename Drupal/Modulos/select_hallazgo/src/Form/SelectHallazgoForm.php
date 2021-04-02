@@ -33,7 +33,7 @@ class SelectHallazgoForm extends FormBase{
     $results = $select->execute()->fetchCol();
     //estatus_revision
     $select = Database::getConnection()->select('actividad', 'a');
-    $select->fields('a', array('id_estatus'));
+    $select->addExpression('MAX(id_estatus)','actividad');
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();

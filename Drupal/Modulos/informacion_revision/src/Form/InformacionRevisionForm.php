@@ -26,11 +26,10 @@ class InformacionRevisionForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento', false);
     $results = $select->execute()->fetchCol();
     //estatus_revision
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->addExpression('MAX(id_estatus)','actividad');
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
@@ -42,19 +41,30 @@ class InformacionRevisionForm extends FormBase{
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
     $select = Database::getConnection()->select('revisiones', 'r');
-    //$select->join('revisiones_hallazgos',"h","r.id_sitio = s.id_sitio");
     $select->fields('r', array('tipo_revision'));
-    $select->fields('r', array('fecha_inicio_revision'));
-    $select->fields('r', array('fecha_fin_revision'));
+    //$select->fields('r', array('fecha_inicio_revision'));
+    //$select->fields('r', array('fecha_fin_revision'));
     $select->condition('id_revision',$rev_id);
-    $results = $select->execute();
+    $tipo_revision = $select->execute()->fetchCol();
+    //Fecha de inicio
+    $connection = Database::getConnection();
+    $select = Database::getConnection()->select('actividad', 'r');
+    $select->fields('r', array('fecha'));
+    $select->condition('id_revision',$rev_id);
+    $select->condition('id_estatus',1);
+    $fecha_inicio_revision = $select->execute()->fetchCol();
+    //Fecha de fin
+    $connection = Database::getConnection();
+    $select = Database::getConnection()->select('actividad', 'r');
+    $select->fields('r', array('fecha'));
+    $select->condition('id_revision',$rev_id);
+    $select->condition('id_estatus',2);
+    $fecha_fin_revision = $select->execute()->fetchCol();
 
     //Se obtienen los pentesters
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision', $rev_id);
-    $select->condition('seguimiento', false);
-    //$select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
     $usuarios_rev = $select->execute()->fetchCol();
 
     Database::setActiveConnection();
@@ -68,34 +78,32 @@ class InformacionRevisionForm extends FormBase{
     foreach ($pentesters as $pentester) {$nombres .= $pentester.', ';}
     $nombres = substr($nombres, 0, -2);
     //Se imprime en pantalla los datos de la revision
-    foreach ($results as $result) {
-      $form['id'] = array(
-        '#type' => 'item',
-        '#title' => 'Id de revisión:',
-        '#markup' => $rev_id,
-      );
-      if($result->tipo_revision){$tipo = 'Circular';}else{$tipo = 'Oficio';}
-      $form['tipo'] = array(
-        '#type' => 'item',
-        '#title' => 'Tipo:',
-        '#markup' => $tipo,
-      );
-      $form['inicio'] = array(
-        '#type' => 'item',
-        '#title' => 'Fecha de asignación:',
-        '#markup' => $result->fecha_inicio_revision,
-      );
-      $form['fecha'] = array(
-        '#type' => 'item',
-        '#title' => 'Fecha de finalización:',
-        '#markup' => $result->fecha_fin_revision,
-      );
-      $form['nombres'] = array(
-        '#type' => 'item',
-        '#title' => 'Pentesters asignados:',
-        '#markup' => $nombres,
-      );
-    }
+    $form['id'] = array(
+      '#type' => 'item',
+      '#title' => 'Id de revisión:',
+      '#markup' => $rev_id,
+    );
+    if($tipo_revision[0]){$tipo = 'Circular';}else{$tipo = 'Oficio';}
+    $form['tipo'] = array(
+      '#type' => 'item',
+      '#title' => 'Tipo:',
+      '#markup' => $tipo,
+    );
+    $form['inicio'] = array(
+      '#type' => 'item',
+      '#title' => 'Fecha de asignación:',
+      '#markup' => $fecha_inicio_revision[0],
+    );
+    $form['fecha'] = array(
+      '#type' => 'item',
+      '#title' => 'Fecha de finalización:',
+      '#markup' => $fecha_fin_revision[0],
+    );
+    $form['nombres'] = array(
+      '#type' => 'item',
+      '#title' => 'Pentesters asignados:',
+      '#markup' => $nombres,
+    );
 
     //Se obtienen los datos de los hallazgos de esta revisión
     Database::setActiveConnection('drupaldb_segundo');
@@ -148,12 +156,7 @@ class InformacionRevisionForm extends FormBase{
           '#title' => 'Recursos afectados:',
           '#markup' => $hallazgo->recursos_afectador,
         );
-        //Obtener el id_rev_sitio_hall
-        /*
-        $consulta = Database::getConnection()->select('revisiones_hallazgos', 'h');
-        $consulta->fields('h', array('id_rev_sitio_hall'));
-        $consulta->condition('id_rev_sitio_hall',$hallazgo->id_rev_sitio_hall);
-        $id_rev_sitio_hall = $consulta->execute()->fetchCol();*/
+        
         Database::setActiveConnection();
         $connection = \Drupal::service('database');
         $select = $connection->select('file_managed', 'fm')
