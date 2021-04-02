@@ -132,6 +132,19 @@ class DeleteHallazgoRevisionForm extends FormBase{
     $mensaje = 'Hallazgo eliminado.';
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_actividad'));
+    $select->condition('id_revision', $regresar);
+    $select->condition('id_estatus', 2);
+    $existe = $select->execute()->fetchCol();
+    $tmp = getdate();
+    $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
+    $update = $connection->update('actividad')
+      ->fields(array(
+        'fecha' => $fecha,
+      ))
+      ->condition('id_actividad',$existe[0])
+      ->execute();
     $borrar = $connection->delete('revisiones_hallazgos')
       ->condition('id_rev_sitio_hall', $id)
       ->execute();
