@@ -71,11 +71,6 @@ CREATE TABLE estatus_revisiones (
 	estatus text NOT NULL
 );
 
-CREATE TABLE estatus_revisiones (
-	id_estatus serial PRIMARY KEY,
-	estatus text NOT NULL
-);
-
 CREATE TABLE revisiones (
 	id_revision serial PRIMARY KEY,
 	tipo_revision boolean NOT NULL,
@@ -88,7 +83,7 @@ CREATE TABLE actividad(
 	id_revision serial NOT NULL,
 	id_estatus serial NOT NULL,
 	fecha date NOT NULL,
-	FOREIGN KEY (id_revision) REFERENCES revisiones(id_revision)
+	FOREIGN KEY (id_revision) REFERENCES revisiones(id_revision),
 	FOREIGN KEY (id_estatus) REFERENCES estatus_revisiones(id_estatus)
 );
 
