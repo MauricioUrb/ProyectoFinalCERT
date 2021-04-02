@@ -75,7 +75,7 @@ CREATE TABLE revisiones (
 	id_revision serial PRIMARY KEY,
 	tipo_revision boolean NOT NULL,
 	seguimiento int NOT NULL,
-	id_seguimiento bigint NULL,
+	id_seguimiento bigint NULL
 );
 
 CREATE TABLE actividad(
