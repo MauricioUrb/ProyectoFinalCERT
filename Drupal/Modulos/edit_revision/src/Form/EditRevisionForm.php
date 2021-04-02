@@ -37,8 +37,13 @@ class EditRevisionForm extends FormBase{
     $select->addExpression('MAX(id_estatus)','actividad');
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
+    //Se restringe a ser revision normal
+    $select = Database::getConnection()->select('revisiones', 'r');
+    $select->fields('r', array('seguimiento'));
+    $select->condition('id_revision',$rev_id);
+    $resultadoS = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || $estatus[0] > 2){
+    if (!in_array(\Drupal::currentUser()->id(), $results) || $estatus[0] > 2 || $resultadoS[0] != 0){
     	return array('#markup' => "No tienes permiso para ver estos formularios.",);
     }
     global $id_rev;
@@ -69,17 +74,17 @@ class EditRevisionForm extends FormBase{
         $consulta->condition('id_hallazgo',$hallazgo->id_hallazgo);
         $id_rev_sitio_hall = $consulta->execute()->fetchCol();
         //Boton de imagenes
-        $urlImg = Url::fromRoute('mostrar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $id_rev_sitio_hall[0]));
+        $urlImg = Url::fromRoute('mostrar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $id_rev_sitio_hall[0], 'seg' => 0));
         $imagenes = Link::fromTextAndUrl('Ver imágenes', $urlImg);
         $imagenes = $imagenes->toRenderable();
         $imagenes['#attributes'] = array('class' => array('button'));
         //Boton de editar
-        $urlEditar = Url::fromRoute('asignar_hallazgos.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo));
+        $urlEditar = Url::fromRoute('asignar_hallazgos.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo, 'seg' => 0));
         $editar = Link::fromTextAndUrl('Editar', $urlEditar);
         $editar = $editar->toRenderable();
         $editar['#attributes'] = array('class' => array('button'));
         //Boton de borrar
-        $urlBorrar = Url::fromRoute('delete_hallazgo_revision.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo, 'rsh' => $id_rev_sitio_hall[0]));
+        $urlBorrar = Url::fromRoute('delete_hallazgo_revision.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo, 'rsh' => $id_rev_sitio_hall[0], 'seg' => 0));
         $borrar = Link::fromTextAndUrl('Borrar', $urlBorrar);
         $borrar = $borrar->toRenderable();
         $borrar['#attributes'] = array('class' => array('button'));
@@ -113,8 +118,7 @@ class EditRevisionForm extends FormBase{
         '#rows' => $rows[$contador],
         '#empty' => t('No tienes hallazgos asignados a este activo.'),
       ];
-      //$url = Url::fromRoute('asignar_hallazgos.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => 0));
-      $url = Url::fromRoute('select_hallazgo.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio));
+      $url = Url::fromRoute('select_hallazgo.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'seg' => 0));
       $project_link = Link::fromTextAndUrl('Agregar hallazgo', $url);
       $project_link = $project_link->toRenderable();
       $project_link['#attributes'] = array('class' => array('button'));

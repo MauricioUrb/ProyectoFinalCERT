@@ -1,5 +1,5 @@
 agregar_imagen.content:
-  path: /imagenes/{rev_id}/{rsh}
+  path: /imagenes/{rev_id}/{rsh}/{seg}
   defaults:
     _form: '\Drupal\agregar_imagen\Form\AgregarImagenForm'
     _title: "Subir Imagenes"

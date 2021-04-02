@@ -23,7 +23,7 @@ class DeleteHallazgoRevisionForm extends FormBase{
   /*
    * (@inheritdoc)
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $hall_id = NULL, $rsh = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $hall_id = NULL, $rsh = NULL, $seg = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -48,6 +48,8 @@ class DeleteHallazgoRevisionForm extends FormBase{
     $regresar = $rev_id;
     global $id_hall;
     $id_hall = $hall_id;
+    global $rS;
+    $rS = $seg;
     //Consulta de la URL del sitio para imprimirlo
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -114,7 +116,11 @@ class DeleteHallazgoRevisionForm extends FormBase{
       '#type' => 'submit',
       '#value' => t('Borrar hallazgo'),
     );
-    $url = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
+    if(!$seg){
+      $url = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
+    }else{
+      $url = Url::fromRoute('edit_seguimiento.content', array('rev_id' => $rev_id));
+    }
     $project_link = Link::fromTextAndUrl('Cancelar', $url);
     $project_link = $project_link->toRenderable();
     $project_link['#attributes'] = array('class' => array('button'));
@@ -129,6 +135,7 @@ class DeleteHallazgoRevisionForm extends FormBase{
     global $id_principal;
     global $regresar;
     global $id_hall;
+    global $rS;
     $mensaje = 'Hallazgo eliminado.';
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -155,6 +162,10 @@ class DeleteHallazgoRevisionForm extends FormBase{
       ->execute();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
-  	$form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));
+  	if(!$rS){
+     $form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));
+    }else{
+     $form_state->setRedirectUrl(Url::fromRoute('edit_seguimiento.content', array('rev_id' => $regresar)));
+    }
   }
 }

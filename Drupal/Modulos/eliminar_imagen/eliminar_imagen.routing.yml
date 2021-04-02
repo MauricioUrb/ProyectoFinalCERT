@@ -1,5 +1,5 @@
 eliminar_imagen.content:
-  path: /eliminar/imagen/{fid}/{rev_id}/{rsh}
+  path: /eliminar/imagen/{fid}/{rev_id}/{rsh}/{seg}
   defaults:
     _form: '\Drupal\eliminar_imagen\Form\EliminarImagenForm'
     _title: "Eliminar Imagen"

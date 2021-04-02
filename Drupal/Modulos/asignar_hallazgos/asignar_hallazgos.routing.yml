@@ -1,5 +1,5 @@
 asignar_hallazgos.content:
-  path: /revisiones/hallazgos/{rev_id}/{id_rev_sitio}/{hall_id}
+  path: /revisiones/hallazgos/{rev_id}/{id_rev_sitio}/{hall_id}/{seg}
   defaults:
     _form: '\Drupal\asignar_hallazgos\Form\AsignarHallazgosForm'
     _title: "Editar hallazgos"

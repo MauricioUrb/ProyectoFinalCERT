@@ -1,5 +1,5 @@
 delete_hallazgo_revision.content:
-  path: /revisiones/delete/{rev_id}/{id_rev_sitio}/{hall_id}/{rsh}
+  path: /revisiones/delete/{rev_id}/{id_rev_sitio}/{hall_id}/{rsh}/{seg}
   defaults:
     _form: '\Drupal\delete_hallazgo_revision\Form\DeleteHallazgoRevisionForm'
     _title: "¿Deseas borrar el hallazgo de la revisión?"

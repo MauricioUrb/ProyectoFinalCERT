@@ -23,7 +23,7 @@ class SelectHallazgoForm extends FormBase{
   /*
    * (@inheritdoc)
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $seg = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -45,6 +45,8 @@ class SelectHallazgoForm extends FormBase{
     global $regresar;
     $regresar = $rev_id;
     global $hall_arr;
+    global $rS;
+    $rS = $seg;
     //Consulta de la URL del sitio para imprimirlo
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -59,10 +61,24 @@ class SelectHallazgoForm extends FormBase{
       '#markup' => $activo[0],
     );
     //Se revisa si el activo ya contiene algún hallazgo
-    $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
-    $select->fields('h', array('id_hallazgo'));
-    $select->condition('id_rev_sitio',$id_rev_sitio);
-    $id_hallz = $select->execute()->fetchCol();
+    if(!$seg){
+      $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
+      $select->fields('h', array('id_hallazgo'));
+      $select->condition('id_rev_sitio',$id_rev_sitio);
+      $id_hallz = $select->execute()->fetchCol();
+    }else{
+      //Se obtiene el id_rev_sitio de 
+      $select = Database::getConnection()->select('revisiones_sitios', 's');
+      $select->join('revisiones','r','s.id_revision = r.id_seguimiento');
+      $select->fields('s', array('id_rev_sitio'));
+      $select->condition('r.id_revision',$rev_id);
+      $id_rev_sitioN = $select->execute()->fetchCol();
+      //Ahora sí se obtienen los hallazgos que tiene
+      $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
+      $select->fields('h', array('id_hallazgo'));
+      $select->condition('id_rev_sitio',$id_rev_sitioN[0]);
+      $id_hallz = $select->execute()->fetchCol();
+    }
 
     $select = Database::getConnection()->select('hallazgos', 'h');
     $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
@@ -82,7 +98,11 @@ class SelectHallazgoForm extends FormBase{
       '#type' => 'submit',
       '#value' => t('Guardar'),
     );
-    $url = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
+    if(!$seg){
+      $url = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
+    }else{
+      $url = Url::fromRoute('edit_seguimiento.content', array('rev_id' => $rev_id));
+    }
     $project_link = Link::fromTextAndUrl('Cancelar', $url);
     $project_link = $project_link->toRenderable();
     $project_link['#attributes'] = array('class' => array('button'));
@@ -98,6 +118,7 @@ class SelectHallazgoForm extends FormBase{
     global $hall_arr;
     global $id_principal;
     global $regresar;
+    global $rS;
     $mensaje = 'Hallazgo agregado a la revision.';
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -157,16 +178,14 @@ class SelectHallazgoForm extends FormBase{
           'fecha' => $fecha,
         ))
         ->execute();
-    }/*
-    $result = $connection->update('actividad')
-      ->fields(array(
-        'id_estatus' => 2,
-      ))
-      ->condition('id_revision', $regresar)
-      ->execute();//*/
+    }
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
-  	$form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));
+    if(!$rS){
+  	 $form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));
+    }else{
+     $form_state->setRedirectUrl(Url::fromRoute('edit_seguimiento.content', array('rev_id' => $regresar)));
+    }
   }
 }

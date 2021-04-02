@@ -17,7 +17,7 @@ class MostrarImagenForm extends FormBase{
     return 'mostrar_imagen_form';
   }
 
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $rsh = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $rsh = NULL, $seg = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -34,6 +34,8 @@ class MostrarImagenForm extends FormBase{
     if (!in_array(\Drupal::currentUser()->id(), $results) || $estatus[0] > 2){
       return array('#markup' => "No tienes permiso para ver estos formularios.",);
     }
+    global $rS;
+    $rS = $seg;
     //Consulta de la URL del sitio para imprimirlo
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -75,7 +77,7 @@ class MostrarImagenForm extends FormBase{
     $results = $select->execute();
 
     foreach ($results as $result){
-      $url = Url::fromRoute('eliminar_imagen.content', array('fid' => $result->fid, 'rev_id' => $rev_id, 'rsh' => $rsh));
+      $url = Url::fromRoute('eliminar_imagen.content', array('fid' => $result->fid, 'rev_id' => $rev_id, 'rsh' => $rsh, 'seg' => $seg));
       $project_link = Link::fromTextAndUrl('Eliminar ', $url);
       $project_link = $project_link->toRenderable();
       $project_link['#attributes'] = array('class' => array('button'));
@@ -117,14 +119,18 @@ class MostrarImagenForm extends FormBase{
     $resultado = $consulta->execute()->fetchCol();
     $cantidadImg = 5 - $resultado[0];
     if($cantidadImg){
-        $urlA = Url::fromRoute('agregar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $rsh));
+        $urlA = Url::fromRoute('agregar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $rsh, 'seg' => $seg));
         $project_linkA = Link::fromTextAndUrl('Agregar imágenes', $urlA);
         $project_linkA = $project_linkA->toRenderable();
         $project_linkA['#attributes'] = array('class' => array('button'));
         $form['agregar'] = array('#markup' => render($project_linkA),);
       }
 
-    $urlR = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
+    if(!$seg){
+      $urlR = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
+    }else{
+      $urlR = Url::fromRoute('edit_seguimiento.content', array('rev_id' => $rev_id));
+    }
     $project_linkR = Link::fromTextAndUrl('Regresar a revisión', $urlR);
     $project_linkR = $project_linkR->toRenderable();
     $project_linkR['#attributes'] = array('class' => array('button'));

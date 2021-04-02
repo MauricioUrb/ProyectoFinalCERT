@@ -31,42 +31,46 @@ class EditSeguimientoForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento',true);
     $results = $select->execute()->fetchCol();
     //estatus_seguimiento
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->addExpression('MAX(id_estatus)','actividad');
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || $estatus[0] != 5){
+    if (!in_array(\Drupal::currentUser()->id(), $results) || $estatus[0] > 2){
     	return array('#markup' => "No tienes permiso para ver estos formularios.",);
     }
-    global $id_rev;
+    global $id_revS;
+    global $id_revOr;
     global $arreglo_global;
     $arreglo_global = array();
-    $id_rev = $rev_id;
-    //Datos de la revisión
-    $form['id'] = array(
-      '#type' => 'item',
-      '#title' => t('ID de revisón a mandar a seguimiento:'),
-      '#markup' => $rev_id,
-    );
-    //Se obtienen los datos
+    $id_revS = $rev_id;
+    //Datos de la revisión original
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
+    $select = Database::getConnection()->select('revisiones', 'r');
+    $select->fields('r', array('id_seguimiento'));
+    $select->condition('id_revision',$rev_id);
+    $rev_idO = $select->execute()->fetchCol();
+    $id_revOr = $rev_idO[0];
+    $form['id'] = array(
+      '#type' => 'item',
+      '#title' => t('ID de revisón mandada a seguimiento:'),
+      '#markup' => $rev_idO[0],
+    );
+    //Se obtienen los datos
     $select = Database::getConnection()->select('revisiones_sitios', 'r');
     $select->join('sitios', 's', 'r.id_sitio = s.id_sitio');
     $select->fields('s', array('url_sitio'));
     $select->fields('r', array('id_rev_sitio'));
-    $select->condition('id_revision',$rev_id);
+    $select->condition('id_revision',$rev_idO[0]);
     $ids = $select->execute();
     $tmp = 1;
     foreach ($ids as $id) {
       $select = Database::getConnection()->select('revisiones_hallazgos', 'r');
       $select->fields('r', array('id_rev_sitio_hall'));
       $select->fields('r', array('descripcion_hall_rev'));
-      //$select->fields('r', array('recursos_afectador'));
       $select->fields('r', array('impacto_hall_rev'));
       $select->fields('r', array('cvss_hallazgos'));
       $select->fields('r', array('id_hallazgo'));
@@ -126,6 +130,96 @@ class EditSeguimientoForm extends FormBase{
       $arreglo_global[$id->id_rev_sitio] = $hallazgos;
     }
     Database::setActiveConnection();
+
+    //Sección para agregar nuevos hallazgos
+    $form['nuevosH'] = array(
+      '#type' => 'item',
+      '#title' => t('Agregar nuevos hallazgos (Opcional)'),
+    );
+    //Se obtienen los sitios correspondientes a esta revision
+    Database::setActiveConnection('drupaldb_segundo');
+    $connection = Database::getConnection();
+    $select = Database::getConnection()->select('revisiones_sitios', 'r');
+    $select->join('sitios', 's', 'r.id_sitio = s.id_sitio');
+    $select->fields('s', array('url_sitio'));
+    $select->fields('r', array('id_rev_sitio'));
+    $select->condition('id_revision',$rev_id);
+    $results = $select->execute();
+    $contador = 0;
+    foreach ($results as $result) {
+      //Se consultan los hallazgos de este sitio
+      $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
+      $select->fields('h', array('id_hallazgo'));
+      $select->fields('h', array('impacto_hall_rev'));
+      $select->fields('h', array('cvss_hallazgos'));
+      $select->condition('h.id_rev_sitio',$result->id_rev_sitio);
+      $datHall = $select->execute();
+      foreach ($datHall as $hallazgo) {
+        //Obtener el id_rev_sitio_hall
+        $consulta = Database::getConnection()->select('revisiones_hallazgos', 'h');
+        $consulta->fields('h', array('id_rev_sitio_hall'));
+        $consulta->condition('id_rev_sitio',$result->id_rev_sitio);
+        $consulta->condition('id_hallazgo',$hallazgo->id_hallazgo);
+        $id_rev_sitio_hall = $consulta->execute()->fetchCol();
+        //Boton de imagenes
+        $urlImg = Url::fromRoute('mostrar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $id_rev_sitio_hall[0], 'seg' => 1));
+        $imagenes = Link::fromTextAndUrl('Ver imágenes', $urlImg);
+        $imagenes = $imagenes->toRenderable();
+        $imagenes['#attributes'] = array('class' => array('button'));
+        //Boton de editar
+        $urlEditar = Url::fromRoute('asignar_hallazgos.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo, 'seg' => 1));
+        $editar = Link::fromTextAndUrl('Editar', $urlEditar);
+        $editar = $editar->toRenderable();
+        $editar['#attributes'] = array('class' => array('button'));
+        //Boton de borrar
+        $urlBorrar = Url::fromRoute('delete_hallazgo_revision.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'hall_id' => $hallazgo->id_hallazgo, 'rsh' => $id_rev_sitio_hall[0], 'seg' => 1));
+        $borrar = Link::fromTextAndUrl('Borrar', $urlBorrar);
+        $borrar = $borrar->toRenderable();
+        $borrar['#attributes'] = array('class' => array('button'));
+        //Primero se obtiene el nombre del hallazgo
+        $select = Database::getConnection()->select('hallazgos', 'h');
+        $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
+        $select->condition('id_hallazgo',$hallazgo->id_hallazgo);
+        $nombreHallazgo = $select->execute()->fetchCol();
+        $rows[$contador][$hallazgo->id_hallazgo] = [
+          $nombreHallazgo[0],
+          $hallazgo->impacto_hall_rev,
+          $hallazgo->cvss_hallazgos,
+          render($imagenes),
+          render($editar),
+          render($borrar),
+        ];
+      }
+      //Se asignan titulos a cada columna
+      $header = [
+        'hallazgo' => t('Hallazgo'),
+        'impact' => t('Impacto'),
+        'cvss' => t('CVSS'),
+        'evidencia' => t('Evidencia'),
+        'edit' => t('Editar'),
+        'delete' => t('Borrar'),
+      ];
+      //se construye la tabla para mostrar
+      $hallazgosT[$contador]['table'] = [
+        '#type' => 'table',
+        '#header' => $header,
+        '#rows' => $rows[$contador],
+        '#empty' => t('No tienes hallazgos asignados a este activo.'),
+      ];
+      $url = Url::fromRoute('select_hallazgo.content', array('rev_id' => $rev_id,'id_rev_sitio' => $result->id_rev_sitio, 'seg' => 1));
+      $project_link = Link::fromTextAndUrl('Agregar hallazgo', $url);
+      $project_link = $project_link->toRenderable();
+      $project_link['#attributes'] = array('class' => array('button'));
+      $form[$contador] = array(
+        '#type' => 'item',
+        '#title' => $result->url_sitio,
+        '#markup' => render($hallazgosT[$contador]),
+        '#description' => render($project_link),
+      );//*/
+      $contador++;
+    }
+    Database::setActiveConnection();
+    
     //Estatus
     $form['estatus'] = array(
       '#type' => 'radios',
@@ -145,8 +239,9 @@ class EditSeguimientoForm extends FormBase{
    */
   public function submitForm(array &$form, FormStateInterface $form_state){
     $mensaje = 'Seguimiento guardado.';
-    //$concluido = $form_state->getValue(['estatus']);
-    global $id_rev;
+    $concluido = $form_state->getValue(['estatus']);
+    global $id_revOr;
+    global $id_revS;
     global $arreglo_global;
     $tmp = 1;
     //$opciones = array(0 => 'Persistente', 1 => 'Mitigado');
@@ -178,24 +273,15 @@ class EditSeguimientoForm extends FormBase{
     }
     $fecha = getdate();
     $hoy = $fecha['year'].'-'.$fecha['mon'].'-'.$fecha['mday'];
-    if($form_state->getValue(['estatus'])){$id_estatus = 6;}else{$id_estatus = 5;}
-    $result = $connection->update('revisiones')
-      ->fields(array(
-        'id_estatus' => $id_estatus,
-        'fecha_fin_seguimiento' => $hoy,
-      ))
-    ->condition('id_revision', $id_rev)
-    ->execute();
     Database::setActiveConnection();
-    if($form_state->getValue(['estatus'])){
+    if($concluido){
       $mensaje = 'Seguimiento mandado para aprobación.';
       //Se busca el nombre del coordinador que asignó la revision
       Database::setActiveConnection('drupaldb_segundo');
       $connection = Database::getConnection();
       $select = Database::getConnection()->select('revisiones_asignadas', 'r');
       $select->fields('r', array('id_usuario'));
-      $select->condition('id_revision', $id_rev);
-      $select->condition('seguimiento', true);
+      $select->condition('id_revision', $id_revS);
       $usuarios_rev = $select->execute()->fetchCol();
       Database::setActiveConnection();
 
@@ -208,10 +294,46 @@ class EditSeguimientoForm extends FormBase{
       //Se manda el correo al coordinador
       $langcode = \Drupal::currentUser()->getPreferredLangcode();
       $params['context']['subject'] = "Revision concluida";
-      $params['context']['message'] = 'Los pentesters han conlcuido la revision de seguimiento #'.$id_rev.' que les fue asignada.';
+      $params['context']['message'] = 'Los pentesters han conlcuido la revision de seguimiento #'.$id_revS.' que les fue asignada.';
       $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $mail[0], $langcode, $params);
       if(!$email){$mensaje = "Ocurrió algún error y no se ha podido enviar el correo de notificación.";}
-  	}
+      Database::setActiveConnection('drupaldb_segundo');
+      $connection = Database::getConnection();
+      $result = $connection->insert('actividad')
+        ->fields(array(
+          'id_revision' => $id_revS,
+          'id_estatus' => 3,
+          'fecha' => $hoy,
+        ))
+        ->execute();
+      Database::setActiveConnection();
+  	}else{
+      Database::setActiveConnection('drupaldb_segundo');
+      $connection = Database::getConnection();
+      //Se revisa si ya se tiene ese estado, de otro modo, se actualiza
+      $select = Database::getConnection()->select('actividad', 'a');
+      $select->fields('a', array('id_actividad'));
+      $select->condition('id_revision', $id_revS);
+      $select->condition('id_estatus', 2);
+      $existe = $select->execute()->fetchCol();
+      if(sizeof($existe)){
+        $update = $connection->update('actividad')
+          ->fields(array(
+            'fecha' => $hoy,
+          ))
+          ->condition('id_actividad',$existe[0])
+          ->execute();
+      }else{
+        $update = $connection->insert('actividad')
+          ->fields(array(
+            'id_revision' => $id_revS,
+            'id_estatus' => 2,
+            'fecha' => $hoy,
+          ))
+          ->execute();
+      }
+      Database::setActiveConnection();
+    }
 
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);

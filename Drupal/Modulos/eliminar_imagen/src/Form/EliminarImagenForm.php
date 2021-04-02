@@ -22,7 +22,7 @@ class EliminarImagenForm extends FormBase {
     return 'eliminar_imagen_form';
   }
 
-  public function buildForm(array $form, FormStateInterface $form_state, $fid = NULL, $rev_id = NULL, $rsh = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $fid = NULL, $rev_id = NULL, $rsh = NULL, $seg = NULL) {
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -45,6 +45,8 @@ class EliminarImagenForm extends FormBase {
     $id_rev = $rev_id;
     global $id_rimg;
     $id_rimg = $rsh;
+    global $rS;
+    $rS = $seg;
 
     $txt = '';
     $txt .= 'Confirmar eliminación de registro';
@@ -58,7 +60,7 @@ class EliminarImagenForm extends FormBase {
       '#value' => t('Aceptar'),
     );
 
-    $url = Url::fromRoute('mostrar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $rsh));
+    $url = Url::fromRoute('mostrar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $rsh, 'seg' => $seg));
     $project_link = Link::fromTextAndUrl('Cancelar', $url);
     $project_link = $project_link->toRenderable();
     $project_link['#attributes'] = array('class' => array('button'));
@@ -71,6 +73,7 @@ class EliminarImagenForm extends FormBase {
 	  global $id;
     global $id_rev;
     global $id_rimg;
+    global $rS;
 	  //se hace la conexion a la base de datos
     $connection = \Drupal::service('database');
 	  //se elimina un regitro de la tabla file_managed
@@ -102,6 +105,6 @@ class EliminarImagenForm extends FormBase {
       ->condition('id_actividad',$existe[0])
       ->execute();
     Database::setActiveConnection();
-    $form_state->setRedirectUrl(Url::fromRoute('mostrar_imagen.content', array('rev_id' => $id_rev, 'rsh' => $id_rimg)));
+    $form_state->setRedirectUrl(Url::fromRoute('mostrar_imagen.content', array('rev_id' => $id_rev, 'rsh' => $id_rimg, 'seg' => $rS)));
   }
 }

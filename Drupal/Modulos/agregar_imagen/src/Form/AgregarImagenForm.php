@@ -22,7 +22,7 @@ class AgregarImagenForm extends FormBase{
     return 'agregar_imagen_form';
   }
 
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $rsh = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $rsh = NULL, $seg = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -46,6 +46,8 @@ class AgregarImagenForm extends FormBase{
     $id_rev = $rev_id;
     global $id_rimg;
     $id_rimg = $rsh;
+    global $rS;
+    $rS = $seg;
     //Cantidad de imágenes ya agregadas
     $consulta = Database::getConnection()->select('file_managed', 'f');
     $consulta->addExpression('COUNT(id_rev_sh)','file_managed');
@@ -81,7 +83,7 @@ class AgregarImagenForm extends FormBase{
       '#type' => 'submit',
       '#value' => t('Guardar'),
     );
-    $urlR = Url::fromRoute('mostrar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $rsh));
+    $urlR = Url::fromRoute('mostrar_imagen.content', array('rev_id' => $rev_id, 'rsh' => $rsh, 'seg' => $seg));
     $project_linkR = Link::fromTextAndUrl('Regresar a imagenes', $urlR);
     $project_linkR = $project_linkR->toRenderable();
     $project_linkR['#attributes'] = array('class' => array('button'));
@@ -96,6 +98,7 @@ class AgregarImagenForm extends FormBase{
     global $cantidadImg;
     global $id_rev;
     global $id_rimg;
+    global $rS;
     $connection = \Drupal::service('database');
     $contador = 0;
     for($i = 1; $i <= $cantidadImg; $i++){
@@ -138,6 +141,6 @@ class AgregarImagenForm extends FormBase{
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage(t('Imágenes actualizadas.'));
-    $form_state->setRedirectUrl(Url::fromRoute('mostrar_imagen.content', array('rev_id' => $id_rev, 'rsh' => $id_rimg)));
+    $form_state->setRedirectUrl(Url::fromRoute('mostrar_imagen.content', array('rev_id' => $id_rev, 'rsh' => $id_rimg, 'seg' => $rS)));
   }
 }
