@@ -30,11 +30,10 @@ class DeleteHallazgoRevisionForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento', false);
     $results = $select->execute()->fetchCol();
     //estatus_revision
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_estatus'));
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
@@ -77,8 +76,7 @@ class DeleteHallazgoRevisionForm extends FormBase{
     $select->fields('h', array('recursos_afectador'));
     $select->fields('h', array('impacto_hall_rev'));
     $select->fields('h', array('cvss_hallazgos'));
-    $select->condition('id_rev_sitio',$id_rev_sitio);
-    $select->condition('id_hallazgo',$hall_id);
+    $select->condition('id_rev_sitio_hall',$rsh);
     $results = $select->execute();
     Database::setActiveConnection();
     $descripcion_hall_rev = '';
@@ -135,14 +133,11 @@ class DeleteHallazgoRevisionForm extends FormBase{
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
     $borrar = $connection->delete('revisiones_hallazgos')
-      ->condition('id_rev_sitio', $id_principal)
-      ->condition('id_hallazgo', $id_hall)
+      ->condition('id_rev_sitio_hall', $id)
       ->execute();
     Database::setActiveConnection();
     $connection = \Drupal::service('database');
-    //se elimina un regitro de la tabla file_managed
     $elimina = $connection->delete('file_managed')
-      //se agrega la condicion id_sitio
       ->condition('id_rev_sh', $id)
       ->execute();
     $messenger_service = \Drupal::service('messenger');
