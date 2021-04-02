@@ -68,7 +68,18 @@ class RevisionesAsignadasForm extends FormBase{
         $select->fields('s', array('estatus'));
         $select->condition('s.id_estatus', $id_estatus[0]);
         $estatus_revision = $select->execute()->fetchCol();
-
+        //Fecha inicio revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 1);
+        $fecha_inicio_revision = $select->execute()->fetchCol();
+        //Fecha fin revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 3);
+        $fecha_fin_revision = $select->execute()->fetchCol();
         //lista de sitios asignados
         $select = Database::getConnection()->select('revisiones_sitios', 'r');
         $select->join('sitios',"s","r.id_sitio = s.id_sitio");
@@ -83,8 +94,10 @@ class RevisionesAsignadasForm extends FormBase{
         Database::setActiveConnection();
 
         $select = Database::getConnection()->select('users_field_data', 'u');
+        $select->join('user__roles','r', 'u.uid = r.entity_id');
         $select->fields('u', array('name'));
         $select->condition('uid', $usuarios_rev, 'IN');
+        $select->condition('roles_target_id','pentester');
         $pentesters = $select->execute()->fetchCol();
         $nombres = '';
         foreach ($pentesters as $pentester) {$nombres .= $pentester.', ';}
@@ -96,8 +109,8 @@ class RevisionesAsignadasForm extends FormBase{
             $nombres,
             $estatus_revision[0],
             $txt,
-            $result->fecha_inicio_revision,
-            $result->fecha_fin_revision,
+            $fecha_inicio_revision[0],
+            $fecha_fin_revision[0],
             render($project_link),
             render($project_linkB),
           ];
@@ -107,7 +120,7 @@ class RevisionesAsignadasForm extends FormBase{
             $tipo,
             $nombres,
             $estatus_revision[0],
-            $result->fecha_inicio_revision,
+            $fecha_inicio_revision[0],
             $txt,
             render($project_linkEC),
             render($project_linkB),
@@ -215,7 +228,18 @@ class RevisionesAsignadasForm extends FormBase{
         $select->fields('s', array('estatus'));
         $select->condition('s.id_estatus', $id_estatus[0]);
         $estatus_revision = $select->execute()->fetchCol();
-
+        //Fecha inicio revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 1);
+        $fecha_inicio_revision = $select->execute()->fetchCol();
+        //Fecha fin revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 3);
+        $fecha_fin_revision = $select->execute()->fetchCol();
         //lista de sitios asignados
         $select = Database::getConnection()->select('revisiones_sitios', 'r');
         $select->join('sitios',"s","r.id_sitio = s.id_sitio");
@@ -230,12 +254,19 @@ class RevisionesAsignadasForm extends FormBase{
         Database::setActiveConnection();
 
         $select = Database::getConnection()->select('users_field_data', 'u');
+        $select->join('user__roles','r', 'u.uid = r.entity_id');
         $select->fields('u', array('name'));
+        $select->condition('roles_target_id','pentester');
         $select->condition('uid', $usuarios_rev, 'IN');
         $pentesters = $select->execute()->fetchCol();
         $nombres = '';
         foreach ($pentesters as $pentester) {$nombres .= $pentester.', ';}
         $nombres = substr($nombres, 0, -2);
+        //Botón para borrar revisión
+        $urlB = Url::fromRoute('borrar_revision.content', array('rev_id' => $result->id_revision));
+        $project_linkB = Link::fromTextAndUrl('Borrar', $urlB);
+        $project_linkB = $project_linkB->toRenderable();
+        $project_linkB['#attributes'] = array('class' => array('button'));
         if($id_estatus[0] == 3){
           $filasS[$result->id_revision] = [
             $result->id_revision,
@@ -243,10 +274,10 @@ class RevisionesAsignadasForm extends FormBase{
             $nombres,
             $estatus_revision[0],
             $txt,
-            $result->fecha_inicio_seguimiento,
-            $result->fecha_fin_seguimiento,
+            $fecha_inicio_revision[0],
+            $fecha_fin_revision[0],
             render($revisarSeguimiento),
-            //render($editarSeguimiento),
+            render($project_linkB),
           ];
         }elseif($id_estatus[0] < 3){
           $rowsS[$result->id_revision] = [
@@ -254,9 +285,10 @@ class RevisionesAsignadasForm extends FormBase{
             $tipo,
             $nombres,
             $estatus_revision[0],
-            $result->fecha_inicio_seguimiento,
+            $fecha_inicio_revision[0],
             $txt,
             render($editarSeguimiento),
+            render($project_linkB),
           ];
         }
       }
@@ -270,7 +302,7 @@ class RevisionesAsignadasForm extends FormBase{
         'start' => t('Fecha de asignacion'),
         'last' => t('Fecha de finalización'),
         'edit' => t('Editar'),
-        //'delete' => t('Borrar'),
+        'delete' => t('Borrar'),
       ];
       $headerS2 = [
         'id' => t('ID'),
@@ -280,7 +312,7 @@ class RevisionesAsignadasForm extends FormBase{
         'start' => t('Fecha de asignacion'),
         'activos' => t('Activos asignados'),
         'edit' => t('Editar'),
-        //'delete' => t('Borrar'),
+        'delete' => t('Borrar'),
       ];
       //se construye la tabla para mostrar
       $segAsig['table'] = [
@@ -349,6 +381,19 @@ class RevisionesAsignadasForm extends FormBase{
         //lista de sitios asignados
         Database::setActiveConnection('drupaldb_segundo');
         $connection = Database::getConnection();
+        //Fecha inicio revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 1);
+        $fecha_inicio_revision = $select->execute()->fetchCol();
+        //Fecha fin revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 3);
+        $fecha_fin_revision = $select->execute()->fetchCol();
+        //activos
         $select = Database::getConnection()->select('revisiones_sitios', 'r');
         $select->join('sitios',"s","r.id_sitio = s.id_sitio");
         $select->fields('s', array('url_sitio'));
@@ -378,8 +423,8 @@ class RevisionesAsignadasForm extends FormBase{
             $tipo,
             $estatus_revision[0],
             $txt,
-            $result->fecha_inicio_revision,
-            $result->fecha_fin_revision,
+            $fecha_inicio_revision[0],
+            $fecha_fin_revision[0],
             $coordinador[0],
           ];
         }elseif($id_estatus[0] < 3){
@@ -389,7 +434,7 @@ class RevisionesAsignadasForm extends FormBase{
             $estatus_revision[0],
             //$result->id_estatus,
             $txt,
-            $result->fecha_inicio_revision,
+            $fecha_inicio_revision[0],
             $coordinador[0],
             render($project_link),
           ];
@@ -499,7 +544,19 @@ class RevisionesAsignadasForm extends FormBase{
         $select->addExpression('MAX(id_estatus)','actividad');
         $select->condition('id_revision', $result->id_revision);
         $id_estatus = $select->execute()->fetchCol();
-        
+        //Fecha inicio revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 1);
+        $fecha_inicio_revision = $select->execute()->fetchCol();
+        //Fecha fin revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 3);
+        $fecha_fin_revision = $select->execute()->fetchCol();
+        //estatus
         $select = Database::getConnection()->select('estatus_revisiones', 's');
         $select->join('actividad','a','a.id_estatus = s.id_estatus');
         $select->fields('s', array('estatus'));
@@ -512,8 +569,8 @@ class RevisionesAsignadasForm extends FormBase{
             $tipo,
             $estatus_revision[0],
             $txt,
-            $result->fecha_inicio_seguimiento,
-            $result->fecha_fin_seguimiento,
+            $fecha_inicio_revision[0],
+            $fecha_fin_revision[0],
             $coordinador[0],
           ];
         }elseif($id_estatus[0] < 3){
@@ -523,7 +580,7 @@ class RevisionesAsignadasForm extends FormBase{
             $estatus_revision[0],
             //$result->id_estatus,
             $txt,
-            $result->fecha_inicio_seguimiento,
+            $fecha_inicio_revision[0],
             $coordinador[0],
             render($project_linkS),
           ];
