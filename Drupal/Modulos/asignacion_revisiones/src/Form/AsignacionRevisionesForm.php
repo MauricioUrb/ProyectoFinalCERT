@@ -80,7 +80,6 @@ class AsignacionRevisionesForm extends FormBase{
    * Validacion de los datos ingresados
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-    //https://www.drupal.org/docs/drupal-apis/form-api/introduction-to-form-api
     //Conteo de sitios seleccionados
     $tmp = '';
     $test = $form_state->getValue(['sitios']);
@@ -89,13 +88,6 @@ class AsignacionRevisionesForm extends FormBase{
     }
     $valores = explode('-',$tmp);
     while(end($valores) == 0 && sizeof($valores) > 1){$tmp = array_pop($valores);}
-    /*
-    //Obtencion del valor de las opciones marcadas
-    $tmp = 0;
-    foreach($valores as $pos){
-      $contenido[$tmp] = $form['sitios']['#options'][$pos];
-      $tmp++;
-    }*/
     //Validacion de tipo de revision
     $cadena = 'En revision de tipo Circular solo puedes escoger un sitio para revision.';
     if($form_state->getValue(['tipo']) != 0 && sizeof($valores) != 1){
@@ -190,11 +182,15 @@ class AsignacionRevisionesForm extends FormBase{
       ->fields(array(
         'id_revision' => $id_revisiones,
         'tipo_revision' => $tipo_revision,
-        'id_estatus'=> $estatus_revision,
-        'fecha_inicio_revision' => $fecha,
-        'fecha_fin_revision' => NULL,
-        'fecha_inicio_seguimiento' => NULL,
-        'fecha_fin_seguimiento' => NULL,
+        'seguimiento' => 0,
+        'id_seguimiento' => NULL,
+      ))->execute();
+    //actividad
+    $result = $connection->insert('actividad')
+      ->fields(array(
+        'id_revision' => $id_revisiones,
+        'id_estatus' => 1,
+        'fecha' => $fecha,
       ))->execute();
     //revisiones_asignadas
     foreach ($uid_usuarios as $pentester) {
@@ -202,7 +198,6 @@ class AsignacionRevisionesForm extends FormBase{
         ->fields(array(
           'id_revision' => $id_revisiones,
           'id_usuario' => $pentester,
-          'seguimiento' => 0,
         ))->execute();
     }
     if(!in_array(\Drupal::currentUser()->id(), $uid_usuarios)){
@@ -210,7 +205,6 @@ class AsignacionRevisionesForm extends FormBase{
         ->fields(array(
           'id_revision' => $id_revisiones,
           'id_usuario' => \Drupal::currentUser()->id(),
-          'seguimiento' => 0,
         ))->execute();
     }
     //revisiones_sitios
