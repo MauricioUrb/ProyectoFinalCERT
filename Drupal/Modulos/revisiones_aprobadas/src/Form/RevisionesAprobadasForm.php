@@ -18,13 +18,12 @@ class RevisionesAprobadasForm extends FormBase{
       Database::setActiveConnection('drupaldb_segundo');
       $connection = Database::getConnection();
       $select = Database::getConnection()->select('revisiones', 'r');
+      $select->join('actividad','a','a.id_revision = r.id_revision');
       $select->fields('r', array('id_revision'));
-      $select->fields('r', array('id_estatus'));
       $select->fields('r', array('tipo_revision'));
-      $select->fields('r', array('fecha_inicio_revision'));
-      $select->fields('r', array('fecha_fin_revision'));
+      $select->condition('seguimiento', 0);
       $select->condition('id_estatus',4,'>=');
-      $select->orderBy('fecha_fin_revision','DESC');
+      $select->orderBy('fecha','DESC');
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
       Database::setActiveConnection();
@@ -39,7 +38,6 @@ class RevisionesAprobadasForm extends FormBase{
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision', $result->id_revision);
-        $select->condition('seguimiento', false);
         $usuarios_rev = $select->execute()->fetchCol();
 
         //lista de sitios asignados
@@ -76,14 +74,27 @@ class RevisionesAprobadasForm extends FormBase{
 
         Database::setActiveConnection('drupaldb_segundo');
         $connection = Database::getConnection();
-        $select = Database::getConnection()->select('revisiones_asignadas', 'r');
+        /*$select = Database::getConnection()->select('revisiones', 'r');
         $select->fields('r', array('seguimiento '));
         $select->condition('id_revision', $result->id_revision);
         $seguimiento = $select->execute()->fetchCol();
-        Database::setActiveConnection();
+        Database::setActiveConnection();*/
 
+        //Fecha inicio revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 1);
+        $fecha_inicio_revision = $select->execute()->fetchCol();
+        //Fecha fin revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 4);
+        $fecha_fin_revision = $select->execute()->fetchCol();
+        Database::setActiveConnection();
         //Botón para descargar reporte
-        list($year,$month,$day) = explode('-', $result->fecha_fin_revision);
+        list($year,$month,$day) = explode('-', $fecha_fin_revision[0]);
         if(strlen((string)$month) == 1){
           $mes = '0'.$month;
         }else{$mes = $month;}
@@ -108,8 +119,8 @@ class RevisionesAprobadasForm extends FormBase{
           $coordinador[0],
           $nombres,
           $nombreSitios,
-          $result->fecha_inicio_revision,
-          $result->fecha_fin_revision,
+          $fecha_inicio_revision[0],
+          $fecha_fin_revision[0],
           render($descargar),
         ];
         
@@ -117,44 +128,31 @@ class RevisionesAprobadasForm extends FormBase{
         $revisiones = Link::fromTextAndUrl('Seguimiento', $url1);
         $revisiones = $revisiones->toRenderable();
         $revisiones['#attributes'] = array('class' => array('button'));
-        if($result->id_estatus == 4){
-          $filas[$result->id_revision] = [
-            $result->id_revision,
-            $tipo,
-            $coordinador[0],
-            $nombres,
-            $nombreSitios,
-            $result->fecha_inicio_revision,
-            $result->fecha_fin_revision,
-            render($descargar),
-            render($revisiones),
-          ];
-        }else{
-          $filas[$result->id_revision] = [
-            $result->id_revision,
-            $tipo,
-            $coordinador[0],
-            $nombres,
-            $nombreSitios,
-            $result->fecha_inicio_revision,
-            $result->fecha_fin_revision,
-            render($descargar),
-            '-',
-          ];
-        }
+        $filas[$result->id_revision] = [
+          $result->id_revision,
+          $tipo,
+          $coordinador[0],
+          $nombres,
+          $nombreSitios,
+          $fecha_inicio_revision[0],
+          $fecha_fin_revision[0],
+          render($descargar),
+          render($revisiones),
+        ];
       }
 
       //Tabla de revisiones de seguimiento
       Database::setActiveConnection('drupaldb_segundo');
       $connection = Database::getConnection();
       $select = Database::getConnection()->select('revisiones', 'r');
+      $select->join('actividad','a','a.id_revision = r.id_revision');
       $select->fields('r', array('id_revision'));
-      $select->fields('r', array('id_estatus'));
       $select->fields('r', array('tipo_revision'));
-      $select->fields('r', array('fecha_inicio_seguimiento'));
-      $select->fields('r', array('fecha_fin_seguimiento'));
-      $select->condition('id_estatus',7);
-      //$select->orderBy('fecha_fin_revision','DESC');
+      $select->fields('r', array('seguimiento'));
+      $select->fields('r', array('id_seguimiento'));
+      $select->condition('seguimiento', 0, '<>');
+      $select->condition('id_estatus',4);
+      $select->orderBy('fecha','DESC');
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
       Database::setActiveConnection();
@@ -167,7 +165,6 @@ class RevisionesAprobadasForm extends FormBase{
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision', $result->id_revision);
-        $select->condition('seguimiento', false);
         $usuarios_rev = $select->execute()->fetchCol();
 
         //lista de sitios asignados
@@ -202,8 +199,23 @@ class RevisionesAprobadasForm extends FormBase{
         //$select->condition('roles_target_id','coordinador de revisiones');
         $coordinador = $select->execute()->fetchCol();
 
+        //Fecha inicio revision
+        Database::setActiveConnection('drupaldb_segundo');
+        $connection = Database::getConnection();
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 1);
+        $fecha_inicio_revision = $select->execute()->fetchCol();
+        //Fecha fin revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 4);
+        $fecha_fin_revision = $select->execute()->fetchCol();
+        Database::setActiveConnection();
         //Botón para descargar reporte
-        list($year,$month,$day) = explode('-', $result->fecha_fin_seguimiento);
+        list($year,$month,$day) = explode('-', $result->fecha_fin_seguimiento[0]);
         if(strlen((string)$month) == 1){
           $mes = '0'.$month;
         }else{$mes = $month;}
@@ -227,12 +239,14 @@ class RevisionesAprobadasForm extends FormBase{
         //Tabla de revisiones de seguimiento
         $ultima[$result->id_revision] = [
           $result->id_revision,
+          $result->seguimiento,
+          $result->id_seguimiento,
           $tipo,
           $coordinador[0],
           $nombres,
           $nombreSitios,
-          $result->fecha_inicio_seguimiento,
-          $result->fecha_fin_seguimiento,
+          $fecha_inicio_seguimiento[0],
+          $fecha_fin_seguimiento[0],
           render($descargarS),
         ];
       }
@@ -260,6 +274,8 @@ class RevisionesAprobadasForm extends FormBase{
       ];
       $header3 = [
         'id' => t('ID'),
+        'id' => t('Seguimiento'),
+        'id' => t('Revisión previa'),
         'type' => t('Tipo'),
         'coordinador' => t('Coordinador de revisiones'),
         'pentesters' => t('Pentesters'),
