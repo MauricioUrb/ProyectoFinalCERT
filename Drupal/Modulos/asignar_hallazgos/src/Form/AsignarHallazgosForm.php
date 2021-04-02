@@ -30,11 +30,10 @@ class AsignarHallazgosForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento', false);
     $results = $select->execute()->fetchCol();
     //estatus_revision
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_estatus'));
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
@@ -47,7 +46,6 @@ class AsignarHallazgosForm extends FormBase{
     $regresar = $rev_id;
     global $id_hall;
     $id_hall = $hall_id;
-    global $hall_arr;
     //Consulta de la URL del sitio para imprimirlo
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -165,7 +163,6 @@ class AsignarHallazgosForm extends FormBase{
    * (@inheritdoc)
    */
   public function submitForm(array &$form, FormStateInterface $form_state){
-    global $hall_arr;
     global $id_principal;
     global $regresar;
     global $id_hall;
@@ -174,7 +171,7 @@ class AsignarHallazgosForm extends FormBase{
     $connection = Database::getConnection();
     //Insercion en la BD
     $mensaje = 'Hallazgo actualizado.';
-      $result = $connection->update('revisiones_hallazgos')
+    $result = $connection->update('revisiones_hallazgos')
       ->fields(array(
         'descripcion_hall_rev' => $form_state->getValue(['descripcion']),
         'recursos_afectador' => $form_state->getValue(['recursos']),
@@ -184,11 +181,18 @@ class AsignarHallazgosForm extends FormBase{
       ->condition('id_hallazgo', $id_hall)
       ->condition('id_rev_sitio', $id_principal)
       ->execute();
-    $result = $connection->update('revisiones')
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_actividad'));
+    $select->condition('id_revision', $regresar);
+    $select->condition('id_estatus', 2);
+    $existe = $select->execute()->fetchCol();
+    $tmp = getdate();
+    $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
+    $update = $connection->update('actividad')
       ->fields(array(
-        'id_estatus' => 2,
+        'fecha' => $fecha,
       ))
-      ->condition('id_revision', $regresar)
+      ->condition('id_actividad',$existe[0])
       ->execute();
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
