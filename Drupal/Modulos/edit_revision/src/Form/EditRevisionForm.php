@@ -31,11 +31,10 @@ class EditRevisionForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento', false);
     $results = $select->execute()->fetchCol();
     //estatus_revision
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_estatus'));
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
@@ -159,7 +158,6 @@ class EditRevisionForm extends FormBase{
       $select = Database::getConnection()->select('revisiones_asignadas', 'r');
       $select->fields('r', array('id_usuario'));
       $select->condition('id_revision', $id_rev);
-      $select->condition('seguimiento', false);
       $usuarios_rev = $select->execute()->fetchCol();
       Database::setActiveConnection();
 
@@ -180,25 +178,42 @@ class EditRevisionForm extends FormBase{
       $connection = Database::getConnection();
       $tmp = getdate();
       $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
-      $update = $connection->update('revisiones')
+      $result = $connection->insert('actividad')
         ->fields(array(
-          'fecha_fin_revision' => $fecha,
+          'id_revision' => $id_rev,
           'id_estatus' => 3,
+          'fecha' => $fecha,
         ))
-        ->condition('id_revision',$id_rev)
         ->execute();
       Database::setActiveConnection();
     }else{
       Database::setActiveConnection('drupaldb_segundo');
       $connection = Database::getConnection();
+      //Se revisa si ya se tiene ese estado, de otro modo, se actualiza
+      $select = Database::getConnection()->select('actividad', 'a');
+      $select->fields('a', array('id_actividad'));
+      $select->condition('id_revision', $id_rev);
+      $select->condition('id_estatus', 2);
+      $existe = $select->execute()->fetchCol();
+
       $tmp = getdate();
       $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
-      $update = $connection->update('revisiones')
-        ->fields(array(
-          'id_estatus' => 2,
-        ))
-        ->condition('id_revision',$id_rev)
-        ->execute();
+      if(sizeof($existe)){
+        $update = $connection->update('actividad')
+          ->fields(array(
+            'fecha' => $fecha,
+          ))
+          ->condition('id_actividad',$existe[0])
+          ->execute();
+      }else{
+        $update = $connection->insert('actividad')
+          ->fields(array(
+            'id_revision' => $id_rev,
+            'id_estatus' => 2,
+            'fecha' => $fecha,
+          ))
+          ->execute();
+      }
       Database::setActiveConnection();
     }
     //db_query("DELETE FROM {cache};");
