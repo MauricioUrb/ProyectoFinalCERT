@@ -42,8 +42,6 @@ class InformacionRevisionForm extends FormBase{
     $connection = Database::getConnection();
     $select = Database::getConnection()->select('revisiones', 'r');
     $select->fields('r', array('tipo_revision'));
-    //$select->fields('r', array('fecha_inicio_revision'));
-    //$select->fields('r', array('fecha_fin_revision'));
     $select->condition('id_revision',$rev_id);
     $tipo_revision = $select->execute()->fetchCol();
     //Fecha de inicio
