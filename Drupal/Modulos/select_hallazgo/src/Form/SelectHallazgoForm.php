@@ -30,11 +30,10 @@ class SelectHallazgoForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento', false);
     $results = $select->execute()->fetchCol();
     //estatus_revision
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_estatus'));
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
@@ -135,12 +134,36 @@ class SelectHallazgoForm extends FormBase{
           'estatus' => 1,
         ))->execute();
     }
-    $result = $connection->update('revisiones')
+    //Se revisa si ya se tiene ese estado, de otro modo, se actualiza
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_actividad'));
+    $select->condition('id_revision', $regresar);
+    $select->condition('id_estatus', 2);
+    $existe = $select->execute()->fetchCol();
+    $tmp = getdate();
+    $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
+    if(sizeof($existe)){
+      $update = $connection->update('actividad')
+        ->fields(array(
+          'fecha' => $fecha,
+        ))
+        ->condition('id_actividad',$existe[0])
+        ->execute();
+    }else{
+      $update = $connection->insert('actividad')
+        ->fields(array(
+          'id_revision' => $id_rev,
+          'id_estatus' => 2,
+          'fecha' => $fecha,
+        ))
+        ->execute();
+    }/*
+    $result = $connection->update('actividad')
       ->fields(array(
         'id_estatus' => 2,
       ))
       ->condition('id_revision', $regresar)
-      ->execute();
+      ->execute();//*/
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
