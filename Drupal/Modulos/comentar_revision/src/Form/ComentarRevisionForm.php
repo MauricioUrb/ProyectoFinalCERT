@@ -24,32 +24,25 @@ class ComentarRevisionForm extends FormBase{
   /*
    * (@inheritdoc)
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $seg = NULL){
+  public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento',$seg);
     $results = $select->execute()->fetchCol();
     //estatus_revision
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->addExpression('MAX(id_estatus)','actividad');
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
-    if($seg && $estatus[0] == 6){$estado = TRUE;}
-    elseif (!$seg && $estatus[0] == 3) {
-      $estado = TRUE;
-    }else{$estado = FALSE;}
-    Database::setActiveConnection();
     $current_user_roles = \Drupal::currentUser()->getRoles();
-    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', $current_user_roles) || !$estado){
+    if (!in_array(\Drupal::currentUser()->id(), $results) || !in_array('coordinador de revisiones', $current_user_roles) || $estatus[0] != 3){
       return array('#markup' => "No tienes permiso para ver esta página.",);
     }
     global $no_rev;
     global $seguimiento;
-    $seguimiento = $seg;
     $no_rev = $rev_id;
     $form['text'] = array(
       '#type' => 'item',
@@ -65,7 +58,14 @@ class ComentarRevisionForm extends FormBase{
       '#type' => 'submit',
       '#value' => t('Comentar'),
     );
-    if($seg){
+    //Se busca si es revisión de seguimiento o no
+    $select = Database::getConnection()->select('revisiones', 'r');
+    $select->fields('r', array('seguimiento'));
+    $select->condition('id_revision',$rev_id);
+    $seg = $select->execute()->fetchCol();
+    Database::setActiveConnection();
+    $seguimiento = $seg;
+    if($seg[0] != 0){
       $url = Url::fromRoute('informacion_seguimiento.content', array('rev_id' => $rev_id));
     }else{
       $url = Url::fromRoute('informacion_revision.content', array('rev_id' => $rev_id));
@@ -89,7 +89,7 @@ class ComentarRevisionForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$no_rev);
-    $select->condition('id_usuario',\Drupal::currentUser()->id(),'<>');
+    //$select->condition('id_usuario',\Drupal::currentUser()->id(),'<>');
     $id_pentester = $select->execute()->fetchCol();
     Database::setActiveConnection();
     $select = Database::getConnection()->select('users_field_data', 'u');
@@ -106,25 +106,12 @@ class ComentarRevisionForm extends FormBase{
     //$to = 'mauricio@dominio.com,angel@dominio.com';
     $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $to, $langcode, $params);
     if(!$email){$mensaje .= " Ocurrió algún error y no se ha podido enviar el correo de notificación.";}
-    //Actualizacion de estatus de la revision
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    /////////////////////////////////////////
-    if($seguimiento){
-      $update = $connection->update('revisiones')
-        ->fields(array(
-          'id_estatus' => 5,
-        ))
-        ->condition('id_revision',$no_rev)
-        ->execute();
-    }else{
-      $update = $connection->update('revisiones')
-        ->fields(array(
-          'id_estatus' => 2,
-        ))
-        ->condition('id_revision',$no_rev)
-        ->execute();
-    }
+    $borrar = $connection->delete('actividad')
+      ->condition('id_revision', $no_rev)
+      ->condition('id_estatus', 3)
+      ->execute();
     Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);

@@ -159,47 +159,20 @@ class BorrarRevisionForm extends FormBase{
     //$to = 'mauricio@dominio.com,angel@dominio.com';
     $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $to, $langcode, $params);
     if(!$email){$mensaje .= "Ocurrió algún error y no se ha podido enviar el correo de notificación.";}else{$mensaje .= 'Se notificará a los pentesters por correo electrónico.';}
-    //Borrado en la BD
+    //Borrado en la BD (estatus = inactivo)
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
-    $select = Database::getConnection()->select('revisiones_sitios', 'r');
-    $select->fields('r', array('id_rev_sitio'));
-    $select->condition('id_revision',$regresar);
-    $resultados = $select->execute()->fetchCol();
-
-    $select = Database::getConnection()->select('revisiones_hallazgos', 'r');
-    $select->fields('r', array('id_rev_sitio_hall'));
-    $select->condition('id_rev_sitio',$resultados, 'IN');
-    $id_h = $select->execute()->fetchCol();
-
-    $borrar = $connection->delete('revisiones_hallazgos')
-      ->condition('id_rev_sitio', $resultados, 'IN')
+    $tmp = getdate();
+    $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
+    $update = $connection->insert('actividad')
+      ->fields(array(
+        'id_revision' => $regresar,
+        'id_estatus' => 5,
+        'fecha' => $fecha,
+      ))
       ->execute();
-    $borrar = $connection->delete('revisiones_sitios')
-      ->condition('id_rev_sitio', $resultados, 'IN')
-      ->execute();
-    $borrar = $connection->delete('revisiones_asignadas')
-      ->condition('id_revision',$regresar)
-      ->execute();
-    $borrar = $connection->delete('actividad')
-      ->condition('id_revision',$regresar)
-      ->execute();
-    $borrar = $connection->delete('revisiones')
-      ->condition('id_revision',$regresar)
-      ->execute();
-    //consulta id_rev_sitio_hall
-    $select = Database::getConnection()->select('revisiones_hallazgos', 'h');
-    $select->join('revisiones_sitios','s','h.id_rev_sitio = s.id_rev_sitio');
-    $select->fields('h', array('id_rev_sitio_hall'));
-    $select->condition('id_revision',$regresar);
-    $idImg = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    $connection = \Drupal::service('database');
-    if(sizeof($idImg)){
-      $elimina = $connection->delete('file_managed')
-        ->condition('id_rev_sh', $idImg, 'IN')
-        ->execute();
-    }
+    
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
   	$form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content', array()));

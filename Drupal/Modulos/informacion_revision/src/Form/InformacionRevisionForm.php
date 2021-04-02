@@ -205,7 +205,7 @@ class InformacionRevisionForm extends FormBase{
 
     Database::setActiveConnection();
     //Botones
-    $urlComentar = Url::fromRoute('comentar_revision.content', array('rev_id' => $rev_id, 'seg' => 0));
+    $urlComentar = Url::fromRoute('comentar_revision.content', array('rev_id' => $rev_id));
     $comentar = Link::fromTextAndUrl('Realizar un comentario', $urlComentar);
     $comentar = $comentar->toRenderable();
     $comentar['#attributes'] = array('class' => array('button'));
