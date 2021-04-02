@@ -24,11 +24,10 @@ class MostrarImagenForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento', false);
     $results = $select->execute()->fetchCol();
     //estatus_revision
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_estatus'));
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();

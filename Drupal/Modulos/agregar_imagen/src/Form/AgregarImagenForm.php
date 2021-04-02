@@ -29,11 +29,10 @@ class AgregarImagenForm extends FormBase{
     $select = Database::getConnection()->select('revisiones_asignadas', 'r');
     $select->fields('r', array('id_usuario'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('seguimiento', false);
     $results = $select->execute()->fetchCol();
     //estatus_revision
-    $select = Database::getConnection()->select('revisiones', 'r');
-    $select->fields('r', array('id_estatus'));
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_estatus'));
     $select->condition('id_revision',$rev_id);
     $estatus = $select->execute()->fetchCol();
     Database::setActiveConnection();
@@ -121,7 +120,22 @@ class AgregarImagenForm extends FormBase{
           ->execute();
         }
     }
-
+    Database::setActiveConnection('drupaldb_segundo');
+    $connection = Database::getConnection();
+    $select = Database::getConnection()->select('actividad', 'a');
+    $select->fields('a', array('id_actividad'));
+    $select->condition('id_revision', $regresar);
+    $select->condition('id_estatus', 2);
+    $existe = $select->execute()->fetchCol();
+    $tmp = getdate();
+    $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
+    $update = $connection->update('actividad')
+      ->fields(array(
+        'fecha' => $fecha,
+      ))
+      ->condition('id_actividad',$existe[0])
+      ->execute();
+    Database::setActiveConnection();
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage(t('Imágenes actualizadas.'));
     $form_state->setRedirectUrl(Url::fromRoute('mostrar_imagen.content', array('rev_id' => $id_rev, 'rsh' => $id_rimg)));
