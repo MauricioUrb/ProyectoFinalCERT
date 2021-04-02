@@ -24,12 +24,8 @@ class RevisionesAsignadasForm extends FormBase{
       $select->join('revisiones_asignadas',"revi","r.id_revision = revi.id_revision");
       $select->fields('r', array('id_revision'));
       $select->fields('r', array('tipo_revision'));
-      $select->fields('r', array('id_estatus'));
-      $select->fields('r', array('fecha_inicio_revision'));
-      $select->fields('r', array('fecha_fin_revision'));
-      $select->condition('seguimiento', false);
+      $select->condition('seguimiento', 0);
       $select->condition('id_usuario',\Drupal::currentUser()->id());
-      $select->orderBy('fecha_inicio_revision','DESC');
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
       Database::setActiveConnection();
@@ -59,14 +55,18 @@ class RevisionesAsignadasForm extends FormBase{
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision', $result->id_revision);
-        $select->condition('seguimiento', false);
-        //$select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
         $usuarios_rev = $select->execute()->fetchCol();
 
         //estatus_revision
+        $select = Database::getConnection()->select('actividad', 's');
+        $select->addExpression('MAX(id_estatus)','actividad');
+        $select->condition('id_revision', $result->id_revision);
+        $id_estatus = $select->execute()->fetchCol();
+        
         $select = Database::getConnection()->select('estatus_revisiones', 's');
+        $select->join('actividad','a','a.id_estatus = s.id_estatus');
         $select->fields('s', array('estatus'));
-        $select->condition('id_estatus', $result->id_estatus);
+        $select->condition('s.id_estatus', $id_estatus[0]);
         $estatus_revision = $select->execute()->fetchCol();
 
         //lista de sitios asignados
@@ -89,7 +89,7 @@ class RevisionesAsignadasForm extends FormBase{
         $nombres = '';
         foreach ($pentesters as $pentester) {$nombres .= $pentester.', ';}
         $nombres = substr($nombres, 0, -2);
-        if($result->id_estatus == 3){
+        if($id_estatus[0] == 3){
           $filas[$result->id_revision] = [
             $result->id_revision,
             $tipo,
@@ -101,7 +101,7 @@ class RevisionesAsignadasForm extends FormBase{
             render($project_link),
             render($project_linkB),
           ];
-        }elseif($result->id_estatus < 3){
+        }elseif($id_estatus[0] < 3){
           $rows[$result->id_revision] = [
             $result->id_revision,
             $tipo,
@@ -176,12 +176,8 @@ class RevisionesAsignadasForm extends FormBase{
       $select->join('revisiones_asignadas',"revi","r.id_revision = revi.id_revision");
       $select->fields('r', array('id_revision'));
       $select->fields('r', array('tipo_revision'));
-      $select->fields('r', array('id_estatus'));
-      $select->fields('r', array('fecha_inicio_seguimiento'));
-      $select->fields('r', array('fecha_fin_seguimiento'));
-      $select->condition('seguimiento', true);
+      $select->condition('seguimiento', 0 , '<>');
       $select->condition('id_usuario',\Drupal::currentUser()->id());
-      $select->orderBy('fecha_inicio_seguimiento','DESC');
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
       Database::setActiveConnection();
@@ -198,7 +194,7 @@ class RevisionesAsignadasForm extends FormBase{
         $editarS = Url::fromRoute('edit_seguimiento.content', array('rev_id' => $result->id_revision));
         $editarSeguimiento = Link::fromTextAndUrl('Editar', $editarS);
         $editarSeguimiento = $editarSeguimiento->toRenderable();
-        $editarSeguimiento['#attributes'] = array('class' => array('button'));//*/
+        $editarSeguimiento['#attributes'] = array('class' => array('button'));
 
         //Se busca el nombre de los pentesters que fueron asignados a la revision
         Database::setActiveConnection('drupaldb_segundo');
@@ -206,14 +202,18 @@ class RevisionesAsignadasForm extends FormBase{
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision', $result->id_revision);
-        $select->condition('seguimiento', true);
-        //$select->condition('id_usuario', \Drupal::currentUser()->id(), '<>');
         $usuarios_rev = $select->execute()->fetchCol();
 
         //estatus_revision
+        $select = Database::getConnection()->select('actividad', 's');
+        $select->addExpression('MAX(id_estatus)','actividad');
+        $select->condition('id_revision', $result->id_revision);
+        $id_estatus = $select->execute()->fetchCol();
+        
         $select = Database::getConnection()->select('estatus_revisiones', 's');
+        $select->join('actividad','a','a.id_estatus = s.id_estatus');
         $select->fields('s', array('estatus'));
-        $select->condition('id_estatus', $result->id_estatus);
+        $select->condition('s.id_estatus', $id_estatus[0]);
         $estatus_revision = $select->execute()->fetchCol();
 
         //lista de sitios asignados
@@ -236,7 +236,7 @@ class RevisionesAsignadasForm extends FormBase{
         $nombres = '';
         foreach ($pentesters as $pentester) {$nombres .= $pentester.', ';}
         $nombres = substr($nombres, 0, -2);
-        if($result->id_estatus == 6){
+        if($id_estatus[0] == 3){
           $filasS[$result->id_revision] = [
             $result->id_revision,
             $tipo,
@@ -248,7 +248,7 @@ class RevisionesAsignadasForm extends FormBase{
             render($revisarSeguimiento),
             //render($editarSeguimiento),
           ];
-        }elseif($result->id_estatus == 5){
+        }elseif($id_estatus[0] < 3){
           $rowsS[$result->id_revision] = [
             $result->id_revision,
             $tipo,
@@ -304,7 +304,7 @@ class RevisionesAsignadasForm extends FormBase{
         '#type' => 'item',
         '#title' => t('Revisiones de seguimiento en proceso'),
         '#markup' => render($segProc),
-      ];
+      ];//*/
       $form['pager'] = array('#type' => 'pager');
       return $form;
     }elseif (in_array('pentester', \Drupal::currentUser()->getRoles())){
@@ -316,12 +316,8 @@ class RevisionesAsignadasForm extends FormBase{
       $select->join('revisiones_asignadas',"revi","r.id_revision = revi.id_revision");
       $select->fields('r', array('id_revision'));
       $select->fields('r', array('tipo_revision'));
-      $select->fields('r', array('id_estatus'));
-      $select->fields('r', array('fecha_inicio_revision'));
-      $select->fields('r', array('fecha_fin_revision'));
       $select->condition('id_usuario',\Drupal::currentUser()->id());
-      $select->condition('seguimiento', false);
-      $select->orderBy('fecha_inicio_revision','DESC');
+      $select->condition('seguimiento', 0);
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datos = $select->execute();
 
@@ -340,7 +336,6 @@ class RevisionesAsignadasForm extends FormBase{
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision', $result->id_revision);
-        $select->condition('seguimiento', false);
         $usuarios_rev = $select->execute()->fetchCol();
         Database::setActiveConnection();
 
@@ -366,12 +361,18 @@ class RevisionesAsignadasForm extends FormBase{
         $txt = substr($txt, 0, -3);
 
         //estatus_revision
+        $select = Database::getConnection()->select('actividad', 's');
+        $select->addExpression('MAX(id_estatus)','actividad');
+        $select->condition('id_revision', $result->id_revision);
+        $id_estatus = $select->execute()->fetchCol();
+        
         $select = Database::getConnection()->select('estatus_revisiones', 's');
+        $select->join('actividad','a','a.id_estatus = s.id_estatus');
         $select->fields('s', array('estatus'));
-        $select->condition('id_estatus', $result->id_estatus);
+        $select->condition('s.id_estatus', $id_estatus[0]);
         $estatus_revision = $select->execute()->fetchCol();
         Database::setActiveConnection();
-        if($result->id_estatus == 3){
+        if($id_estatus[0] == 3){
           $filas[$result->id_revision] = [
             $result->id_revision,
             $tipo,
@@ -381,7 +382,7 @@ class RevisionesAsignadasForm extends FormBase{
             $result->fecha_fin_revision,
             $coordinador[0],
           ];
-        }elseif($result->id_estatus < 3){
+        }elseif($id_estatus[0] < 3){
           $rows[$result->id_revision] = [
             $result->id_revision,
             $tipo,
@@ -449,12 +450,8 @@ class RevisionesAsignadasForm extends FormBase{
       $select->join('revisiones_asignadas',"revi","r.id_revision = revi.id_revision");
       $select->fields('r', array('id_revision'));
       $select->fields('r', array('tipo_revision'));
-      $select->fields('r', array('id_estatus'));
-      $select->fields('r', array('fecha_inicio_seguimiento'));
-      $select->fields('r', array('fecha_fin_seguimiento'));
       $select->condition('id_usuario',\Drupal::currentUser()->id());
-      $select->condition('seguimiento', true);
-      $select->orderBy('fecha_inicio_seguimiento','DESC');
+      $select->condition('seguimiento', 0, '<>');
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       $datosS = $select->execute();
 
@@ -473,7 +470,6 @@ class RevisionesAsignadasForm extends FormBase{
         $select = Database::getConnection()->select('revisiones_asignadas', 'r');
         $select->fields('r', array('id_usuario'));
         $select->condition('id_revision', $result->id_revision);
-        $select->condition('seguimiento', true);
         $usuarios_rev = $select->execute()->fetchCol();
         Database::setActiveConnection();
 
@@ -499,12 +495,18 @@ class RevisionesAsignadasForm extends FormBase{
         $txt = substr($txt, 0, -3);
 
         //estatus_revision
+        $select = Database::getConnection()->select('actividad', 's');
+        $select->addExpression('MAX(id_estatus)','actividad');
+        $select->condition('id_revision', $result->id_revision);
+        $id_estatus = $select->execute()->fetchCol();
+        
         $select = Database::getConnection()->select('estatus_revisiones', 's');
+        $select->join('actividad','a','a.id_estatus = s.id_estatus');
         $select->fields('s', array('estatus'));
-        $select->condition('id_estatus', $result->id_estatus);
+        $select->condition('s.id_estatus', $id_estatus[0]);
         $estatus_revision = $select->execute()->fetchCol();
         Database::setActiveConnection();
-        if($result->id_estatus == 6){
+        if($id_estatus[0] == 3){
           $filasS[$result->id_revision] = [
             $result->id_revision,
             $tipo,
@@ -514,7 +516,7 @@ class RevisionesAsignadasForm extends FormBase{
             $result->fecha_fin_seguimiento,
             $coordinador[0],
           ];
-        }elseif($result->id_estatus == 5){
+        }elseif($id_estatus[0] < 3){
           $rowsS[$result->id_revision] = [
             $result->id_revision,
             $tipo,
