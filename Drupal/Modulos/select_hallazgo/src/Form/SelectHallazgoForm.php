@@ -152,7 +152,7 @@ class SelectHallazgoForm extends FormBase{
     }else{
       $update = $connection->insert('actividad')
         ->fields(array(
-          'id_revision' => $id_rev,
+          'id_revision' => $regresar,
           'id_estatus' => 2,
           'fecha' => $fecha,
         ))
