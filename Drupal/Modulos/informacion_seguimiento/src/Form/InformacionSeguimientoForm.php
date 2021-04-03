@@ -56,7 +56,7 @@ class InformacionSeguimientoForm extends FormBase{
     $select = Database::getConnection()->select('actividad', 'r');
     $select->fields('r', array('fecha'));
     $select->condition('id_revision',$rev_id);
-    $select->condition('id_estatus',2);
+    $select->condition('id_estatus',3);
     $fecha_fin_revision = $select->execute()->fetchCol();
 
     //Se obtienen los pentesters

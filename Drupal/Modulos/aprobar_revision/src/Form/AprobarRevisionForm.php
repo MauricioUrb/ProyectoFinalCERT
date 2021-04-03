@@ -1117,7 +1117,7 @@ class AprobarRevisionForm extends FormBase{
       //Obtener usuarios
       $select = Database::getConnection()->select('revisiones_asignadas', 'r');
       $select->fields('r', array('id_usuario'));
-      $select->condition('id_revision',$no_rev);
+      $select->condition('id_revision',$revision_actual);
       $usuarios_rev = $select->execute()->fetchCol();
       Database::setActiveConnection();
       $select = Database::getConnection()->select('users_field_data', 'u');
