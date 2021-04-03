@@ -257,7 +257,7 @@ class RevisionesAprobadasForm extends FormBase{
         'coordinador' => t('Coordinador de revisiones'),
         'pentesters' => t('Pentesters'),
         'activos' => t('Activos asignados'),
-        'start' => t('Fecha de asignacion'),
+        'start' => t('Fecha de asignación'),
         'last' => t('Fecha de finalización'),
         'edit' => t('Descargar reporte'),
       ];
@@ -267,7 +267,7 @@ class RevisionesAprobadasForm extends FormBase{
         'coordinador' => t('Coordinador de revisiones'),
         'pentesters' => t('Pentesters'),
         'activos' => t('Activos asignados'),
-        'start' => t('Fecha de asignacion'),
+        'start' => t('Fecha de asignación'),
         'last' => t('Fecha de finalización'),
         'edit' => t('Descargar reporte'),
         'seguimiento' => t('Mandar a seguimiento'),
@@ -280,7 +280,7 @@ class RevisionesAprobadasForm extends FormBase{
         'coordinador' => t('Coordinador de revisiones'),
         'pentesters' => t('Pentesters'),
         'activos' => t('Activos asignados'),
-        'start' => t('Fecha de asignacion'),
+        'start' => t('Fecha de asignación'),
         'last' => t('Fecha de finalización'),
         'edit' => t('Descargar reporte'),
       ];
