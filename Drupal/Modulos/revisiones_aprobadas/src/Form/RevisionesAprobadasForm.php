@@ -215,7 +215,7 @@ class RevisionesAprobadasForm extends FormBase{
         $fecha_fin_revision = $select->execute()->fetchCol();
         Database::setActiveConnection();
         //Botón para descargar reporte
-        list($year,$month,$day) = explode('-', $result->fecha_fin_seguimiento[0]);
+        list($year,$month,$day) = explode('-', $fecha_fin_revision[0]);
         if(strlen((string)$month) == 1){
           $mes = '0'.$month;
         }else{$mes = $month;}
@@ -245,8 +245,8 @@ class RevisionesAprobadasForm extends FormBase{
           $coordinador[0],
           $nombres,
           $nombreSitios,
-          $fecha_inicio_seguimiento[0],
-          $fecha_fin_seguimiento[0],
+          $fecha_inicio_revision[0],
+          $fecha_fin_revision[0],
           render($descargarS),
         ];
       }
@@ -274,8 +274,8 @@ class RevisionesAprobadasForm extends FormBase{
       ];
       $header3 = [
         'id' => t('ID'),
-        'id' => t('Seguimiento'),
-        'id' => t('Revisión previa'),
+        'id_S' => t('Seguimiento'),
+        'id_P' => t('Revisión previa'),
         'type' => t('Tipo'),
         'coordinador' => t('Coordinador de revisiones'),
         'pentesters' => t('Pentesters'),

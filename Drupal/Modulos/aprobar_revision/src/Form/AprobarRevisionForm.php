@@ -44,7 +44,6 @@ class AprobarRevisionForm extends FormBase{
     }
     global $no_rev;
     global $seguimiento;
-    $seguimiento = $seg;
     $no_rev = $rev_id;
     //Se busca si es revisión de seguimiento o no
     Database::setActiveConnection('drupaldb_segundo');
@@ -54,7 +53,7 @@ class AprobarRevisionForm extends FormBase{
     $select->condition('id_revision',$rev_id);
     $seg = $select->execute()->fetchCol();
     Database::setActiveConnection();
-    $seguimiento = $seg;
+    $seguimiento = $seg[0];
     if($seg[0] != 0){
       $form['text'] = array(
         '#type' => 'item',
@@ -88,6 +87,7 @@ class AprobarRevisionForm extends FormBase{
   public function submitForm(array &$form, FormStateInterface $form_state){
     global $no_rev;
     global $seguimiento;
+    $revision_actual = $no_rev;
     $mensaje = 'Revision aprobada. Se notificará a los pentesters por correo electrónico.';
     //Consulta de correos
     Database::setActiveConnection('drupaldb_segundo');
@@ -124,6 +124,37 @@ class AprobarRevisionForm extends FormBase{
         'id_estatus' => 4,
         'fecha' => $hoy,
       ))->execute();
+    //Se relacionan los nuevos hallazgos con la revisión original
+    if($seguimiento){
+      $select = Database::getConnection()->select('revisiones', 'r');
+      $select->fields('r', array('id_seguimiento'));
+      $select->condition('id_revision',$no_rev);
+      $id_seguimiento = $select->execute()->fetchCol();
+      $select = Database::getConnection()->select('revisiones_sitios', 'r');
+      $select->fields('r', array('id_rev_sitio'));
+      $select->fields('r', array('id_sitio'));
+      $select->condition('id_revision',$id_seguimiento[0]);
+      $original = $select->execute();
+      foreach ($original as $dato) {
+        $select = Database::getConnection()->select('revisiones_sitios', 'r');
+        $select->fields('r', array('id_rev_sitio'));
+        $select->fields('r', array('id_sitio'));
+        $select->condition('id_revision',$no_rev);
+        $nuevos = $select->execute();
+        foreach ($nuevos as $datoN) {
+          if($datoN->id_sitio == $dato->id_sitio){
+            //Modificación en la BD
+            $update = $connection->update('revisiones_hallazgos')
+              ->fields(array(
+                'id_rev_sitio' => $dato->id_rev_sitio,
+              ))
+              ->condition('id_rev_sitio',$datoN->id_rev_sitio)
+              ->execute();
+          }
+        }
+      }
+      $no_rev = $id_seguimiento[0];
+    }
     Database::setActiveConnection();
     //En esta parte se crea el reporte
     //Se obtiene el tipo y la cantidad de sitios
@@ -135,7 +166,7 @@ class AprobarRevisionForm extends FormBase{
     $tipo_revision = $select->execute()->fetchCol();
     Database::setActiveConnection();
     //////////////////////////////////////////////
-    if($seguimiento[0] == 0){
+    if(!$seguimiento){
       //If reporte tipo corto (circular) tipo_revision == true
       if($tipo_revision[0]){
         $fecha = getdate();
@@ -1169,8 +1200,7 @@ class AprobarRevisionForm extends FormBase{
       $select->condition('id_revision',$no_rev);
       $tipo = $select->execute()->fetchCol();
       if($tipo[0]){$tipoR = 'Circular';}else{$tipoR = 'Oficio';}
-      //$nombreReporte .= $urlSitio[0].'_REV'.$no_rev.'_'.$tipoR.'_Seguimiento';
-      $nombreArchivo .= '_REV'.$no_rev.'_'.$tipoR.'_seguimiento.docx';
+      $nombreArchivo .= '_REV'.$revision_actual.'_'.$tipoR.'_seguimiento.docx';
 
       //Se ordenan los sitios y hallazgos
       $select = Database::getConnection()->select('revisiones_sitios', 'r');
@@ -1397,7 +1427,7 @@ class AprobarRevisionForm extends FormBase{
                 array_push($estadoActual,array(
                   'id_activoE' => $sitio['ACT'],
                   'ACTIVO' => $url[0] . ' / ' . $ipSitio[0],
-                  'nombre_hallazgo' => '-',
+                  'nombre_hallazgo' => $info->nombre_hallazgo_vulnerabilidad,
                   'rec_id' => '-',
                   'nivel_impacto_n' => '-',
                   'nivel_impacto' => '-',
@@ -1582,6 +1612,6 @@ class AprobarRevisionForm extends FormBase{
     //*/
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
-    $form_state->setRedirectUrl(Url::fromRoute('revisiones_asignadas.content'));
+    $form_state->setRedirectUrl(Url::fromRoute('revisiones_aprobadas.content'));
   }
 }
