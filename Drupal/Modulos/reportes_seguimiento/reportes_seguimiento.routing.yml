@@ -1,0 +1,7 @@
+reportes_seguimiento.content:
+  path: /seguimiento/aprobadas
+  defaults:
+    _form: Drupal\reportes_seguimiento\Form\ReportesSeguimientoForm
+    _title: "Revisiones de seguimiento aprobadas"
+  requirements:
+    _permission: 'view reportes_seguimiento'

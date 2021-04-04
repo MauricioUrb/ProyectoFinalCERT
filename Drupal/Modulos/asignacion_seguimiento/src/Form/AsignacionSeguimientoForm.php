@@ -249,7 +249,7 @@ class AsignacionSeguimientoForm extends FormBase{
     //Obtener número de revision de seguimiento
     $consulta = Database::getConnection()->select('revisiones', 'r');
     $consulta->addExpression('COUNT(id_seguimiento)','revisiones');
-    $consulta->condition('id_revision',$no_rev);
+    $consulta->condition('id_seguimiento',$no_rev);
     $resultado = $consulta->execute()->fetchCol();
     $num_seg = $resultado[0] + 1;
     //revisiones

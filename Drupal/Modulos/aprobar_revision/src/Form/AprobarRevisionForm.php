@@ -1612,6 +1612,10 @@ class AprobarRevisionForm extends FormBase{
     //*/
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage($mensaje);
-    $form_state->setRedirectUrl(Url::fromRoute('revisiones_aprobadas.content'));
+    if($seguimiento){
+      $form_state->setRedirectUrl(Url::fromRoute('reportes_seguimiento.content'));
+    }else{
+      $form_state->setRedirectUrl(Url::fromRoute('revisiones_aprobadas.content'));
+    }
   }
 }

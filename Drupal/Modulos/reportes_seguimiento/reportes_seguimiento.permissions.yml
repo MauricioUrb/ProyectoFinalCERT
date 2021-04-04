@@ -1,0 +1,3 @@
+view reportes_seguimiento:
+  title: 'Ver revisiones de seguimiento aprobadas'
+  description: 'Ver las revisiones de seguimiento aprobadas.'

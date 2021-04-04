@@ -1,0 +1,168 @@
+<?php
+
+namespace Drupal\reportes_seguimiento\Form;
+use Drupal\Core\Form\FormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Link;
+use Drupal\Core\Database\Database;
+
+class ReportesSeguimientoForm extends FormBase{
+  public function getFormId(){
+    return 'reportes_seguimiento_form';
+  }
+
+  public function buildForm(array $form, FormStateInterface $form_state){
+    if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
+      //Tabla de revisiones de seguimiento
+      Database::setActiveConnection('drupaldb_segundo');
+      $connection = Database::getConnection();
+      $select = Database::getConnection()->select('revisiones', 'r');
+      $select->join('actividad','a','a.id_revision = r.id_revision');
+      $select->fields('r', array('id_revision'));
+      $select->fields('r', array('tipo_revision'));
+      $select->fields('r', array('seguimiento'));
+      $select->fields('r', array('id_seguimiento'));
+      $select->condition('seguimiento', 0, '<>');
+      $select->condition('id_estatus',4);
+      $select->orderBy('fecha','DESC');
+      $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
+      $datos = $select->execute();
+      Database::setActiveConnection();
+      foreach ($datos as $result) {
+        if($result->tipo_revision){$tipo = 'Circular';}else{$tipo = 'Oficio';}
+        
+        //Se busca el nombre de los pentesters que fueron asignados a la revision
+        Database::setActiveConnection('drupaldb_segundo');
+        $connection = Database::getConnection();
+        $select = Database::getConnection()->select('revisiones_asignadas', 'r');
+        $select->fields('r', array('id_usuario'));
+        $select->condition('id_revision', $result->id_revision);
+        $usuarios_rev = $select->execute()->fetchCol();
+
+        //lista de sitios asignados
+        $select = Database::getConnection()->select('revisiones_sitios', 'r');
+        $select->join('sitios',"s","r.id_sitio = s.id_sitio");
+        $select->fields('s', array('url_sitio'));
+        $select->condition('id_revision', $result->id_revision);
+        $lista_sitios = $select->execute()->fetchCol();
+        $nombreSitios = '';
+        foreach ($lista_sitios as $sitio) {
+          $nombreSitios .= $sitio . ' , ';
+        }
+        $nombreSitios = substr($nombreSitios, 0, -3);
+        Database::setActiveConnection();
+
+        //Pentesters
+        $select = Database::getConnection()->select('users_field_data', 'u');
+        $select->join('user__roles',"r"," r.entity_id = u.uid");
+        $select->fields('u', array('name'));
+        $select->condition('uid', $usuarios_rev, 'IN');
+        $select->condition('roles_target_id','pentester');
+        $pentesters = $select->execute()->fetchCol();
+        $nombres = '';
+        foreach ($pentesters as $pentester) {$nombres .= $pentester.', ';}
+        $nombres = substr($nombres, 0, -2);
+        //Coordinador
+        $select = Database::getConnection()->select('users_field_data', 'u');
+        $select->join('user__roles',"r"," r.entity_id = u.uid");
+        $select->fields('u', array('name'));
+        $select->condition('uid', $usuarios_rev, 'IN');
+        $select->condition('roles_target_id', ['coordinador de revisiones','auxiliar'],'IN');
+        //$select->condition('roles_target_id','coordinador de revisiones');
+        $coordinador = $select->execute()->fetchCol();
+
+        //Fecha inicio revision
+        Database::setActiveConnection('drupaldb_segundo');
+        $connection = Database::getConnection();
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 1);
+        $fecha_inicio_revision = $select->execute()->fetchCol();
+        //Fecha fin revision
+        $select = Database::getConnection()->select('actividad', 'r');
+        $select->fields('r', array('fecha'));
+        $select->condition('id_revision', $result->id_revision);
+        $select->condition('id_estatus', 4);
+        $fecha_fin_revision = $select->execute()->fetchCol();
+        Database::setActiveConnection();
+        //Botón para descargar reporte
+        list($year,$month,$day) = explode('-', $fecha_fin_revision[0]);
+        if(strlen((string)$month) == 1){
+          $mes = '0'.$month;
+        }else{$mes = $month;}
+        if($result->tipo_revision){
+          $nombreArchivoS = $year.$mes.'_'.$lista_sitios[0].'_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
+        }else{
+          if(sizeof($lista_sitios) == 1){
+            $nombreArchivoS = $year.$mes.'_'.$lista_sitios[0].'_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
+          }else{
+            $nombreArchivoS = $year.$mes.'_VariosSitios_REV'.$result->id_revision . '_' . $tipo.'_seguimiento.docx';
+          }
+        }
+        $urlS = Url::fromUri('http://' . $_SERVER['SERVER_NAME'] . '/reportes/' . $nombreArchivoS);
+        $descargarS = Link::fromTextAndUrl('Descargar', $urlS);
+        $descargarS = $descargarS->toRenderable();
+        $descargarS['#attributes'] = array('class' => array('button'));
+        $url2 = Url::fromUri('http://' . $_SERVER['SERVER_NAME'] . '/reportes/' . $nombreArchivoS);
+        $descargar1 = Link::fromTextAndUrl('Descargar', $url2);
+        $descargar1 = $descargar1->toRenderable();
+        $descargar1['#attributes'] = array('class' => array('button'));
+        //Tabla de revisiones de seguimiento
+        $ultima[$result->id_revision] = [
+          $result->id_revision,
+          $result->seguimiento,
+          $result->id_seguimiento,
+          $tipo,
+          $coordinador[0],
+          $nombres,
+          $nombreSitios,
+          $fecha_inicio_revision[0],
+          $fecha_fin_revision[0],
+          render($descargarS),
+        ];
+      }
+      //Se asignan titulos a cada columna
+      $header3 = [
+        'id' => t('ID'),
+        'id_S' => t('Seguimiento'),
+        'id_P' => t('Revisión previa'),
+        'type' => t('Tipo'),
+        'coordinador' => t('Coordinador de revisiones'),
+        'pentesters' => t('Pentesters'),
+        'activos' => t('Activos asignados'),
+        'start' => t('Fecha de asignación'),
+        'last' => t('Fecha de finalización'),
+        'edit' => t('Descargar reporte'),
+      ];
+      $last_T['table'] = [
+        '#type' => 'table',
+        '#header' => $header3,
+        '#rows' => $ultima,
+        '#empty' => t('Sin revisiones por mostrar.'),
+      ];
+      $form['last_T'] = [
+        '#type' => 'item',
+        '#title' => t('Revisiones de seguimiento concluidas'),
+        '#markup' => render($last_T),
+      ];
+      $form['pager'] = array('#type' => 'pager');
+      /*
+      $url = Url::fromUri('http://' . $_SERVER['SERVER_NAME'] . '/reportes/202103_variosSitios_REV3_Oficio.docx');
+      $project_link = Link::fromTextAndUrl('Descargar', $url);
+      $project_link = $project_link->toRenderable();
+      $project_link['#attributes'] = array('class' => array('button'));
+      $form['test'] = array('#markup' => render($project_link));
+      //*/
+    }else{
+      return array('#markup' => "No tienes permiso para ver esta página",);
+    }
+    return $form;
+  }
+  
+  public function submitForm(array &$form, FormStateInterface $form_state) {
+    $messenger_service = \Drupal::service('messenger');
+    $messenger_service->addMessage(t('The form is working.'));
+  }
+}

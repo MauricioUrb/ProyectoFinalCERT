@@ -162,6 +162,7 @@ echo 'yes' | /var/www/drupal/vendor/bin/drush theme:enable bootstrap
 /var/www/drupal/vendor/bin/drush en asignacion_seguimiento
 /var/www/drupal/vendor/bin/drush en edit_seguimiento
 /var/www/drupal/vendor/bin/drush en informacion_seguimiento
+/var/www/drupal/vendor/bin/drush en reportes_seguimiento
 #Hallazgos
 /var/www/drupal/vendor/bin/drush en editar_hallazgos
 /var/www/drupal/vendor/bin/drush en eliminar_hallazgos

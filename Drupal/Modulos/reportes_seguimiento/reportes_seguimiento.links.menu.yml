@@ -1,0 +1,6 @@
+reportes_seguimiento.newpage:
+  title: 'Revisiones de Seguimiento Aprobadas'
+  description: 'Link a la página de revisiones de seguimiento aprobadas'
+  route_name: reportes_seguimiento.content
+  weight: 14
+  menu_name: main

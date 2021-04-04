@@ -272,18 +272,7 @@ class RevisionesAprobadasForm extends FormBase{
         'edit' => t('Descargar reporte'),
         'seguimiento' => t('Mandar a seguimiento'),
       ];
-      $header3 = [
-        'id' => t('ID'),
-        'id_S' => t('Seguimiento'),
-        'id_P' => t('Revisión previa'),
-        'type' => t('Tipo'),
-        'coordinador' => t('Coordinador de revisiones'),
-        'pentesters' => t('Pentesters'),
-        'activos' => t('Activos asignados'),
-        'start' => t('Fecha de asignación'),
-        'last' => t('Fecha de finalización'),
-        'edit' => t('Descargar reporte'),
-      ];
+      
       //se construye la tabla para mostrar
       if(!in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
         $concluidas['table'] = [
@@ -300,22 +289,13 @@ class RevisionesAprobadasForm extends FormBase{
           '#empty' => t('Sin revisiones aprobadas.'),
         ];
       }
-      $last_T['table'] = [
-        '#type' => 'table',
-        '#header' => $header3,
-        '#rows' => $ultima,
-        '#empty' => t('Sin revisiones por mostrar.'),
-      ];
+      
       $form['concluidas'] = [
         '#type' => 'item',
         '#title' => t('Revisiones concluidas'),
         '#markup' => render($concluidas),
       ];
-      $form['last_T'] = [
-        '#type' => 'item',
-        '#title' => t('Revisiones de seguimiento concluidas'),
-        '#markup' => render($last_T),
-      ];
+      
       $form['pager'] = array('#type' => 'pager');
       /*
       $url = Url::fromUri('http://' . $_SERVER['SERVER_NAME'] . '/reportes/202103_variosSitios_REV3_Oficio.docx');
