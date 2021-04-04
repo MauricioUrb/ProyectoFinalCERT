@@ -1,6 +1,6 @@
-name: Página para comentar un revisión (Coordinador)
+name: Comentar una revisión (Coordinador)
 type: module
-description: Comentar una revisión.
+description: Página para realizar un comentario en una revisión
 package: Custom
 core_version_requirement: ^8 || ^9
 core: 8.x
