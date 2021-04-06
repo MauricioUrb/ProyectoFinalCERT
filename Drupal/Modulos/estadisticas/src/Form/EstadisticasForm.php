@@ -292,10 +292,11 @@ class EstadisticasForm extends FormBase {
                         $select->join('sitios', 's', 's.id_sitio = ds.id_sitio');
                         $select->join('revisiones_sitios', 'rs', 'rs.id_sitio = s.id_sitio');
                         $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+                        $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
                         //Se especifican las columnas a leer
                         $select->fields('d', array('nombre_dependencia'));
                         $select->addExpression('COUNT(*)', 'cuenta');
-                        $select->condition('fecha_inicio_revision', array($date1, $date2), 'BETWEEN');
+                        $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $select->groupBy('nombre_dependencia');
                         $select->orderBy('cuenta', 'DESC');
                         $results = $select->execute();
@@ -365,10 +366,11 @@ class EstadisticasForm extends FormBase {
                         $select->join('revisiones_hallazgos', 'rh', 'rh.id_rev_sitio = rs.id_rev_sitio');
                         $select->join('hallazgos', 'h', 'h.id_hallazgo = rh.id_hallazgo');
                         $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+                        $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
                         //Se especifican las columnas a leer
                         $select->fields('d', array('nombre_dependencia'));
                         $select->addExpression('COUNT(*)', 'cuenta');
-                        $select->condition('fecha_inicio_revision', array($date1, $date2), 'BETWEEN');
+                        $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $select->groupBy('nombre_dependencia');
                         $select->orderBy('cuenta', 'DESC');
                         $results = $select->execute();
@@ -458,8 +460,9 @@ class EstadisticasForm extends FormBase {
                         $select = $connection->select('revisiones_hallazgos', 'rh');
                         $select->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
                         $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+                        $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
                         $select->fields('rh', array('impacto_hall_rev'));
-                        $select->condition('fecha_inicio_revision', array($date1, $date2), 'BETWEEN');
+                        $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $results = $select->execute();
 
                         // criticidad
@@ -508,10 +511,11 @@ class EstadisticasForm extends FormBase {
                         $select ->join('revisiones_hallazgos', 'rh', 'h.id_hallazgo = rh.id_hallazgo');
                         $select ->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
                         $select ->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+                        $select ->join('actividad', 'a', 'a.id_revision = r.id_revision');
                         //Se especifican las columnas a leer
                         $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
                         $select->addExpression('COUNT(*)', 'cuenta');
-                        $select->condition('fecha_inicio_revision', array($date1, $date2), 'BETWEEN');
+                        $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $select->groupBy('nombre_hallazgo_vulnerabilidad');
                         $select->orderBy('cuenta', 'DESC');
                         $results = $select->execute();
@@ -592,12 +596,13 @@ class EstadisticasForm extends FormBase {
                                 $connection = \Drupal\Core\Database\Database::getConnection();
                                 $select = Database::getConnection()->select('revisiones_asignadas', 'rs');
                                 $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+                                $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
                                 $select->fields('rs', array('id_usuario'));
                                 $select->addExpression('COUNT(*)', 'cuenta');
                                 $select->condition('id_usuario', $pts->uid);
                                 //$select->condition('fecha_fin_revision', array('2015/01/1', '2016/12/30'), 'BETWEEN');
                                 //$select->condition('fecha_fin_revision', array($form_state->getValue('fecha1'), $form_state->getValue('fecha2')), 'BETWEEN');
-                                $select->condition('fecha_inicio_revision', array($date1, $date2), 'BETWEEN');
+                                $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                                 $select->groupBy('id_usuario');
                                 $results = $select->execute();
                                 foreach ($results as $result){
@@ -650,10 +655,11 @@ class EstadisticasForm extends FormBase {
                                 $connection = \Drupal\Core\Database\Database::getConnection();
                                 $select = Database::getConnection()->select('revisiones_asignadas', 'rs');
                                 $select ->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
+                                $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
                                 $select->addExpression('COUNT(*)', 'cuenta');
                                 $select->condition('id_usuario', $dpto->uid );
 //                                      $select->condition('fecha_fin_revision', array($form_state->getValue('fecha1'), $form_state->getValue('fecha2')), 'BETWEEN');
-                                $select->condition('fecha_fin_revision', array($date1,$date2), 'BETWEEN');
+                                $select->condition('fecha', array($date1,$date2), 'BETWEEN');
                                 $select->groupBy('id_usuario');
 
                                 $select2 = $connection->select($select, 'usuarios');
