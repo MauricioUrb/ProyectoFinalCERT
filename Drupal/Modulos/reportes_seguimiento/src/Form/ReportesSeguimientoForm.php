@@ -20,18 +20,21 @@ class ReportesSeguimientoForm extends FormBase{
         '#type' => 'textfield',
         '#title' => t('ID de revisión de seguimiento:'),
         '#size' => 15,
+        '#maxlength' => 15,
         '#default_value' => $form_state->getValue(['id_seg']) ? $form_state->getValue(['id_seg']) : '',
       );
       $form['no_seg'] = array(
         '#type' => 'textfield',
         '#title' => t('Número de seguimiento:'),
         '#size' => 15,
+        '#maxlength' => 15,
         '#default_value' => $form_state->getValue(['no_seg']) ? $form_state->getValue(['no_seg']) : '',
       );
       $form['id_rev'] = array(
         '#type' => 'textfield',
         '#title' => t('ID de revisión previa:'),
         '#size' => 15,
+        '#maxlength' => 15,
         '#default_value' => $form_state->getValue(['id_rev']) ? $form_state->getValue(['id_rev']) : '',
       );
       $form['tipo_r'] = array(
@@ -44,18 +47,21 @@ class ReportesSeguimientoForm extends FormBase{
         '#type' => 'textfield',
         '#title' => t('Coordinador de revisión:'),
         '#size' => 20,
+        '#maxlength' => 20,
         '#default_value' => $form_state->getValue(['coord_n']) ? $form_state->getValue(['coord_n']) : '',
       );
       $form['pent_n'] = array(
         '#type' => 'textfield',
         '#title' => t('Pentester asignado:'),
         '#size' => 20,
+        '#maxlength' => 20,
         '#default_value' => $form_state->getValue(['pent_n']) ? $form_state->getValue(['pent_n']) : '',
       );
       $form['act_n'] = array(
         '#type' => 'textfield',
         '#title' => t('Activo asignado:'),
         '#size' => 50,
+        '#maxlength' => 50,
         '#default_value' => $form_state->getValue(['act_n']) ? $form_state->getValue(['act_n']) : '',
       );
       $form['fechaI'] = array(

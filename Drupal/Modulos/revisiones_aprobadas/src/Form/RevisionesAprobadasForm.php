@@ -14,7 +14,7 @@ class RevisionesAprobadasForm extends FormBase{
 
   public function buildForm(array $form, FormStateInterface $form_state){
     if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
-            $form['opcion'] = array('#markup' => "Filtrar resultados",);
+      $form['opcion'] = array('#markup' => "Filtrar resultados",);
       // Filter field.
       $form['id_rev'] = array(
         '#type' => 'textfield',
@@ -32,18 +32,21 @@ class RevisionesAprobadasForm extends FormBase{
         '#type' => 'textfield',
         '#title' => t('Coordinador de revisión:'),
         '#size' => 20,
+        '#maxlength' => 20,
         '#default_value' => $form_state->getValue(['coord_n']) ? $form_state->getValue(['coord_n']) : '',
       );
       $form['pent_n'] = array(
         '#type' => 'textfield',
         '#title' => t('Pentester asignado:'),
         '#size' => 20,
+        '#maxlength' => 20,
         '#default_value' => $form_state->getValue(['pent_n']) ? $form_state->getValue(['pent_n']) : '',
       );
       $form['act_n'] = array(
         '#type' => 'textfield',
         '#title' => t('Activo asignado:'),
         '#size' => 50,
+        '#maxlength' => 50,
         '#default_value' => $form_state->getValue(['act_n']) ? $form_state->getValue(['act_n']) : '',
       );
       $form['fechaI'] = array(
