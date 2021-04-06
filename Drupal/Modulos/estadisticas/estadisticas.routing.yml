@@ -3,6 +3,6 @@ estadisticas.content:
   path: /estadisticas
   defaults:
     _form: Drupal\estadisticas\Form\EstadisticasForm
-    _title: "Título de la pagina"
+    _title: "Estadísticas"
   requirements:
     _permission: 'view estadisticas'
