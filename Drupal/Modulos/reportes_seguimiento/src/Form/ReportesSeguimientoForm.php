@@ -14,6 +14,77 @@ class ReportesSeguimientoForm extends FormBase{
 
   public function buildForm(array $form, FormStateInterface $form_state){
     if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
+      $form['opcion'] = array('#markup' => "Filtrar resultados",);
+      // Filter field.
+      $form['id_seg'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID de revisión de seguimiento:'),
+        '#size' => 15,
+        '#default_value' => $form_state->getValue(['id_seg']) ? $form_state->getValue(['id_seg']) : '',
+      );
+      $form['no_seg'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Número de seguimiento:'),
+        '#size' => 15,
+        '#default_value' => $form_state->getValue(['no_seg']) ? $form_state->getValue(['no_seg']) : '',
+      );
+      $form['id_rev'] = array(
+        '#type' => 'textfield',
+        '#title' => t('ID de revisión previa:'),
+        '#size' => 15,
+        '#default_value' => $form_state->getValue(['id_rev']) ? $form_state->getValue(['id_rev']) : '',
+      );
+      $form['tipo_r'] = array(
+        '#title' => t('Tipo de revisión:'),
+        '#type' => 'radios',
+        '#options' => array(0 => 'Sin filtro', 1 => 'Oficio', 2 => 'Circular'),
+        '#default_value' => 0,
+      );
+      $form['coord_n'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Coordinador de revisión:'),
+        '#size' => 20,
+        '#default_value' => $form_state->getValue(['coord_n']) ? $form_state->getValue(['coord_n']) : '',
+      );
+      $form['pent_n'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Pentester asignado:'),
+        '#size' => 20,
+        '#default_value' => $form_state->getValue(['pent_n']) ? $form_state->getValue(['pent_n']) : '',
+      );
+      $form['act_n'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Activo asignado:'),
+        '#size' => 50,
+        '#default_value' => $form_state->getValue(['act_n']) ? $form_state->getValue(['act_n']) : '',
+      );
+      $form['fechaI'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Fecha de asignación:'),
+        '#size' => 15,
+        '#default_value' => $form_state->getValue(['fechaI']) ? $form_state->getValue(['fechaI']) : '',
+        '#description' => 'Formato: YYYY o YYYY-MM o YYYY-MM-DD',
+        '#maxlength' => 10,
+      );
+      $form['fechaF'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Fecha de finalización:'),
+        '#size' => 15,
+        '#default_value' => $form_state->getValue(['fechaF']) ? $form_state->getValue(['fechaF']) : '',
+        '#description' => 'Formato: YYYY o YYYY-MM o YYYY-MM-DD',
+        '#maxlength' => 10,
+      );
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t("Buscar"),  
+      );
+      $urlR = Url::fromRoute('reportes_seguimiento.content', array());
+      $project_linkR = Link::fromTextAndUrl('Limpiar filtros', $urlR);
+      $project_linkR = $project_linkR->toRenderable();
+      $project_linkR['#attributes'] = array('class' => array('button'));
+      $form['regresar'] = array('#markup' => render($project_linkR),);
+      
+      
       //Tabla de revisiones de seguimiento
       Database::setActiveConnection('drupaldb_segundo');
       $connection = Database::getConnection();
@@ -26,7 +97,9 @@ class ReportesSeguimientoForm extends FormBase{
       $select->condition('seguimiento', 0, '<>');
       $select->condition('id_estatus',4);
       $select->orderBy('fecha','DESC');
-      $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
+      if(!$form_state->getValue(['filtro'])){
+        $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
+      }
       $datos = $select->execute();
       Database::setActiveConnection();
       foreach ($datos as $result) {
@@ -109,8 +182,7 @@ class ReportesSeguimientoForm extends FormBase{
         $descargar1 = Link::fromTextAndUrl('Descargar', $url2);
         $descargar1 = $descargar1->toRenderable();
         $descargar1['#attributes'] = array('class' => array('button'));
-        //Tabla de revisiones de seguimiento
-        $ultima[$result->id_revision] = [
+        $rows[$result->id_revision] = [
           $result->id_revision,
           $result->seguimiento,
           $result->id_seguimiento,
@@ -123,6 +195,103 @@ class ReportesSeguimientoForm extends FormBase{
           render($descargarS),
         ];
       }
+      //Filtros
+      $filtro = false;
+      if($form_state->getValue(['id_seg'])){
+        $filtro = true;
+        $ultima = array();
+        foreach ($rows as $id => $value) {
+          if($form_state->getValue(['id_seg']) == $value[0]){
+            $ultima[$id] = $value;
+          }
+        }
+        $rows = $ultima;
+      }
+      if($form_state->getValue(['no_seg'])){
+        $filtro = true;
+        $ultima = array();
+        foreach ($rows as $id => $value) {
+          if($form_state->getValue(['no_seg']) == $value[1]){
+            $ultima[$id] = $value;
+          }
+        }
+        $rows = $ultima;
+      }
+      if($form_state->getValue(['id_rev'])){
+        $filtro = true;
+        $ultima = array();
+        foreach ($rows as $id => $value) {
+          if($form_state->getValue(['id_rev']) == $value[2]){
+            $ultima[$id] = $value;
+          }
+        }
+        $rows = $ultima;
+      }
+      if($form_state->getValue(['tipo_r']) != 0){
+        $filtro = true;
+        $ultima = array();
+        if($form_state->getValue(['tipo_r']) == 1){$type = 'Oficio';}else{$type = 'Circular';}
+        foreach ($rows as $id => $value) {
+          if(preg_match("/".$type."/", $value[3])){
+            $ultima[$id] = $value;
+          }
+        }
+        $rows = $ultima;
+      }
+      if($form_state->getValue(['coord_n'])){
+        $filtro = true;
+        $ultima = array();
+        foreach ($rows as $id => $value) {
+          if(preg_match("/".$form_state->getValue(['coord_n'])."/", $value[4])){
+            $ultima[$id] = $value;
+          }
+        }
+        $rows = $ultima;
+      }
+      if($form_state->getValue(['pent_n'])){
+        $filtro = true;
+        $ultima = array();
+        foreach ($rows as $id => $value) {
+          if(preg_match("/".$form_state->getValue(['pent_n'])."/", $value[5])){
+            $ultima[$id] = $value;
+          }
+        }
+        $rows = $ultima;
+      }
+      if($form_state->getValue(['act_n'])){
+        $filtro = true;
+        $ultima = array();
+        foreach ($rows as $id => $value) {
+          if(preg_match("/".$form_state->getValue(['act_n'])."/", $value[6])){
+            $ultima[$id] = $value;
+          }
+        }
+        $rows = $ultima;
+      }
+      if($form_state->getValue(['fechaI'])){
+        $filtro = true;
+        $ultima = array();
+        foreach ($rows as $id => $value) {
+          if(str_starts_with($value[7], $form_state->getValue(['fechaI']))){
+            $form['test'] = array('#markup' => $form_state->getValue(['fechaI']));
+            $ultima[$id] = $value;
+          }
+        }
+        $rows = $ultima;
+      }
+      if($form_state->getValue(['fechaF'])){
+        $filtro = true;
+        $ultima = array();
+        foreach ($rows as $id => $value) {
+          if(str_starts_with($value[7], $form_state->getValue(['fechaF']))){
+            $form['test'] = array('#markup' => $form_state->getValue(['fechaF']));
+            $ultima[$id] = $value;
+          }
+        }
+        $rows = $ultima;
+      }
+      $form['filtro'] = array('#type' => 'hidden', '#value' => $filtro);
+
       //Se asignan titulos a cada columna
       $header3 = [
         'id' => t('ID'),
@@ -139,7 +308,8 @@ class ReportesSeguimientoForm extends FormBase{
       $last_T['table'] = [
         '#type' => 'table',
         '#header' => $header3,
-        '#rows' => $ultima,
+        //'#rows' => $ultima,
+        '#rows' => $rows,
         '#empty' => t('Sin revisiones por mostrar.'),
       ];
       $form['last_T'] = [
@@ -147,14 +317,11 @@ class ReportesSeguimientoForm extends FormBase{
         '#title' => t('Revisiones de seguimiento concluidas'),
         '#markup' => render($last_T),
       ];
-      $form['pager'] = array('#type' => 'pager');
-      /*
-      $url = Url::fromUri('http://' . $_SERVER['SERVER_NAME'] . '/reportes/202103_variosSitios_REV3_Oficio.docx');
-      $project_link = Link::fromTextAndUrl('Descargar', $url);
-      $project_link = $project_link->toRenderable();
-      $project_link['#attributes'] = array('class' => array('button'));
-      $form['test'] = array('#markup' => render($project_link));
-      //*/
+      if(!$form_state->getValue(['filtro'])){
+        $form['pager'] = array('#type' => 'pager');
+      }
+
+      
     }else{
       return array('#markup' => "No tienes permiso para ver esta página",);
     }
@@ -162,7 +329,13 @@ class ReportesSeguimientoForm extends FormBase{
   }
   
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $messenger_service = \Drupal::service('messenger');
-    $messenger_service->addMessage(t('The form is working.'));
+    //$messenger_service = \Drupal::service('messenger');
+    //$messenger_service->addMessage(t('The form is working.'));
+    // Set the provided filter value in the storage.
+    //$form_state->setStorage(['title']) = $form_state->getValue(['title']);
+    //$form_state->setStorage($form_state['title']);
+    // Show the form again.
+    //$form_state['rebuild'] = TRUE;
+    $form_state->setRebuild();
   }
 }
