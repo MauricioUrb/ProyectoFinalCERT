@@ -273,7 +273,6 @@ class ReportesSeguimientoForm extends FormBase{
         $ultima = array();
         foreach ($rows as $id => $value) {
           if(str_starts_with($value[7], $form_state->getValue(['fechaI']))){
-            $form['test'] = array('#markup' => $form_state->getValue(['fechaI']));
             $ultima[$id] = $value;
           }
         }
@@ -283,8 +282,7 @@ class ReportesSeguimientoForm extends FormBase{
         $filtro = true;
         $ultima = array();
         foreach ($rows as $id => $value) {
-          if(str_starts_with($value[7], $form_state->getValue(['fechaF']))){
-            $form['test'] = array('#markup' => $form_state->getValue(['fechaF']));
+          if(str_starts_with($value[8], $form_state->getValue(['fechaF']))){
             $ultima[$id] = $value;
           }
         }
@@ -329,13 +327,6 @@ class ReportesSeguimientoForm extends FormBase{
   }
   
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    //$messenger_service = \Drupal::service('messenger');
-    //$messenger_service->addMessage(t('The form is working.'));
-    // Set the provided filter value in the storage.
-    //$form_state->setStorage(['title']) = $form_state->getValue(['title']);
-    //$form_state->setStorage($form_state['title']);
-    // Show the form again.
-    //$form_state['rebuild'] = TRUE;
     $form_state->setRebuild();
   }
 }
