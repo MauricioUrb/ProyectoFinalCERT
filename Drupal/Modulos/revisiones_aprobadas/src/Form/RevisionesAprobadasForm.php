@@ -75,6 +75,11 @@ class RevisionesAprobadasForm extends FormBase{
       $project_linkR['#attributes'] = array('class' => array('button'));
       $form['regresar'] = array('#markup' => render($project_linkR),);
 
+      //Filtros
+      $filtro = false;
+      if($form_state->getValue(['id_rev']) || $form_state->getValue(['tipo_r']) != 0 || $form_state->getValue(['coord_n']) || $form_state->getValue(['pent_n']) || $form_state->getValue(['act_n']) || $form_state->getValue(['fechaI']) || $form_state->getValue(['fechaF'])){
+        $filtro = true;
+      }
       //Campos de revisiones
       Database::setActiveConnection('drupaldb_segundo');
       $connection = Database::getConnection();
@@ -85,7 +90,7 @@ class RevisionesAprobadasForm extends FormBase{
       $select->condition('seguimiento', 0);
       $select->condition('id_estatus',4);
       $select->orderBy('fecha','DESC');
-      if(!$form_state->getValue(['filtro'])){
+      if(!$filtro){
         $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       }
       $datos = $select->execute();
@@ -274,7 +279,6 @@ class RevisionesAprobadasForm extends FormBase{
         $ultima = array();
         foreach ($rows as $id => $value) {
           if(str_starts_with($value[5], $form_state->getValue(['fechaI']))){
-            $form['test'] = array('#markup' => $form_state->getValue(['fechaI']));
             $ultima[$id] = $value;
           }
         }
@@ -286,14 +290,12 @@ class RevisionesAprobadasForm extends FormBase{
         $ultima = array();
         foreach ($rows as $id => $value) {
           if(str_starts_with($value[6], $form_state->getValue(['fechaF']))){
-            $form['test'] = array('#markup' => $form_state->getValue(['fechaF']));
             $ultima[$id] = $value;
           }
         }
         $filas = $ultima;
         $rows = $ultima;
       }
-      $form['filtro'] = array('#type' => 'hidden', '#value' => $filtro);
       //Se asignan titulos a cada columna
       $header1 = [
         'id' => t('ID'),
@@ -340,7 +342,7 @@ class RevisionesAprobadasForm extends FormBase{
         '#markup' => render($concluidas),
       ];
       
-      if(!$form_state->getValue(['filtro'])){
+      if(!$filtro){
         $form['pager'] = array('#type' => 'pager');
       }
     }else{

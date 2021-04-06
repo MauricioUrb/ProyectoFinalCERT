@@ -90,7 +90,11 @@ class ReportesSeguimientoForm extends FormBase{
       $project_linkR['#attributes'] = array('class' => array('button'));
       $form['regresar'] = array('#markup' => render($project_linkR),);
       
-      
+      //Filtros
+      $filtro = false;
+      if($form_state->getValue(['id_seg']) || $form_state->getValue(['no_seg']) || $form_state->getValue(['id_rev']) || $form_state->getValue(['tipo_r']) != 0 || $form_state->getValue(['coord_n']) || $form_state->getValue(['pent_n']) || $form_state->getValue(['act_n']) || $form_state->getValue(['fechaI']) || $form_state->getValue(['fechaF'])){
+        $filtro = true;
+      }
       //Tabla de revisiones de seguimiento
       Database::setActiveConnection('drupaldb_segundo');
       $connection = Database::getConnection();
@@ -103,7 +107,7 @@ class ReportesSeguimientoForm extends FormBase{
       $select->condition('seguimiento', 0, '<>');
       $select->condition('id_estatus',4);
       $select->orderBy('fecha','DESC');
-      if(!$form_state->getValue(['filtro'])){
+      if(!$filtro){
         $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       }
       $datos = $select->execute();
@@ -294,7 +298,6 @@ class ReportesSeguimientoForm extends FormBase{
         }
         $rows = $ultima;
       }
-      $form['filtro'] = array('#type' => 'hidden', '#value' => $filtro);
 
       //Se asignan titulos a cada columna
       $header3 = [
@@ -321,11 +324,9 @@ class ReportesSeguimientoForm extends FormBase{
         '#title' => t('Revisiones de seguimiento concluidas'),
         '#markup' => render($last_T),
       ];
-      if(!$form_state->getValue(['filtro'])){
+      if(!$filtro){
         $form['pager'] = array('#type' => 'pager');
-      }
-
-      
+      }      
     }else{
       return array('#markup' => "No tienes permiso para ver esta página",);
     }
