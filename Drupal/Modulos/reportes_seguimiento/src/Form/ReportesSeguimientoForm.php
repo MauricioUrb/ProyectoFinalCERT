@@ -7,11 +7,21 @@ use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\Core\Database\Database;
 
+/*
++ Descripción: Formulario para visualizar los reportes de revisiones de seguimiento. Además de contar con un filtro de búsqueda.
+*/
 class ReportesSeguimientoForm extends FormBase{
+  /*
+  + Descripción: Función para asignar id del formulario
+  + Sin parámetros
+  */
   public function getFormId(){
     return 'reportes_seguimiento_form';
   }
-
+  /*
+  + Descripción: Función para construir el formulario. Se valida al inicio que se tienen permisos para visualizar el formulario.
+  + Sin parámetros
+  */
   public function buildForm(array $form, FormStateInterface $form_state){
     if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
       $form['opcion'] = array('#markup' => "Filtrar resultados",);
@@ -332,7 +342,12 @@ class ReportesSeguimientoForm extends FormBase{
     }
     return $form;
   }
-  
+  /*
+  + Descripción: Función para mandar los datos proporcionados por el usuario y registrarlos en la base de datos.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $form_state->setRebuild();
   }

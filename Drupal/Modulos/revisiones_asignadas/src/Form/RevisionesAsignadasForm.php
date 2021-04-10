@@ -10,10 +10,21 @@ use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\Core\Database\Database;
 
+/*
++ Descripción: Formulario para visualizar las revisiones que el usuario tiene asignadas.
+*/
 class RevisionesAsignadasForm extends FormBase{
+  /*
+  + Descripción: Función para asignar id del formulario
+  + Sin parámetros
+  */
   public function getFormId(){
     return 'revisiones_asignadas_form';
   }
+  /*
+  + Descripción: Función para construir el formulario. Se valida al inicio que se tienen permisos para visualizar el formulario.
+  + Sin parámetros
+  */
   public function buildForm(array $form, FormStateInterface $form_state){
     if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
       //Consulta de las revisiones que tiene el usuario
@@ -636,6 +647,12 @@ class RevisionesAsignadasForm extends FormBase{
       return array('#markup' => "No tienes permiso para ver esta página",);
     }
   }
+  /*
+  + Descripción: Función para mandar los datos proporcionados por el usuario y registrarlos en la base de datos.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $messenger_service = \Drupal::service('messenger');
     $messenger_service->addMessage(t('The form is working.'));

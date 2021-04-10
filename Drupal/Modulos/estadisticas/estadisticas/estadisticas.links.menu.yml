@@ -1,0 +1,6 @@
+estadisticas.newpage:
+  title: 'Estadisticas'
+  description: 'Link to the page hello_world created'
+  route_name: estadisticas.content
+  weight: 13
+  menu_name: main

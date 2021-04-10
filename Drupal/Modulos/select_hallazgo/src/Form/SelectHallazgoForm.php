@@ -11,18 +11,25 @@ use Drupal\Core\Url;
 use Drupal\Core\Link;
 
 /*
- *
- */
++ Descripción: Formulario para asignar uno o más hallazgos a un sitio en una revisión.
+*/
 class SelectHallazgoForm extends FormBase{
-/*
-   * (@inheritdoc)
-   */
+  /*
+  + Descripción: Función para asignar id del formulario
+  + Sin parámetros
+  */
   public function getFormId(){
     return 'select_hallazgo_form';
   }
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para construir el formulario. Se valida al inicio que se tienen permisos para visualizar el formulario.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  +   - $rev_id: Id de revisión | Tipo: int, Default: NULL |
+  +   - $id_rev_sitio: id_rev_sitio (llave primaria de la tabla que relaciona en número de revisión con el id del sitio) | Tipo: int, Default: NULL |
+  +   - $seg: booleano que indica si es revisión de seguimiento | Tipo: bool, Default: 
+  */
   public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL, $id_rev_sitio = NULL, $seg = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
@@ -111,9 +118,11 @@ class SelectHallazgoForm extends FormBase{
     return $form;    
   }
   /*
-   * (@inheritdoc)
-   * Validacion de los datos ingresados
-   */
+  + Descripción: Función para mandar los datos proporcionados por el usuario y registrarlos en la base de datos.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  */
   public function submitForm(array &$form, FormStateInterface $form_state){
     global $hall_arr;
     global $id_principal;

@@ -10,19 +10,25 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Mail\MailInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
+
 /*
- *
- */
++ Descripción: Formulario para asignar una revisión de seguimiento a pentesters notificándolos por correo electrónico.
+*/
 class AsignacionSeguimientoForm extends FormBase{
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para asignar id del formulario
+  + Sin parámetros
+  */
   public function getFormId(){
     return 'asignacion_seguimiento_form';
   }
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para construir el formulario. Se valida al inicio que se tienen permisos para visualizar el formulario.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  +   - $rev_id: id de revisión | Tipo: int, Default: NULL |
+  */
   public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL){
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -187,8 +193,11 @@ class AsignacionSeguimientoForm extends FormBase{
     return $form;
   }
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para mandar los datos proporcionados por el usuario y registrarlos en la base de datos.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     global $no_rev;
     //Buscar nombres de los pentester asignados

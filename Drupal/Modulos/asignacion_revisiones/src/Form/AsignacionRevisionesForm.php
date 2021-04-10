@@ -10,18 +10,22 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Mail\MailInterface;
 
 /*
- *
- */
++ Descripción: Formulario para asignar una revisión a pentesters notificándolos por correo electrónico.
+*/
 class AsignacionRevisionesForm extends FormBase{
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para asignar id del formulario
+  + Sin parámetros
+  */
   public function getFormId(){
     return 'asignacion_revisiones_form';
   }
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para construir el formulario. Se valida al inicio que se tienen permisos para visualizar el formulario.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  */
   public function buildForm(array $form, FormStateInterface $form_state){
     $current_user_roles = \Drupal::currentUser()->getRoles();
     $grupo = TRUE;
@@ -76,9 +80,11 @@ class AsignacionRevisionesForm extends FormBase{
     return $form;
   }
   /*
-   * (@inheritdoc)
-   * Validacion de los datos ingresados
-   */
+  + Descripción: Función para validar los datos proporcionados por el usuario.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  */
   public function validateForm(array &$form, FormStateInterface $form_state) {
     //Conteo de sitios seleccionados
     $tmp = '';
@@ -95,8 +101,11 @@ class AsignacionRevisionesForm extends FormBase{
     }
   }
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para mandar los datos proporcionados por el usuario y registrarlos en la base de datos.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     //Buscar nombres de los pentester asignados
     $tmp = '';

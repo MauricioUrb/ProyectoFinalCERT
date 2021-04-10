@@ -12,18 +12,23 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 /*
- *
- */
++ Descripción: Formulario para visualizar los hallazgos relacionados con cada sitio en una revisión. Además de seleccionar el nuevo estado de una revisión como "En proceso" o "Concluido". Si se concluye la revisión, la información se le enviará al coordinador y se le notificará por correo electrónico.
+*/
 class EditRevisionForm extends FormBase{
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para asignar id del formulario
+  + Sin parámetros
+  */
   public function getFormId(){
     return 'edit_revision_form';
   }
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para construir el formulario. Se valida al inicio que se tienen permisos para visualizar el formulario.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  +   - $rev_id: id de revisión | Tipo: int, Default: NULL |
+  */
   public function buildForm(array $form, FormStateInterface $form_state, $rev_id = NULL){
     //Comprobación de que el usuario loggeado tiene permiso de ver esta revision
     Database::setActiveConnection('drupaldb_segundo');
@@ -147,8 +152,11 @@ class EditRevisionForm extends FormBase{
     return $form;
   }
   /*
-   * (@inheritdoc)
-   */
+  + Descripción: Función para mandar los datos proporcionados por el usuario y registrarlos en la base de datos.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  */
   public function submitForm(array &$form, FormStateInterface $form_state){
     $mensaje = 'Revision guardada.';
     $concluido = $form_state->getValue(['estatus']);

@@ -1,0 +1,8 @@
+estadisticas.content:
+  #Ruta que tendrá en la url
+  path: /estadisticas
+  defaults:
+    _form: Drupal\estadisticas\Form\EstadisticasForm
+    _title: "Estadísticas"
+  requirements:
+    _permission: 'view estadisticas'
