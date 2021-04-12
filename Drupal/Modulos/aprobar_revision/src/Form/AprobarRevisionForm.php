@@ -14,7 +14,7 @@ use Drupal\Core\Url;
 /*
 + Descripción: Formulario para aprobar la revisión y generar su reporte en formato .docx.
 */
-class AprobarRevisionForm extends FormBase
+class AprobarRevisionForm extends FormBase{
   /*
   + Descripción: Función para asignar id del formulario
   + Sin parámetros
