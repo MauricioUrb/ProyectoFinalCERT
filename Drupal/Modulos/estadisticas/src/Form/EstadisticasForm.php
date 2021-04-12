@@ -411,12 +411,12 @@ class EstadisticasForm extends FormBase {
                         $valores[1] = ["", ""];
                         $valores[2] = ["", "Cantidad"];
 
-                        $select = $connection->select('hallazgos', 'h');
-                        $select->join('revisiones_hallazgos', 'rh', 'rh.id_hallazgo = h.id_hallazgo');
+
+                        $select = $connection->select('revisiones_hallazgos', 'rh');
                         $select->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
                         $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
                         $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
-                        $select->fields('h', array('nivel_cvss'));
+                        $select->fields('rh', array('impacto_hall_rev'));
                         $select->condition('rs.id_sitio', $id_sitio);
                         $select->condition('id_estatus', '1');
                         $results = $select->execute();
@@ -431,7 +431,7 @@ class EstadisticasForm extends FormBase {
                         );
                         // obtenemos los resultados de las consultas
                         foreach($results as $result){
-                                $nivel = explode(" ", $result->nivel_cvss);
+                                $nivel = explode(" ", $result->impacto_hall_rev);
                                 $critico["$nivel[1]"] += 1;
                         }
 
@@ -462,14 +462,13 @@ class EstadisticasForm extends FormBase {
                         $valores[1] = ["", ""];
                         $valores[2] = ["", "Cantidad"];
 
-                        $select = $connection->select('hallazgos', 'h');
-                        $select->join('revisiones_hallazgos', 'rh', 'rh.id_hallazgo = h.id_hallazgo');
+                        $select = $connection->select('revisiones_hallazgos', 'rh');
                         $select->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
                         $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
                         $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
-                        $select->fields('h', array('nivel_cvss'));
+                        $select->fields('rh', array('impacto_hall_rev'));
+                        $select->condition('rs.id_sitio', $id_sitio);
                         $select->condition('id_estatus', '1');
-                        $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $results = $select->execute();
 
                         // criticidad
@@ -482,7 +481,7 @@ class EstadisticasForm extends FormBase {
                         );
                         // obtenemos los resultados de las consultas
                         foreach($results as $result){
-                                $nivel = explode(" ", $result->nivel_cvss);
+                                $nivel = explode(" ", $result->impacto_hall_rev);
                                 $critico["$nivel[1]"] += 1;
                         }
 
