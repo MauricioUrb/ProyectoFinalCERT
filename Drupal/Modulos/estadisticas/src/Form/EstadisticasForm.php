@@ -296,6 +296,7 @@ class EstadisticasForm extends FormBase {
                         //Se especifican las columnas a leer
                         $select->fields('d', array('nombre_dependencia'));
                         $select->addExpression('COUNT(*)', 'cuenta');
+                        $select->condition('id_estatus', '1');
                         $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $select->groupBy('nombre_dependencia');
                         $select->orderBy('cuenta', 'DESC');
@@ -370,6 +371,7 @@ class EstadisticasForm extends FormBase {
                         //Se especifican las columnas a leer
                         $select->fields('d', array('nombre_dependencia'));
                         $select->addExpression('COUNT(*)', 'cuenta');
+                        $select->condition('id_estatus', '1');
                         $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $select->groupBy('nombre_dependencia');
                         $select->orderBy('cuenta', 'DESC');
@@ -409,11 +411,14 @@ class EstadisticasForm extends FormBase {
                         $valores[1] = ["", ""];
                         $valores[2] = ["", "Cantidad"];
 
-                        $select = $connection->select('revisiones_hallazgos', 'rh');
+                        $select = $connection->select('hallazgos', 'h');
+                        $select->join('revisiones_hallazgos', 'rh', 'rh.id_hallazgo = h.id_hallazgo');
                         $select->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
                         $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
-                        $select->fields('rh', array('impacto_hall_rev'));
+                        $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
+                        $select->fields('h', array('nivel_cvss'));
                         $select->condition('rs.id_sitio', $id_sitio);
+                        $select->condition('id_estatus', '1');
                         $results = $select->execute();
 
                         // criticidad
@@ -426,7 +431,7 @@ class EstadisticasForm extends FormBase {
                         );
                         // obtenemos los resultados de las consultas
                         foreach($results as $result){
-                                $nivel = explode(" ", $result->impacto_hall_rev);
+                                $nivel = explode(" ", $result->nivel_cvss);
                                 $critico["$nivel[1]"] += 1;
                         }
 
@@ -457,11 +462,13 @@ class EstadisticasForm extends FormBase {
                         $valores[1] = ["", ""];
                         $valores[2] = ["", "Cantidad"];
 
-                        $select = $connection->select('revisiones_hallazgos', 'rh');
+                        $select = $connection->select('hallazgos', 'h');
+                        $select->join('revisiones_hallazgos', 'rh', 'rh.id_hallazgo = h.id_hallazgo');
                         $select->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
                         $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
                         $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
-                        $select->fields('rh', array('impacto_hall_rev'));
+                        $select->fields('h', array('nivel_cvss'));
+                        $select->condition('id_estatus', '1');
                         $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $results = $select->execute();
 
@@ -475,7 +482,7 @@ class EstadisticasForm extends FormBase {
                         );
                         // obtenemos los resultados de las consultas
                         foreach($results as $result){
-                                $nivel = explode(" ", $result->impacto_hall_rev);
+                                $nivel = explode(" ", $result->nivel_cvss);
                                 $critico["$nivel[1]"] += 1;
                         }
 
@@ -515,6 +522,7 @@ class EstadisticasForm extends FormBase {
                         //Se especifican las columnas a leer
                         $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
                         $select->addExpression('COUNT(*)', 'cuenta');
+                        $select->condition('id_estatus', '1');
                         $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $select->groupBy('nombre_hallazgo_vulnerabilidad');
                         $select->orderBy('cuenta', 'DESC');
@@ -602,6 +610,7 @@ class EstadisticasForm extends FormBase {
                                 $select->condition('id_usuario', $pts->uid);
                                 //$select->condition('fecha_fin_revision', array('2015/01/1', '2016/12/30'), 'BETWEEN');
                                 //$select->condition('fecha_fin_revision', array($form_state->getValue('fecha1'), $form_state->getValue('fecha2')), 'BETWEEN');
+                                $select->condition('id_estatus', '3');
                                 $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                                 $select->groupBy('id_usuario');
                                 $results = $select->execute();
@@ -659,6 +668,7 @@ class EstadisticasForm extends FormBase {
                                 $select->addExpression('COUNT(*)', 'cuenta');
                                 $select->condition('id_usuario', $dpto->uid );
 //                                      $select->condition('fecha_fin_revision', array($form_state->getValue('fecha1'), $form_state->getValue('fecha2')), 'BETWEEN');
+                                $select->condition('id_estatus', '3');
                                 $select->condition('fecha', array($date1,$date2), 'BETWEEN');
                                 $select->groupBy('id_usuario');
 
