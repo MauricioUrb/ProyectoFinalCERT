@@ -411,7 +411,6 @@ class EstadisticasForm extends FormBase {
                         $valores[1] = ["", ""];
                         $valores[2] = ["", "Cantidad"];
 
-
                         $select = $connection->select('revisiones_hallazgos', 'rh');
                         $select->join('revisiones_sitios', 'rs', 'rs.id_rev_sitio = rh.id_rev_sitio');
                         $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
@@ -419,6 +418,7 @@ class EstadisticasForm extends FormBase {
                         $select->fields('rh', array('impacto_hall_rev'));
                         $select->condition('rs.id_sitio', $id_sitio);
                         $select->condition('id_estatus', '1');
+                        $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $results = $select->execute();
 
                         // criticidad
@@ -431,8 +431,23 @@ class EstadisticasForm extends FormBase {
                         );
                         // obtenemos los resultados de las consultas
                         foreach($results as $result){
-                                $nivel = explode(" ", $result->impacto_hall_rev);
-                                $critico["$nivel[1]"] += 1;
+//                            $nivel = explode(" ", $result->impacto_hall_rev);
+                            $nivel = $result->impacto_hall_rev;
+                            if($nivel == 0.0){
+                                $critico["SIN IMPACTO"] += 1;
+                            }
+                            elseif($nivel >= 0.1 || $nivel <= 3.9){
+                                $critico["BAJO"] += 1;
+                            }
+                            elseif($nivel >= 4.0 || $nivel <= 6.9){
+                                $critico["MEDIO"] += 1;
+                            }
+                            elseif($nivel >= 7.0 || $nivel <= 8.9){
+                                $critico["ALTO"] += 1;
+                            }
+                            elseif($nivel >= 9.0 || $nivel <= 10.0){
+                                $critico["CRITICO"] += 1;
+                            }
                         }
 
                         foreach($critico as $level => $value){
@@ -467,8 +482,8 @@ class EstadisticasForm extends FormBase {
                         $select->join('revisiones', 'r', 'r.id_revision = rs.id_revision');
                         $select->join('actividad', 'a', 'a.id_revision = r.id_revision');
                         $select->fields('rh', array('impacto_hall_rev'));
-                        $select->condition('rs.id_sitio', $id_sitio);
                         $select->condition('id_estatus', '1');
+                        $select->condition('fecha', array($date1, $date2), 'BETWEEN');
                         $results = $select->execute();
 
                         // criticidad
@@ -479,6 +494,27 @@ class EstadisticasForm extends FormBase {
                                 "BAJO" => 0,
                                 "SIN IMPACTO" => 0,
                         );
+                        // obtenemos los resultados de las consultas
+                        foreach($results as $result){
+//                                $nivel = explode(" ", $result->impacto_hall_rev);
+                            $nivel = $result->impacto_hall_rev;
+                            if($nivel == 0.0){
+                                $critico["SIN IMPACTO"] += 1;
+                            }
+                            elseif($nivel >= 0.1 || $nivel <= 3.9){
+                                $critico["BAJO"] += 1;
+                            }
+                            elseif($nivel >= 4.0 || $nivel <= 6.9){
+                                    $critico["MEDIO"] += 1;
+                            }
+                            elseif($nivel >= 7.0 || $nivel <= 8.9){
+                                $critico["ALTO"] += 1;
+                            }
+                            elseif($nivel >= 9.0 || $nivel <= 10.0){
+                                $critico["CRITICO"] += 1;
+                            }
+                        }
+
                         // obtenemos los resultados de las consultas
                         foreach($results as $result){
                                 $nivel = explode(" ", $result->impacto_hall_rev);
