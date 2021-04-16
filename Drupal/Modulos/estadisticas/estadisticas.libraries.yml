@@ -1,0 +1,7 @@
+estadisticas:
+  version: 1.x
+  js:
+    js/estadisticas.js: {}
+  dependencies:
+    - core/drupalSettings
+    - core/jquery
