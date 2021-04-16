@@ -99,9 +99,14 @@ cp -r plantillas /var/www/drupal/web/reportes/.
 echo "Sitio instalado. Instalando modulos..."
 
 
-#Crear carpeta para guardar las estadisticas
-mkdir /var/www/drupal/web/sites/default/files/Graficas
-chown www-data:www-data /var/www/drupal/web/sites/default/files/Graficas
+# Crear carpeta para guardar las estadisticas (xlsx)
+mkdir -p /var/www/drupal/web/sites/default/files/Graficas/output_files
+# Crear carpeta para guardar las estadisticas (html)
+mkdir -p /var/www/drupal/web/sites/default/files/Graficas/charts
+# Se copia el template para las graficas
+cp -r Template /var/www/drupal/web/sites/default/files/Graficas/
+# Se asignan los permisos a la carpeta
+chown -R www-data:www-data /var/www/drupal/web/sites/default/files/Graficas
 
 #Crear carpeta para guardar los archivos csv
 mkdir -p /var/www/drupal/web/sites/default/files/csv_files/hallazgos/export
