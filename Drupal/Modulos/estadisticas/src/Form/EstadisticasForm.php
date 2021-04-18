@@ -56,193 +56,198 @@ class EstadisticasForm extends FormBase {
          * (@inheritdoc)
          */
         public function buildForm(array $form, FormStateInterface $form_state){
-                //conectar a la otra db
-                \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
-                $connection = \Drupal\Core\Database\Database::getConnection();
+		if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
+	                //conectar a la otra db
+        	        \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+	                $connection = \Drupal\Core\Database\Database::getConnection();
 
-                // consulta para traer los sitios
-                $select = $connection->select('sitios', 's');
-                $select->fields('s', array('id_sitio', 'url_sitio'));
-                $select->orderBy('url_sitio');
-                $results = $select->execute();
+        	        // consulta para traer los sitios
+                	$select = $connection->select('sitios', 's');
+	                $select->fields('s', array('id_sitio', 'url_sitio'));
+        	        $select->orderBy('url_sitio');
+                	$results = $select->execute();
 
-                $options = array();
-                $options['vacio'] = "--Selecciona un sitio--";
-                // acomodamos el resultado de la consulta en un arreglo
-                foreach($results as $result){
-                        $options[$result->id_sitio] = $result->url_sitio;
-                }
+	                $options = array();
+        	        $options['vacio'] = "--Selecciona un sitio--";
+                	// acomodamos el resultado de la consulta en un arreglo
+	                foreach($results as $result){
+        	                $options[$result->id_sitio] = $result->url_sitio;
+                	}
 
-                $form_state->disableCache();
+	                $form_state->disableCache();
+	
+			// agregamos nuestra libreria de js
+			$form['#attached']['library'][] = 'estadisticas/estadisticas';
 
-		// agregamos nuestra libreria de js
-		$form['#attached']['library'][] = 'estadisticas/estadisticas';
-
-                // grafica 1
-                $titulo = "Hallazgos mas comunes encontrados en las revisiones de seguridad.";
-                $form["hallazgos_comunes"] = array(
-                        '#type' => 'fieldset',
-                        '#title' => t("$titulo"),
-                        '#open' => TRUE,
-			'#collapsible' => TRUE,
-			'#name' => 'hallazgos_comunes',
-		);
-                $form["hallazgos_comunes"]["button_1"] = array(#
-                        '#type' => 'submit',
-                        '#value' => t('Descargar graficas'),
-                        '#name' => "hallazgos_comunes",
-                        '#button_type' => 'primary',
-                );
-                $form["hallazgos_comunes"]["button_2"] = array(#
-                        '#type' => 'submit',
-                        '#value' => t('Mostrar grafica'),
-                        '#name' => "hc_chart",
-                        '#button_type' => 'primary',
-                );
-		// titulos de las graficas que requieren fechas
-                $titulos = array(
-                        "Número de revisiones por dependencia.",
-                        "Número de hallazgos por dependencia.",
-                        "Número de hallzagos con impacto.",
-                        "Cantidad de hallazgos encontrados en periodo de tiempo.",
-                        "Estadisticas por pentester.",
-                );
-                $buttons = array(
-                        'revisiones_dependencia',
-                        'hallazgos_dependencia',
-                        'hallazgos_impacto',
-                        'hallazgos_date',
-                        'pentester',
-                );
-                $num = 0;
-                // graficas de la 2 a la 6
-                foreach($titulos as $titulo){
-			$b_name = $buttons[$num] . "_chart";
-                        $form["date_$num"] = array(
-                                '#type' => 'fieldset',
-                                '#title' => t("$titulo"),
-                                '#open' => TRUE,
-                                '#collapsible' => TRUE,
-                                '#tree' => TRUE,
-                        );
-                        $form["date_$num"]['fecha1'] = array (
-                                '#type' => 'date',
-                                '#title' => t('Fecha inicial'),
-                                '#default_value' => '',
-                                '#date_date_format' => 'Y/m/d',
-                                '#description' => date('d/m/Y', time()),
-                        );
-                        $form["date_$num"]['fecha2'] = array (
-                                '#type' => 'date',
-                                '#title' => t('Fecha final'),
-                                '#default_value' => '',
-                                '#date_date_format' => 'Y/m/d',
-                                '#description' => date('d/m/Y', time()),
-                        );
-                        $form["date_$num"]['submit'] = array(
-                                '#type' => 'submit',
-                                '#value' => t('Descargar graficas'),
-                                '#name' => $buttons[$num],
-                                '#button_type' => 'primary',
+	                // grafica 1
+	                $titulo = "Hallazgos mas comunes encontrados en las revisiones de seguridad.";
+	                $form["hallazgos_comunes"] = array(
+	                        '#type' => 'fieldset',
+	                        '#title' => t("$titulo"),
+	                        '#open' => TRUE,
+				'#collapsible' => TRUE,
+				'#name' => 'hallazgos_comunes',
 			);
-                	$form["date_$num"]["submit_2"] = array(#
-                        	'#type' => 'submit',
-	                        '#value' => t('Mostrar grafica'),
-        	                '#name' => $b_name,
-                	        '#button_type' => 'primary',
+	                $form["hallazgos_comunes"]["button_1"] = array(#
+	                        '#type' => 'submit',
+	                        '#value' => t('Descargar graficas'),
+	                        '#name' => "hallazgos_comunes",
+	                        '#button_type' => 'primary',
 	                );
-                        $num++;
-                }
-                // grafica 7
-                $titulo = "Estadisticas por sitio";
-                $form["sites"] = array(
-                        '#type' => 'fieldset',
-                        '#title' => t("$titulo"),
-                        '#open' => TRUE,
-                        '#collapsible' => TRUE,
-                        '#tree' => TRUE,
-                );
-                $form['sites']['sitio'] = array (
-                        '#type' => 'select',
-                        '#title' => t('Listado de sitios'),
-                        '#options' => $options,
-                        '#description' => "Selecciona un sitio",
-                );
-                $form['sites']['submit'] = array(
-                        '#type' => 'submit',
-                        '#value' => t('Descargar graficas'),
-                        '#name' => "sitio",
-                        '#button_type' => 'primary',
-                );
-                $form["sites"]["button_2"] = array(#
-                        '#type' => 'submit',
-                        '#value' => t('Mostrar grafica'),
-                        '#name' => "sitio_chart",
-                        '#button_type' => 'primary',
-                );
-                // grafica 8
-                $titulo = "Hallazgos identificados por ip.";
-                $form["hallazgos_ip"] = array(
-                        '#type' => 'fieldset',
-                        '#title' => t("$titulo"),
-                        '#open' => TRUE,
-                        '#collapsible' => TRUE,
-                );
-                $form["hallazgos_ip"]["button"] = array(
-                        '#type' => 'submit',
-                        '#value' => t('Descargar graficas'),
-                        '#name' => "hallazgos_ip",
-                        '#button_type' => 'primary',
-                );
-                $form["hallazgos_ip"]["button_2"] = array(#
-                        '#type' => 'submit',
-                        '#value' => t('Mostrar grafica'),
-                        '#name' => "hi_chart",
-                        '#button_type' => 'primary',
-                );
-                // grafica 9
-                $titulo = "Estadisticas por departamento.";
-                $form["date_5"] = array(
-                        '#type' => 'fieldset',
-                        '#title' => t("$titulo"),
-                        '#open' => TRUE,
-                        '#collapsible' => TRUE,
-                        '#tree' => TRUE,
-                );
-                $form["date_5"]['depto'] = array(
-                        '#type' => 'select',
-                        '#title' => t('Departamentos'),
-                        '#options' => array('auditoria' => 'auditoria', 'sistemas' => 'sistemas'),
-                        '#description' => t('Selecciona un departamento.'),
-                );
-                $form["date_5"]['fecha1'] = array (
-                        '#type' => 'date',
-                        '#title' => t('Fecha inicial'),
-                        '#default_value' => '',
-                        '#date_date_format' => 'Y/m/d',
-                        '#description' => date('d/m/Y', time()),
-                );
-                $form["date_5"]['fecha2'] = array (
-                        '#type' => 'date',
-                        '#title' => t('Fecha final'),
-                        '#default_value' => '',
-                        '#date_date_format' => 'Y/m/d',
-                        '#description' => date('d/m/Y', time()),
-                );
-                $form["date_5"]['submit'] = array(
-                        '#type' => 'submit',
-                        '#value' => t('Descargar graficas'),
-                        '#name' => 'departamento',
-                        '#button_type' => 'primary',
-                );
-                $form["date_5"]["button_2"] = array(#
-                        '#type' => 'submit',
-                        '#value' => t('Mostrar grafica'),
-                        '#name' => "departamento_chart",
-                        '#button_type' => 'primary',
-                );
+	                $form["hallazgos_comunes"]["button_2"] = array(#
+	                        '#type' => 'submit',
+	                        '#value' => t('Generar gráfica'),
+	                        '#name' => "hc_chart",
+	                        '#button_type' => 'primary',
+	                );
+			// titulos de las graficas que requieren fechas
+	                $titulos = array(
+	                        "Número de revisiones por dependencia.",
+	                        "Número de hallazgos por dependencia.",
+	                        "Número de hallzagos con impacto.",
+	                        "Cantidad de hallazgos encontrados en periodo de tiempo.",
+	                        "Estadisticas por pentester.",
+	                );
+	                $buttons = array(
+	                        'revisiones_dependencia',
+	                        'hallazgos_dependencia',
+	                        'hallazgos_impacto',
+	                        'hallazgos_date',
+	                        'pentester',
+	                );
+	                $num = 0;
+	                // graficas de la 2 a la 6
+	                foreach($titulos as $titulo){
+				$b_name = $buttons[$num] . "_chart";
+	                        $form["date_$num"] = array(
+	                                '#type' => 'fieldset',
+	                                '#title' => t("$titulo"),
+	                                '#open' => TRUE,
+        	                        '#collapsible' => TRUE,
+	                                '#tree' => TRUE,
+	                        );
+	                        $form["date_$num"]['fecha1'] = array (
+	                                '#type' => 'date',
+	                                '#title' => t('Fecha inicial'),
+	                                '#default_value' => '',
+	                                '#date_date_format' => 'Y/m/d',
+	                                '#description' => date('d/m/Y', time()),
+	                        );
+	                        $form["date_$num"]['fecha2'] = array (
+	                                '#type' => 'date',
+	                                '#title' => t('Fecha final'),
+	                                '#default_value' => '',
+	                                '#date_date_format' => 'Y/m/d',
+	                                '#description' => date('d/m/Y', time()),
+	                        );
+	                        $form["date_$num"]['submit'] = array(
+	                                '#type' => 'submit',
+	                                '#value' => t('Descargar graficas'),
+	                                '#name' => $buttons[$num],
+	                                '#button_type' => 'primary',
+				);
+	                	$form["date_$num"]["submit_2"] = array(#
+	                        	'#type' => 'submit',
+		                        '#value' => t('Generar gráfica'),
+	        	                '#name' => $b_name,
+	                	        '#button_type' => 'primary',
+		                );
+	                        $num++;
+	                }
+	                // grafica 7
+	                $titulo = "Estadisticas por sitio";
+	                $form["sites"] = array(
+	                        '#type' => 'fieldset',
+	                        '#title' => t("$titulo"),
+	                        '#open' => TRUE,
+	                        '#collapsible' => TRUE,
+	                        '#tree' => TRUE,
+	                );
+	                $form['sites']['sitio'] = array (
+	                        '#type' => 'select',
+	                        '#title' => t('Listado de sitios'),
+	                        '#options' => $options,
+        	                '#description' => "Selecciona un sitio",
+	                );
+	                $form['sites']['submit'] = array(
+	                        '#type' => 'submit',
+	                        '#value' => t('Descargar graficas'),
+	                        '#name' => "sitio",
+	                        '#button_type' => 'primary',
+	                );
+	                $form["sites"]["button_2"] = array(#
+	                        '#type' => 'submit',
+	                        '#value' => t('Generar gráfica'),
+        	                '#name' => "sitio_chart",
+	                        '#button_type' => 'primary',
+	                );
+	                // grafica 8
+	                $titulo = "Hallazgos identificados por ip.";
+	                $form["hallazgos_ip"] = array(
+	                        '#type' => 'fieldset',
+	                        '#title' => t("$titulo"),
+	                        '#open' => TRUE,
+	                        '#collapsible' => TRUE,
+	                );
+	                $form["hallazgos_ip"]["button"] = array(
+	                        '#type' => 'submit',
+	                        '#value' => t('Descargar graficas'),
+	                        '#name' => "hallazgos_ip",
+	                        '#button_type' => 'primary',
+	                );
+	                $form["hallazgos_ip"]["button_2"] = array(#
+	                        '#type' => 'submit',
+	                        '#value' => t('Generar gráfica'),
+	                        '#name' => "hi_chart",
+	                        '#button_type' => 'primary',
+	                );
+	                // grafica 9
+	                $titulo = "Estadisticas por departamento.";
+	                $form["date_5"] = array(
+	                        '#type' => 'fieldset',
+	                        '#title' => t("$titulo"),
+	                        '#open' => TRUE,
+	                        '#collapsible' => TRUE,
+	                        '#tree' => TRUE,
+	                );
+	                $form["date_5"]['depto'] = array(
+	                        '#type' => 'select',
+	                        '#title' => t('Departamentos'),
+	                        '#options' => array('auditoria' => 'auditoria', 'sistemas' => 'sistemas'),
+	                        '#description' => t('Selecciona un departamento.'),
+	                );
+	                $form["date_5"]['fecha1'] = array (
+	                        '#type' => 'date',
+	                        '#title' => t('Fecha inicial'),
+	                        '#default_value' => '',
+	                        '#date_date_format' => 'Y/m/d',
+	                        '#description' => date('d/m/Y', time()),
+	                );
+	                $form["date_5"]['fecha2'] = array (
+	                        '#type' => 'date',
+	                        '#title' => t('Fecha final'),
+	                        '#default_value' => '',
+	                        '#date_date_format' => 'Y/m/d',
+	                        '#description' => date('d/m/Y', time()),
+	                );
+	                $form["date_5"]['submit'] = array(
+	                        '#type' => 'submit',
+	                        '#value' => t('Descargar graficas'),
+	                        '#name' => 'departamento',
+	                        '#button_type' => 'primary',
+	                );
+	                $form["date_5"]["button_2"] = array(#
+	                        '#type' => 'submit',
+	                        '#value' => t('Generar gráfica'),
+        	                '#name' => "departamento_chart",
+	                        '#button_type' => 'primary',
+	                );
+	
+	                return $form;
 
-                return $form;
+		}else{
+			return array('#markup' => "No tienes permiso para ver estos formularios.",);
+		}
         }
         /*
          *
@@ -312,6 +317,8 @@ class EstadisticasForm extends FormBase {
                 case "revisiones_dependencia":
 			// nombre del html
 			$html = "rd_chart.html";
+			// archivo csv
+			$datos_csv = "revisiones_dependencia.csv";
                         // nombre del archivo de excel que contiene las graficas	
                         $name = "revisiones_dependencia.xlsx";
 
@@ -359,6 +366,8 @@ class EstadisticasForm extends FormBase {
                 case "hallazgos_comunes":
 			// nombre del html
 			$html = "hc_chart.html";
+			// archivo csv
+			$datos_csv = "hallazgos_comunes.csv";
                         // nombre del archivo
                         $name = "hallazgos_comunes.xlsx";
 
@@ -395,6 +404,8 @@ class EstadisticasForm extends FormBase {
                 case "hallazgos_dependencia":
 			// nombre del html
 			$html = "hd_chart.html";
+			// archivo csv
+			$datos_csv = "hallazgos_dependencia.csv";
                         // nombre del archivo
                         $name = "hallazgos_dependencia.xlsx";
 
@@ -443,6 +454,8 @@ class EstadisticasForm extends FormBase {
                 case 'sitio':
 			// nombre del html
 			$html = "s_chart.html";
+			// archivo csv
+			$datos_csv = "sitio.csv";
                         // nombre del archivo
                         $name = "sitio.xlsx";
 
@@ -512,6 +525,8 @@ class EstadisticasForm extends FormBase {
                 case 'hallazgos_impacto':
 			// nombre del html
 			$html = "hi_chart.html";
+			// archivo csv
+			$datos_csv = "hallazgos_impacto.csv";
                         // nombre del archivo
                         $name = "hallazgos_impacto.xlsx";
 
@@ -575,6 +590,8 @@ class EstadisticasForm extends FormBase {
                 case "hallazgos_date":
 			// nombre del html
 			$html = "h_d_chart.html";
+			// archivo csv
+			$datos_csv = "hallazgos_date.csv";
                         // nombre del archivo
                         $name = "hallazgos_fecha.xlsx";
 
@@ -621,6 +638,8 @@ class EstadisticasForm extends FormBase {
                 case "hallazgos_ip":
 			// nombre del html
 			$html = "hip_chart.html";
+			// archivo csv
+			$datos_csv = "hallazgos_ip.csv";
                         // nombre del archivo
                         $name = "hallazgos_ip.xlsx";
 
@@ -662,6 +681,8 @@ class EstadisticasForm extends FormBase {
                 case 'pentester':
 			// nombre del html
 			$html = "p_chart.html";
+			// archivo csv
+			$datos_csv = "pentester.csv";
                         // nombre del archivo
                         $name = "pentesters.xlsx";
 
@@ -714,6 +735,8 @@ class EstadisticasForm extends FormBase {
                 case 'departamento':
 			// nombre del html
 			$html = "d_chart.html";
+			// archivo csv
+			$datos_csv = "departamento.csv";
                         // nombre del archivo
                         $name = "departamento.xlsx";
 
@@ -774,8 +797,11 @@ class EstadisticasForm extends FormBase {
                 }
 
 		/* prueba con los templates */
-		// debug
-		//$messenger_service = \Drupal::service('messenger');
+		
+		/* datos de prueba */
+		// mensaje de debug
+		$messenger_service = \Drupal::service('messenger');
+		/* datos de prueba */
 
 		if (str_contains($button_clicked, 'chart')) {
 			// obtenemos la ruta de la carpeta de graficas
@@ -790,6 +816,26 @@ class EstadisticasForm extends FormBase {
 			// le damos formato a los valores que se muestran
 			unset($valores[0]);
 			unset($valores[1]);
+			
+			
+			/* inicio de opcion 2 */
+			$graficas_csv = $path . "_csv/prueba";
+			if ((file_exists($graficas_csv))) {   
+				$spreadsheet = new Spreadsheet();
+				$worksheet = $spreadsheet->getActiveSheet();
+				$worksheet->fromArray($valores);
+
+				$writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
+				$writer->setSheetIndex(0);   // Select which sheet to export.
+				$writer->save("public://Graficas_csv/$datos_csv");
+
+				\Drupal::service('cache.render')->invalidateAll();
+			} else {
+				$messenger_service->addError(t("Aún no se ha generado el apartado donde se muestran las gráficas, o no se han agregado correctamente los archivos utilizados. Favor de revisar la documentación."));
+			}
+			/* fin de opcion 2 */
+			
+			
 			unset($valores[2]);
 			$v_len = count($valores);
 			$v_con = 0;
@@ -814,6 +860,9 @@ class EstadisticasForm extends FormBase {
 			shell_exec($cmd);
 			$cmd = "sed -i '14i \\\t\t\t\t$datos' $destination";
 			shell_exec($cmd);
+
+
+
 
 			// debug
 			//$messenger_service->addMessage(t("$cmd '$out'"));
@@ -956,9 +1005,9 @@ class EstadisticasForm extends FormBase {
 	                $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
 	                $writer->setIncludeCharts(true);
 	                $callStartTime = microtime(true);
-	                $writer->save("public://Graficas/$filename");
+	                $writer->save("public://Graficas/output_files/$filename");
 
-			$dir_xlsx = "/sites/default/files/Graficas/$filename";
+			$dir_xlsx = "/sites/default/files/Graficas/output_files/$filename";
         	        // se hace la redireccion a donde se encuentra el archivo y se descarga
 	                $redirect = new RedirectResponse(Url::fromUserInput("$dir_xlsx")->toString());
                 	$redirect->send();
