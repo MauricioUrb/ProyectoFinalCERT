@@ -819,7 +819,7 @@ class EstadisticasForm extends FormBase {
 			
 			
 			/* inicio de opcion 2 */
-			$graficas_csv = $path . "_csv/prueba";
+			$graficas_csv = $path . "_csv/$datos_csv";
 			if ((file_exists($graficas_csv))) {   
 				$spreadsheet = new Spreadsheet();
 				$worksheet = $spreadsheet->getActiveSheet();
