@@ -130,6 +130,7 @@ echo 'yes' | composer require drupal/admin_toolbar:^3.0 --working-dir=/var/www/d
 echo 'yes' | composer require 'drupal/textarea_widget_for_text:^1.2' --working-dir=/var/www/drupal
 echo 'yes' | composer require 'drupal/mailsystem:^4.3' --working-dir=/var/www/drupal
 echo 'yes' | composer require 'drupal/phpmailer_smtp:^2.0' --working-dir=/var/www/drupal
+echo 'yes' | composer require 'drupal/chart_suite:^1.1' --working-dir=/var/www/drupal
 #composer require '' --working-dir=/var/www/drupal
 # Módulos custom
 cp -r Modulos/* /var/www/drupal/web/modules/.
@@ -147,6 +148,7 @@ echo 'yes' | /var/www/drupal/vendor/bin/drush theme:enable bootstrap
 /var/www/drupal/vendor/bin/drush en textarea_widget_for_text
 /var/www/drupal/vendor/bin/drush en mailsystem
 /var/www/drupal/vendor/bin/drush en phpmailer_smtp
+/var/www/drupal/vendor/bin/drush en chart_suite
 # Custom
 #/var/www/drupal/vendor/bin/drush en [nombre de los modulos custom]
 #Revisiones
