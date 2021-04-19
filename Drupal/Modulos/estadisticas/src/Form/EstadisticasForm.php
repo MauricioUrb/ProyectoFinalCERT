@@ -830,6 +830,7 @@ class EstadisticasForm extends FormBase {
 				$writer->save("public://Graficas_csv/$datos_csv");
 
 				\Drupal::service('cache.render')->invalidateAll();
+				$messenger_service->addMessage(t("Ver gráfica <a href=/node/7>aquí<a/>."));
 			} else {
 				$messenger_service->addError(t("Aún no se ha generado el apartado donde se muestran las gráficas, o no se han agregado correctamente los archivos utilizados. Favor de revisar la documentación."));
 			}
@@ -860,9 +861,6 @@ class EstadisticasForm extends FormBase {
 			shell_exec($cmd);
 			$cmd = "sed -i '14i \\\t\t\t\t$datos' $destination";
 			shell_exec($cmd);
-
-
-
 
 			// debug
 			//$messenger_service->addMessage(t("$cmd '$out'"));
