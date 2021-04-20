@@ -114,10 +114,12 @@ class SelectHallazgoForm extends FormBase{
     if($form_state->getValue(['nombre_hall'])){
       $filtro = true;
       $ultima = array();
+      $contador = 1;
       foreach ($hallazgos as $nombre) {
         if(preg_match("/".$form_state->getValue(['nombre_hall'])."/", $nombre)){
-          array_push($ultima, $nombre);
+          $ultima[$contador] = $nombre;
         }
+        $contador++;
       }
       $hallazgos = $ultima;
     }
@@ -162,7 +164,7 @@ class SelectHallazgoForm extends FormBase{
       while(end($valores) == 0 && sizeof($valores)){$tmp = array_pop($valores);}
       if(!sizeof($valores)){
         $form_state->setErrorByName("hallazgos", "Debes de seleccionar al menos un hallazgo.");
-      }
+      }//*/
     }
   }
   /*
