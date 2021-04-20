@@ -47,13 +47,10 @@ class SelectHallazgoForm extends FormBase{
     if (!in_array(\Drupal::currentUser()->id(), $results) || $estatus[0] > 2){
       return array('#markup' => "No tienes permiso para ver estos formularios.",);
     }
-    global $id_principal;
-    $id_principal = $id_rev_sitio;
-    global $regresar;
-    $regresar = $rev_id;
     global $hall_arr;
-    global $rS;
-    $rS = $seg;
+    $form['id_principal'] = array('#type' => 'hidden', '#value' => $id_rev_sitio);
+    $form['regresar'] = array('#type' => 'hidden', '#value' => $rev_id);
+    $form['rS'] = array('#type' => 'hidden', '#value' => $seg);
     //Consulta de la URL del sitio para imprimirlo
     Database::setActiveConnection('drupaldb_segundo');
     $connection = Database::getConnection();
@@ -66,6 +63,21 @@ class SelectHallazgoForm extends FormBase{
       '#type' => 'item',
       '#title' => t('Agregar hallazgo al activo:'),
       '#markup' => $activo[0],
+    );
+    $form['nombre_hall'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Filtrar por nombre:'),
+      '#size' => 100,
+      '#maxlength' => 100,
+      '#default_value' => $form_state->getValue(['nombre_hall']) ? $form_state->getValue(['nombre_hall']) : '',
+    );
+    //Filtros
+    $filtro = false;
+    if($form_state->getValue(['nombre_hall'])){$filtro = true;}
+    $form['submitF'] = array(
+      '#type' => 'submit',
+      '#value' => t('Filtrar'),
+      '#name' => "filtrar",
     );
     //Se revisa si el activo ya contiene algún hallazgo
     if(!$seg){
@@ -91,19 +103,36 @@ class SelectHallazgoForm extends FormBase{
     $select->fields('h', array('nombre_hallazgo_vulnerabilidad'));
     if(sizeof($id_hallz)){$select->condition('id_hallazgo',$id_hallz,'NOT IN');}
     $select->orderBy('nombre_hallazgo_vulnerabilidad');
-    $hallazgos = $select->execute()->fetchCol();
+    $hallazgosT = $select->execute()->fetchCol();
+    $contador = 1;
+    foreach ($hallazgosT as $value) {
+      $hallazgos[$contador] = $value;
+      $contador++;
+    }
     $hall_arr = $hallazgos;
+
+    if($form_state->getValue(['nombre_hall'])){
+      $filtro = true;
+      $ultima = array();
+      foreach ($hallazgos as $nombre) {
+        if(preg_match("/".$form_state->getValue(['nombre_hall'])."/", $nombre)){
+          array_push($ultima, $nombre);
+        }
+      }
+      $hallazgos = $ultima;
+    }
+
     $form['hallazgos'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Selecciona los hallazgos a agregar:'),
       '#options' => $hallazgos,
-      '#required' => TRUE,
     );
     
     //Boton para enviar el formulario
-    $form['submit'] = array(
+    $form['submitG'] = array(
       '#type' => 'submit',
       '#value' => t('Guardar'),
+      '#name' => "guardar",
     );
     if(!$seg){
       $url = Url::fromRoute('edit_revision.content', array('rev_id' => $rev_id));
@@ -118,6 +147,25 @@ class SelectHallazgoForm extends FormBase{
     return $form;    
   }
   /*
+  + Descripción: Función para validar los datos proporcionados por el usuario.
+  + Parámetros:
+  +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
+  +   - $form_state: estado de los formularios creados de Drupal | Tipo: FormStateInterface, Default: NA |
+  */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    $button_clicked = $form_state->getTriggeringElement()['#name'];
+    if($button_clicked == "guardar"){
+      $tmp = '';
+      $id_hall = $form_state->getValue(['hallazgos']);
+      foreach($id_hall as $valores){ $tmp .= $valores.'-'; }
+      $valores = explode('-',$tmp);
+      while(end($valores) == 0 && sizeof($valores)){$tmp = array_pop($valores);}
+      if(!sizeof($valores)){
+        $form_state->setErrorByName("hallazgos", "Debes de seleccionar al menos un hallazgo.");
+      }
+    }
+  }
+  /*
   + Descripción: Función para mandar los datos proporcionados por el usuario y registrarlos en la base de datos.
   + Parámetros:
   +   - $form: arreglo de formulario de Drupal | Tipo: array, Default: NA |
@@ -125,76 +173,86 @@ class SelectHallazgoForm extends FormBase{
   */
   public function submitForm(array &$form, FormStateInterface $form_state){
     global $hall_arr;
-    global $id_principal;
+    //global $id_principal;
     global $regresar;
     global $rS;
-    $mensaje = 'Hallazgo agregado a la revision.';
-    Database::setActiveConnection('drupaldb_segundo');
-    $connection = Database::getConnection();
-    //Obtener el id_hallazgo
-    $tmp = '';
-    $id_hall = $form_state->getValue(['hallazgos']);
-    foreach($id_hall as $valores){ $tmp .= $valores.'-'; }
-    $valores = explode('-',$tmp);
-    while(end($valores) == 0 && sizeof($valores) > 1){$tmp = array_pop($valores);}
-    $tmp = 0;
-    foreach($valores as $pos){
-      $nombres[$tmp] = $form['hallazgos']['#options'][$pos];
-      $tmp++;
-    }
-    $consulta = Database::getConnection()->select('hallazgos', 'h');
-    $consulta->fields('h', array('id_hallazgo'));
-    $consulta->fields('h', array('descripcion_hallazgo'));
-    $consulta->fields('h', array('nivel_cvss'));
-    $consulta->fields('h', array('vector_cvss'));
-    $consulta->condition('nombre_hallazgo_vulnerabilidad',$nombres,'IN');
-    $datosH = $consulta->execute();
-    //Insercion en la BD
-    foreach ($datosH as $dato) {
-      $impacto = $dato->nivel_cvss;
-      preg_match('/[\d]+.\d/', $dato->nivel_cvss, $impacto);
-      $result = $connection->insert('revisiones_hallazgos')
-        ->fields(array(
-          'id_rev_sitio' => $id_principal,
-          'id_hallazgo' => $dato->id_hallazgo,
-          'descripcion_hall_rev' => $dato->descripcion_hallazgo,
-          'recursos_afectador' => '/',
-          'impacto_hall_rev' => $impacto[0],
-          'cvss_hallazgos' => $dato->vector_cvss,
-          'estatus' => 1,
-        ))->execute();
-    }
-    //Se revisa si ya se tiene ese estado, de otro modo, se actualiza
-    $select = Database::getConnection()->select('actividad', 'a');
-    $select->fields('a', array('id_actividad'));
-    $select->condition('id_revision', $regresar);
-    $select->condition('id_estatus', 2);
-    $existe = $select->execute()->fetchCol();
-    $tmp = getdate();
-    $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
-    if(sizeof($existe)){
-      $update = $connection->update('actividad')
-        ->fields(array(
-          'fecha' => $fecha,
-        ))
-        ->condition('id_actividad',$existe[0])
-        ->execute();
+    $id_principal = $form_state->getValue(['id_principal']);
+    $regresar = $form_state->getValue(['regresar']);
+    $rS = $form_state->getValue(['rS']);
+    $button_clicked = $form_state->getTriggeringElement()['#name'];
+    if($button_clicked == "filtrar"){
+      //Recargar con el filtro
+      $form_state->setRebuild();
     }else{
-      $update = $connection->insert('actividad')
-        ->fields(array(
-          'id_revision' => $regresar,
-          'id_estatus' => 2,
-          'fecha' => $fecha,
-        ))
-        ->execute();
-    }
-    Database::setActiveConnection();
-    $messenger_service = \Drupal::service('messenger');
-    $messenger_service->addMessage($mensaje);
-    if(!$rS){
-  	 $form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));
-    }else{
-     $form_state->setRedirectUrl(Url::fromRoute('edit_seguimiento.content', array('rev_id' => $regresar)));
+      $mensaje = 'Hallazgo agregado a la revision.';
+      Database::setActiveConnection('drupaldb_segundo');
+      $connection = Database::getConnection();
+      //Obtener el id_hallazgo
+      $tmp = '';
+      $id_hall = $form_state->getValue(['hallazgos']);
+      foreach($id_hall as $valores){ $tmp .= $valores.'-'; }
+      $valores = explode('-',$tmp);
+      while(end($valores) == 0 && sizeof($valores)){$tmp = array_pop($valores);}
+      $tmp = 0;
+      foreach($valores as $pos){
+        $nombres[$tmp] = $form['hallazgos']['#options'][$pos];
+        $tmp++;
+      }
+      
+      $consulta = Database::getConnection()->select('hallazgos', 'h');
+      $consulta->fields('h', array('id_hallazgo'));
+      $consulta->fields('h', array('descripcion_hallazgo'));
+      $consulta->fields('h', array('nivel_cvss'));
+      $consulta->fields('h', array('vector_cvss'));
+      $consulta->condition('nombre_hallazgo_vulnerabilidad',$nombres,'IN');
+      $datosH = $consulta->execute();
+      //Insercion en la BD
+      foreach ($datosH as $dato) {
+        $impacto = $dato->nivel_cvss;
+        preg_match('/[\d]+.\d/', $dato->nivel_cvss, $impacto);
+        $result = $connection->insert('revisiones_hallazgos')
+          ->fields(array(
+            'id_rev_sitio' => $form_state->getValue(['id_principal']),
+            'id_hallazgo' => $dato->id_hallazgo,
+            'descripcion_hall_rev' => $dato->descripcion_hallazgo,
+            'recursos_afectador' => '/',
+            'impacto_hall_rev' => $impacto[0],
+            'cvss_hallazgos' => $dato->vector_cvss,
+            'estatus' => 1,
+          ))->execute();
+      }
+      //Se revisa si ya se tiene ese estado, de otro modo, se actualiza
+      $select = Database::getConnection()->select('actividad', 'a');
+      $select->fields('a', array('id_actividad'));
+      $select->condition('id_revision', $regresar);
+      $select->condition('id_estatus', 2);
+      $existe = $select->execute()->fetchCol();
+      $tmp = getdate();
+      $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
+      if(sizeof($existe)){
+        $update = $connection->update('actividad')
+          ->fields(array(
+            'fecha' => $fecha,
+          ))
+          ->condition('id_actividad',$existe[0])
+          ->execute();
+      }else{
+        $update = $connection->insert('actividad')
+          ->fields(array(
+            'id_revision' => $regresar,
+            'id_estatus' => 2,
+            'fecha' => $fecha,
+          ))
+          ->execute();
+      }
+      Database::setActiveConnection();//*/
+      $messenger_service = \Drupal::service('messenger');
+      $messenger_service->addMessage($mensaje);
+      if(!$rS){
+    	 $form_state->setRedirectUrl(Url::fromRoute('edit_revision.content', array('rev_id' => $regresar)));
+      }else{
+       $form_state->setRedirectUrl(Url::fromRoute('edit_seguimiento.content', array('rev_id' => $regresar)));
+      }
     }
   }
 }
