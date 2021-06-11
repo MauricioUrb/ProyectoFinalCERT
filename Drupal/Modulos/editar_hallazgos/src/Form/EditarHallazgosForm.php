@@ -16,6 +16,19 @@ class EditarHallazgosForm extends FormBase {
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $id_h = NULL) {
+    //Se revisa que el sitio esté activo para poder editarlo
+    \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+    $connection = \Drupal\Core\Database\Database::getConnection();
+    $select = Database::getConnection()->select('hallazgos', 'h');
+    $select->fields('h', array('activo'));
+    $select->condition('id_hallazgo',$id_h);
+    $results = $select->execute()->fetchCol();
+    \Drupal\Core\Database\Database::setActiveConnection();
+    if(!$results[0]){
+      return array('#markup' => "No puedes modificar este registro. Contacta con el administrador.",);
+    }
+
+    
     if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles()) || in_array('pentester', \Drupal::currentUser()->getRoles())){
       global $varh;
       $varh = $id_h;
@@ -38,7 +51,8 @@ class EditarHallazgosForm extends FormBase {
       $select->condition('id_hallazgo', $id_h);
       //Se realiza la consulta
       $results = $select->execute();
-
+      //regresar a la default
+      \Drupal\Core\Database\Database::setActiveConnection();
       $txt = '';
       //se recorren los resultados para después imprimirlos
       foreach ($results as $result){
@@ -110,8 +124,7 @@ class EditarHallazgosForm extends FormBase {
 
       return $form;
 
-      //regresar a la default
-      \Drupal\Core\Database\Database::setActiveConnection();
+      
 
     } 
     else{

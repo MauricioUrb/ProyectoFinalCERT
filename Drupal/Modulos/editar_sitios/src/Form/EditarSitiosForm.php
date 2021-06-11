@@ -19,6 +19,18 @@ class EditarSitiosForm extends FormBase{
   }
 
   public function buildForm(array $form, FormStateInterface $form_state, $id_s = NULL, $id_ip = NULL, $id_dep = NULL){
+    //Se revisa que el sitio esté activo para poder editarlo
+    \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+    $connection = \Drupal\Core\Database\Database::getConnection();
+    $select = Database::getConnection()->select('sitios', 's');
+    $select->fields('s', array('activo'));
+    $select->condition('id_sitio',$id_s);
+    $results = $select->execute()->fetchCol();
+    \Drupal\Core\Database\Database::setActiveConnection();
+    if(!$results[0]){
+      return array('#markup' => "No puedes modificar este registro. Contacta con el administrador.",);
+    }
+
     if (in_array('coordinador de revisiones', \Drupal::currentUser()->getRoles())){
       //declaramos una variable global para poder usar en otra funcion
       global $vars, $dependencia_id, $ip_id;
@@ -46,6 +58,8 @@ class EditarSitiosForm extends FormBase{
       $select->condition('ip.id_ip', $id_ip);
       //Se realiza la consulta
       $results = $select->execute();
+      //regresar a la default
+      \Drupal\Core\Database\Database::setActiveConnection();
 
       $txt = '';
       //se recorren los resultados para después imprimirlos
@@ -88,9 +102,6 @@ class EditarSitiosForm extends FormBase{
         );
       }
       return $form;
-      //regresar a la default
-      \Drupal\Core\Database\Database::setActiveConnection();
-
     }
     else{
       return array('#markup' => "No tienes permiso para ver estos formularios.",);
