@@ -62,6 +62,7 @@ class AsignacionRevisionesForm extends FormBase{
     $connection = Database::getConnection();
     $consulta = Database::getConnection()->select('sitios', 's');
     $consulta->fields('s', array('url_sitio'));
+    $consulta->condition('activo',1);
     $sitios = $consulta->execute()->fetchCol();
     Database::setActiveConnection();
     

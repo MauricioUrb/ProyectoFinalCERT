@@ -51,6 +51,7 @@ class SitiosShowForm extends FormBase{
              ->fields('ip', array('dir_ip_sitios', 'id_ip'));
       //evitar repetidos
       $select->distinct();
+      $select->condition('activo',1);
       $select->orderBy('url_sitio');
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       //Se realiza la consulta

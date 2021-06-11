@@ -55,6 +55,7 @@ class HallazgosShowForm extends FormBase{
              ->fields('h', array('r_ejecutivo_hallazgo'))
              ->fields('h', array('solucion_corta'));
       $select->orderBy('nombre_hallazgo_vulnerabilidad');
+      $select->condition('activo',1);
       $select = $select->extend('Drupal\Core\Database\Query\PagerSelectExtender')->limit(15);
       //Se realiza la consulta
       $results = $select->execute();

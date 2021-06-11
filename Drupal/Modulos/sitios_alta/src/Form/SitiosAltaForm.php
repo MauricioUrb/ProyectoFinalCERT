@@ -360,6 +360,7 @@ class SitiosAltaForm extends FormBase{
 					->fields(array(
 						 'descripcion_sitio' => $desc,
 						 'url_sitio' => $url,
+						 'activo' => 1,
 					))
 					->execute();
 				}

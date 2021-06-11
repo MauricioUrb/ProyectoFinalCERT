@@ -432,13 +432,14 @@ class HallazgosAltaForm extends FormBase {
 				  		'descripcion_hallazgo' => $desc,
 						// aqui va lo de la descripcion corta
 			  			'solucion_corta' => $corta,
-			  			'solucion_recomendacion_hallazgo' => $sol,
+			  			'solucion_recomendacion_halazgo' => $sol,
 				  		'referencias_hallazgo' => $refer,
 					  	'recomendacion_general_hallazgo' => $reco,
 					  	'nivel_cvss' => $full_level,
 					  	'vector_cvss' => $vector,
 					  	'enlace_cvss' => $link,
 					  	'r_ejecutivo_hallazgo' => $resum,
+					  	'activo' => 1,
 				  	))
 		  			// ejecutamos el query
 		  			->execute();
