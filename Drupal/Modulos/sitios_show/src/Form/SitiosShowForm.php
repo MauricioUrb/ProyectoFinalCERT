@@ -147,7 +147,7 @@ class SitiosShowForm extends FormBase{
     $select ->join('ip_sitios', 'ips', 's.id_sitio = ips.id_sitio');
     $select ->join('dir_ip', 'ip', 'ip.id_ip = ips.id_ip');
     //Se especifican las columnas a leer
-    $select->fields('s', array('id_sitio', 'descripcion_sitio', 'url_sitio'))
+    $select->fields('s', array('id_sitio', 'descripcion_sitio', 'url_sitio','activo'))
 	   ->fields('d', array('nombre_dependencia', 'id_dependencia' ))
 	   ->fields('ip', array('dir_ip_sitios', 'id_ip'));
     //evitar repetidos
@@ -157,10 +157,10 @@ class SitiosShowForm extends FormBase{
     $results = $select->execute();
 
     $valores = array();
-    $valores[0] = ["Descripcion", "URL", "IP", "Dependencia"];
+    $valores[0] = ["Descripcion", "URL", "Activo", "IP", "Dependencia"];
     $cont = 1;
     foreach($results as $result){
-	    $valores[$cont] = ["$result->descripcion_sitio", "$result->url_sitio", "$result->dir_ip_sitios", "$result->nombre_dependencia"];
+	    $valores[$cont] = ["$result->descripcion_sitio", "$result->url_sitio", "$result->activo", "$result->dir_ip_sitios", "$result->nombre_dependencia"];
 	    $cont++;
     }
 

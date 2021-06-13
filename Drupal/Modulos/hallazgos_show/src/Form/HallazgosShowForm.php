@@ -167,16 +167,17 @@ class HallazgosShowForm extends FormBase{
 	   ->fields('h', array('vector_cvss'))//9
 	   ->fields('h', array('enlace_cvss'))//6
 	   ->fields('h', array('r_ejecutivo_hallazgo'))//7
-	   ->fields('h', array('solucion_corta'));//3
+     ->fields('h', array('solucion_corta'))//3
+	   ->fields('h', array('activo'));
     $select->orderBy('nombre_hallazgo_vulnerabilidad');
     //Se realiza la consulta
     $results = $select->execute();
 
     $valores = array();
-    $valores[0] = ["nombre del hallazgo", "descripcion del hallazgo", "solucion corta", "solucion/recomendacion", "referencias", "enlace del cvss", "resumen ejecutivo", "recomendacion general", "vector cvss","criticidad"];
+    $valores[0] = ["nombre del hallazgo", "descripcion del hallazgo", "solucion corta", "solucion/recomendacion", "referencias", "enlace del cvss", "resumen ejecutivo", "recomendacion general", "vector cvss","criticidad","activo"];
     $cont = 1;
     foreach($results as $r){
-	    $valores[$cont] = ["$r->nombre_hallazgo_vulnerabilidad", "$r->descripcion_hallazgo", "$r->solucion_corta", "$r->solucion_recomendacion_halazgo", "$r->referencias_hallazgo", "$r->enlace_cvss", "$r->r_ejecutivo_hallazgo", "$r->recomendacion_general_hallazgo", "$r->vector_cvss", "$r->nivel_cvss"];
+	    $valores[$cont] = ["$r->nombre_hallazgo_vulnerabilidad", "$r->descripcion_hallazgo", "$r->solucion_corta", "$r->solucion_recomendacion_halazgo", "$r->referencias_hallazgo", "$r->enlace_cvss", "$r->r_ejecutivo_hallazgo", "$r->recomendacion_general_hallazgo", "$r->vector_cvss", "$r->nivel_cvss", "$r->activo"];
 	    $cont++;
     }
 
