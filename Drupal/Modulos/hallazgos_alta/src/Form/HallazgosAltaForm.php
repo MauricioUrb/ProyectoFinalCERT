@@ -369,6 +369,7 @@ class HallazgosAltaForm extends FormBase {
 											  	'vector_cvss' => $vector,
 											  	'enlace_cvss' => $link,
 											  	'r_ejecutivo_hallazgo' => $resum,
+											  	'activo' => 1,
 										  	))
 									  		// ejecutamos el query
 									  		->execute();
