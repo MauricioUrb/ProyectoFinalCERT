@@ -122,7 +122,7 @@ class EliminarSitiosForm extends FormBase {
     }
     $to = substr($to, 0, -1);
     $params['context']['subject'] = "Notificación de eliminación de hallazgo.";
-    $params['context']['message'] = 'Se ha eliminado el hallazgo "'.$urlSitio[0].'". Si tiene alguna revisión en proceso en el que se haya asignado este hallazgo, este será eliminado.';
+    $params['context']['message'] = 'Se ha eliminado el sitio "'.$urlSitio[0].'". Si tiene alguna revisión en proceso en el que se haya asignado este sitio, este será eliminado.';
     //$to = 'mauricio@dominio.com,angel@dominio.com';
     $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $to, $langcode, $params);
     if(!$email){$badMail = TRUE;}
