@@ -147,6 +147,6 @@ class EditarSitiosForm extends FormBase{
         $messenger_service->addMessage(t('Se ha actualizado la base de datos'));
 	//regresar a la default
 	\Drupal\Core\Database\Database::setActiveConnection();
-  
+	$form_state->setRedirectUrl(Url::fromRoute('sitios_show.content'));
   }
 }
