@@ -8,6 +8,7 @@ namespace Drupal\editar_hallazgos\Form;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 
 class EditarHallazgosForm extends FormBase {
 
@@ -160,6 +161,6 @@ class EditarHallazgosForm extends FormBase {
           $messenger_service->addMessage(t('Se ha actualizado la base de datos'));
 	  //regresar a la default
 	  \Drupal\Core\Database\Database::setActiveConnection();
-
+	  $form_state->setRedirectUrl(Url::fromRoute('hallazgos_show.content'));
   }
 }
