@@ -79,19 +79,7 @@ class EliminarHallazgosForm extends FormBase {
     $consulta->fields('h', array('nombre_hallazgo_vulnerabilidad'));
     $consulta->condition('id_hallazgo', $idh);
     $nombreHallazgo = $consulta->execute()->fetchCol();
-    //Revisiones actualmente activas
-    $consulta = Database::getConnection()->select('actividad', 'a');
-    $consulta->fields('a', array('id_revision'));
-    $consulta->groupBy('id_revision');
-    $consulta->having('MAX(id_estatus) < 4');
-    $revisiones = $consulta->execute()->fetchCol();
-    //Revisiones activas que han asignado este hallazgo
-    $consulta = Database::getConnection()->select('revisiones_hallazgos', 'h');
-    $consulta->join('revisiones_sitios', 'r', 'h.id_rev_sitio = r.id_rev_sitio');
-    $consulta->fields('h', array('id_rev_sitio_hall'));
-    $consulta->condition('id_hallazgo', $idh);
-    $consulta->condition('id_revision', $revisiones, 'IN');
-    $irsh = $consulta->execute()->fetchCol();
+    
     // se desactiva el registro en la tabla hallazgos
 	  $update = $connection->update('hallazgos')
 		  ->fields(array('activo' => 0))
@@ -110,15 +98,34 @@ class EliminarHallazgosForm extends FormBase {
     $mensaje = 'Hallazgo eliminado.';
     
     //Si se desactivo con éxito, se procede a borrar de las revisiones activas y enviar el correo
-    if(sizeof($irsh)){
-      \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
-      $connection = \Drupal\Core\Database\Database::getConnection();
-      $update = $connection->delete('revisiones_hallazgos')
-        ->condition('id_rev_sitio_hall',$irsh,'IN')
-        ->execute();
-      \Drupal\Core\Database\Database::setActiveConnection();
+    // se hace la conexion a la base de datos
+    \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+    $connection = \Drupal\Core\Database\Database::getConnection();
+    //Revisiones actualmente activas
+    $consulta = Database::getConnection()->select('actividad', 'a');
+    $consulta->fields('a', array('id_revision'));
+    $consulta->groupBy('id_revision');
+    $consulta->having('MAX(id_estatus) < 4');
+    $revisiones = $consulta->execute()->fetchCol();
+    //Revisiones activas que han asignado este hallazgo
+    if(sizeof($revisiones)){
+      $consulta = Database::getConnection()->select('revisiones_hallazgos', 'h');
+      $consulta->join('revisiones_sitios', 'r', 'h.id_rev_sitio = r.id_rev_sitio');
+      $consulta->fields('h', array('id_rev_sitio_hall'));
+      $consulta->condition('id_hallazgo', $idh);
+      $consulta->condition('id_revision', $revisiones, 'IN');
+      $irsh = $consulta->execute()->fetchCol();
+      if(sizeof($irsh)){
+        \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+        $connection = \Drupal\Core\Database\Database::getConnection();
+        $update = $connection->delete('revisiones_hallazgos')
+          ->condition('id_rev_sitio_hall',$irsh,'IN')
+          ->execute();
+        \Drupal\Core\Database\Database::setActiveConnection();
+      }
     }
-    
+    //regresar a la db default
+    \Drupal\Core\Database\Database::setActiveConnection();
     //Notificacion de correo de elminacion de hallazgo
     $consulta = Database::getConnection()->select('users_field_data', 'r');
     $consulta->join('user__roles','u','r.uid = u.entity_id');
