@@ -85,12 +85,6 @@ class EliminarSitiosForm extends FormBase {
     $consulta->groupBy('id_revision');
     $consulta->having('MAX(id_estatus) < 4');
     $revisiones = $consulta->execute()->fetchCol();
-    //Revisiones activas que han asignado este sitio
-    $consulta = Database::getConnection()->select('revisiones_sitios', 'r');
-    $consulta->fields('r', array('id_revision'));
-    $consulta->condition('id_sitio', $ids);
-    $consulta->condition('id_revision', $revisiones, 'IN');
-    $revDel = $consulta->execute()->fetchCol();
     // se desactiva el registro en la tabla hallazgos
     $update = $connection->update('sitios')
       ->fields(array('activo' => 0))
@@ -127,40 +121,53 @@ class EliminarSitiosForm extends FormBase {
     $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $to, $langcode, $params);
     if(!$email){$badMail = TRUE;}
 
-    //Notificacion a los pertenecientes de las revisiones que fueron eliminadas
-    foreach($revDel as $rev){
-      \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
-      $connection = \Drupal\Core\Database\Database::getConnection();
-      //Obtención id usuarios
-      $consulta = Database::getConnection()->select('revisiones_asignadas', 'r');
-      $consulta->fields('r',array('id_usuario'));
-      $consulta->condition('id_revision',$rev);
-      $idU = $consulta->execute()->fetchCol();
-      //Eliminacion de la revisión
-      $tmp = getdate();
-      $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
-      $update = $connection->insert('actividad')
-        ->fields(array(
-          'id_revision' => $rev,
-          'id_estatus' => 5,
-          'fecha' => $fecha,
-        ))
-        ->execute();
-      \Drupal\Core\Database\Database::setActiveConnection();
-      //Obtención de mails
-      $consulta = Database::getConnection()->select('users_field_data', 'r');
-      $consulta->fields('r', array('mail'));
-      $consulta->condition('uid',$idU,'IN');
-      $correos = $consulta->execute()->fetchCol();
-      $to = "";
-      foreach($correos as $mail){ $to .= $mail.','; }
-      $to = substr($to, 0, -1);
-      $params['context']['subject'] = "Notificación de eliminación de revision por eliminación de sitio.";
-      $params['context']['message'] = 'Se ha eliminado la revisión con ID '.$rev." debido a la eliminación del sitio ".$urlSitio[0].". Favor de ponerse en contacto con el coordinador de la revisión.";
-      //$to = 'mauricio@dominio.com,angel@dominio.com';
-      $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $to, $langcode, $params);
-      if(!$email){$badMail = TRUE;}
+    //se hace la conexion a la base de datos
+    \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+    $connection = \Drupal\Core\Database\Database::getConnection();
+    //Revisiones activas que han asignado este sitio
+    if(sizeof($revisiones)){
+      $consulta = Database::getConnection()->select('revisiones_sitios', 'r');
+      $consulta->fields('r', array('id_revision'));
+      $consulta->condition('id_sitio', $ids);
+      $consulta->condition('id_revision', $revisiones, 'IN');
+      $revDel = $consulta->execute()->fetchCol();
+      //Notificacion a los pertenecientes de las revisiones que fueron eliminadas
+      foreach($revDel as $rev){
+        \Drupal\Core\Database\Database::setActiveConnection('drupaldb_segundo');
+        $connection = \Drupal\Core\Database\Database::getConnection();
+        //Obtención id usuarios
+        $consulta = Database::getConnection()->select('revisiones_asignadas', 'r');
+        $consulta->fields('r',array('id_usuario'));
+        $consulta->condition('id_revision',$rev);
+        $idU = $consulta->execute()->fetchCol();
+        //Eliminacion de la revisión
+        $tmp = getdate();
+        $fecha = $tmp['year'].'-'.$tmp['mon'].'-'.$tmp['mday'];
+        $update = $connection->insert('actividad')
+          ->fields(array(
+            'id_revision' => $rev,
+            'id_estatus' => 5,
+            'fecha' => $fecha,
+          ))
+          ->execute();
+        \Drupal\Core\Database\Database::setActiveConnection();
+        //Obtención de mails
+        $consulta = Database::getConnection()->select('users_field_data', 'r');
+        $consulta->fields('r', array('mail'));
+        $consulta->condition('uid',$idU,'IN');
+        $correos = $consulta->execute()->fetchCol();
+        $to = "";
+        foreach($correos as $mail){ $to .= $mail.','; }
+        $to = substr($to, 0, -1);
+        $params['context']['subject'] = "Notificación de eliminación de revision por eliminación de sitio.";
+        $params['context']['message'] = 'Se ha eliminado la revisión con ID '.$rev." debido a la eliminación del sitio ".$urlSitio[0].". Favor de ponerse en contacto con el coordinador de la revisión.";
+        //$to = 'mauricio@dominio.com,angel@dominio.com';
+        $email = \Drupal::service('plugin.manager.mail')->mail('system', 'mail', $to, $langcode, $params);
+        if(!$email){$badMail = TRUE;}
+      }
     }
+    //regresar a la default
+    \Drupal\Core\Database\Database::setActiveConnection();
     if($badMail){$mensaje .= " Ocurrió algún error y no se ha podido enviar el correo de notificación a algunos usuarios. Favor de contactar con el administrador.";}
 
     $messenger_service->addMessage($mensaje);
