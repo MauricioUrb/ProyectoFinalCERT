@@ -115,38 +115,3 @@ insert into estatus_revisiones(estatus) values('En proceso');
 insert into estatus_revisiones(estatus) values('Concluido');
 insert into estatus_revisiones(estatus) values('Aprobado');
 insert into estatus_revisiones(estatus) values('Inactivo');
-insert into dependencias (nombre_dependencia) values ('medicina');
-insert into dependencias (nombre_dependencia) values ('mate');
-insert into dependencias (nombre_dependencia) values ('quimica');
-insert into dependencias (nombre_dependencia) values ('inge');
-insert into dependencias (nombre_dependencia) values ('fca');
-insert into sitios (descripcion_sitio, url_sitio, activo) values ('medicina', 'medicina.unam',true);
-insert into sitios (descripcion_sitio, url_sitio, activo) values ('mate', 'mate.unam',true);
-insert into sitios (descripcion_sitio, url_sitio, activo) values ('quimica', 'quimica.unam',true);
-insert into sitios (descripcion_sitio, url_sitio, activo) values ('inge', 'inge.unam',true);
-insert into sitios (descripcion_sitio, url_sitio, activo) values ('fca', 'fca.unam',true);
-insert into dir_ip (dir_ip_sitios ) values ('172.16.16.195');
-insert into dir_ip (dir_ip_sitios ) values ('172.16.16.23');
-insert into dir_ip (dir_ip_sitios ) values ('192.168.16.35');
-insert into dir_ip (dir_ip_sitios ) values ('10.10.10.25');
-insert into dir_ip (dir_ip_sitios ) values ('132.45.22.12');
-insert into dependencias_sitios values (1,1);
-insert into dependencias_sitios values (2,2);
-insert into dependencias_sitios values (3,3);
-insert into dependencias_sitios values (4,4);
-insert into dependencias_sitios values (5,5);
-insert into ip_sitios values (1,1);
-insert into ip_sitios values (2,2);
-insert into ip_sitios values (3,3);
-insert into ip_sitios values (4,4);
-insert into ip_sitios values (5,5);
-insert into hallazgos (nombre_hallazgo_vulnerabilidad, descripcion_hallazgo, solucion_recomendacion_halazgo, referencias_hallazgo, recomendacion_general_hallazgo, nivel_cvss, vector_cvss, enlace_cvss, r_ejecutivo_hallazgo,solucion_corta, activo) 
-	values ('prueba', 'prueba', 'prueba', 'prueba', 'prueba', 'None', 'AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N', 'pruebaenlace', 'pruebaejecutivo','solucion corta prueba',true);
-insert into hallazgos(nombre_hallazgo_vulnerabilidad,descripcion_hallazgo,solucion_recomendacion_halazgo,referencias_hallazgo,recomendacion_general_hallazgo,nivel_cvss,vector_cvss,enlace_cvss,r_ejecutivo_hallazgo,solucion_corta, activo) 
-	values('SLQinjection','Descripcion SLQinjection','Solucion SLQinjection','Referencia SLQinjection','Recomendacion SLQinjection','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H/MA:H','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H/MA:H','Reporte SLQinjection','solucion corta SLQinjection',true);
-insert into hallazgos(nombre_hallazgo_vulnerabilidad,descripcion_hallazgo,solucion_recomendacion_halazgo,referencias_hallazgo,recomendacion_general_hallazgo,nivel_cvss,vector_cvss,enlace_cvss,r_ejecutivo_hallazgo,solucion_corta, activo) 
-	values('XSS','Descripcion XSS','Solucion XSS','Referencia XSS','Recomendacion XSS','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L/MI:H','Reporte XSS','solucion corta XSS',true);
-insert into hallazgos(nombre_hallazgo_vulnerabilidad,descripcion_hallazgo,solucion_recomendacion_halazgo,referencias_hallazgo,recomendacion_general_hallazgo,nivel_cvss,vector_cvss,enlace_cvss,r_ejecutivo_hallazgo,solucion_corta, activo) 
-  	values('Clickjacking','Descripcion Clickjacking','Solucion Clickjacking','Referencia Clickjacking','Recomendacion Clickjacking','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C','Reporte Clickjacking','solucion corta Clickjacking',true);
-insert into hallazgos(nombre_hallazgo_vulnerabilidad,descripcion_hallazgo,solucion_recomendacion_halazgo,referencias_hallazgo,recomendacion_general_hallazgo,nivel_cvss,vector_cvss,enlace_cvss,r_ejecutivo_hallazgo,solucion_corta, activo) 
-  	values('CSRF','Descripcion CSRF','Solucion CSRF','Referencia CSRF','Recomendacion CSRF','3.1 BAJO','AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L','https://www.first.org/cvss/calculator/3.0#CVSS:3.0/AV:A/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C/CR:H/IR:H/AR:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:L','Reporte CSRF','solucion corta CSRF',true);
